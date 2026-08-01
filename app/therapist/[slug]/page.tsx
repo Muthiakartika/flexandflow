@@ -4,8 +4,9 @@ import { notFound } from "next/navigation";
 
 import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
-import Reveal from "@/components/ui/Reveal";
+import { BAND, CARD, FOCUS, H3, WRAP } from "@/components/ui/tokens";
 import { therapistBySlug, therapists } from "@/lib/data/therapists";
+import { contact, workingHours } from "@/lib/site";
 
 export function generateStaticParams() {
   return therapists.map((therapist) => ({ slug: therapist.slug }));
@@ -33,10 +34,13 @@ export async function generateMetadata(
 }
 
 /**
- * Therapist profile: a three-part row — portrait, bio text, and the scene
- * photo with "Her Approach" plus a black "Contact Now" pill stacked beneath it
- * in the same column. The original doesn't show working hours on this page
- * (only in the About page's team grid, and even there at font-size 0).
+ * Therapist profile.
+ *
+ * The clone ran three fixed columns — portrait, bio, scene photo — which broke
+ * the reading order: "Her Approach" sat in the right-hand column, below a
+ * photo, nowhere near the bio it belonged to. Here the bio runs as one column
+ * with the practical card beside it, and the WhatsApp message it opens already
+ * names the practitioner.
  */
 export default async function TherapistPage(
   props: PageProps<"/therapist/[slug]">,
@@ -45,92 +49,143 @@ export default async function TherapistPage(
   const therapist = therapistBySlug.get(slug);
   if (!therapist) notFound();
 
+  const bookingHref = `${contact.whatsapp}?text=${encodeURIComponent(
+    `Hi Flex & Flow, I'd like to book a session with ${therapist.name}.`,
+  )}`;
+
   return (
     <>
       <PageHero
         title={therapist.name}
+        eyebrow={therapist.role}
         crumbs={[
           { label: "About us", href: "/about-us" },
           { label: therapist.name },
         ]}
+        actions={
+          <ButtonLink href={bookingHref} external variant="solid">
+            Book with {therapist.name}
+          </ButtonLink>
+        }
       />
 
-      <section className="hero-gap-top px-[30px] pb-[80px] max-[767px]:px-5">
-        <div className="mx-auto grid w-full max-w-[1300px] gap-10 lg:grid-cols-[380px_1fr_390px]">
-          <Reveal>
-            <Image
-              src={therapist.portrait}
-              alt={therapist.name}
-              width={1300}
-              height={1200}
-              sizes="(max-width: 1023px) 90vw, 380px"
-              className="h-full min-h-[400px] w-full rounded-[var(--radius-2x)] object-cover"
-            />
-          </Reveal>
+      <section className={`${WRAP} ${BAND}`}>
+        <div className="grid gap-[clamp(1.75rem,3vw,3rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
+          <article>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Image
+                src={therapist.portrait}
+                alt={therapist.name}
+                width={1300}
+                height={1200}
+                priority
+                sizes="(max-width: 640px) 92vw, 380px"
+                className="aspect-[4/5] w-full rounded-[10px] object-cover object-top"
+              />
+              <Image
+                src={therapist.sceneImage}
+                alt={`${therapist.name} working with a client`}
+                width={1300}
+                height={1200}
+                sizes="(max-width: 640px) 92vw, 380px"
+                className="aspect-[4/5] w-full rounded-[10px] object-cover"
+              />
+            </div>
 
-          <Reveal delay={100}>
-            <h3 className="text-[var(--fs-h3)]">{therapist.name}</h3>
-            <p className="mt-[-8px] text-[16px]">{therapist.role}</p>
-
-            <h4 className="mt-8 text-[var(--fs-h4)]">Specialized In</h4>
-            <p className="mt-2 text-[16px] leading-[1.625]">
-              {therapist.specializedIn}
-            </p>
-
-            <h4 className="mt-8 text-[var(--fs-h4)]">About Me</h4>
-            <div className="mt-2 flex flex-col gap-4 text-[16px] leading-[1.625]">
+            <h2 className={`mt-8 ${H3}`}>About Me</h2>
+            <div className="mt-3 flex flex-col gap-3">
               {therapist.about.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
+                <p
+                  key={paragraph}
+                  className="max-w-[68ch] font-body text-[15px] leading-[1.75] text-body-text/80"
+                >
+                  {paragraph}
+                </p>
               ))}
             </div>
 
-            {therapist.instagram ? (
-              <>
-                <h4 className="mt-8 text-[var(--fs-h4)]">Social Media</h4>
-                <a
-                  href={therapist.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Instagram"
-                  className="mt-3 flex h-8 w-8 items-center justify-center rounded-full border border-secondary/60 text-secondary transition-colors duration-300 hover:border-primary hover:text-primary"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    aria-hidden
-                    className="h-[14px] w-[14px]"
-                    fill="currentColor"
+            <h2 className={`mt-8 ${H3}`}>Her Approach</h2>
+            <p className="mt-3 max-w-[68ch] font-body text-[15px] leading-[1.75] text-body-text/80">
+              {therapist.approach}
+            </p>
+          </article>
+
+          {/* ── Specialisms, hours and the way to book ──────────────────── */}
+          {/* First on a phone: what this person does and how to reach them
+              beats scrolling the bio to find out. */}
+          <aside className="order-first lg:order-none lg:sticky lg:top-[92px] lg:h-fit">
+            <div className={`${CARD} p-5`}>
+              <h2 className="page-label">Specialized In</h2>
+              <ul className="mt-3 flex flex-wrap gap-1.5">
+                {therapist.specializedIn.split("•").map((skill) => (
+                  <li
+                    key={skill}
+                    className="rounded-full border border-secondary/12 px-2.5 py-1 font-body text-[12px] leading-none text-body-text/75"
                   >
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.336 3.608 1.311.975.975 1.249 2.242 1.311 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.336 2.633-1.311 3.608-.975.975-2.242 1.249-3.608 1.311-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.336-3.608-1.311-.975-.975-1.249-2.242-1.311-3.608C2.175 15.586 2.163 15.206 2.163 12s.012-3.584.07-4.85c.062-1.366.336-2.633 1.311-3.608C4.519 2.567 5.786 2.293 7.152 2.231 8.418 2.175 8.796 2.163 12 2.163m0-2.163C8.741 0 8.332.014 7.052.072 5.197.157 3.355.673 2.014 2.014.673 3.355.157 5.197.072 7.052.014 8.332 0 8.741 0 12s.014 3.668.072 4.948c.085 1.855.601 3.697 1.942 5.038 1.341 1.341 3.183 1.857 5.038 1.942C8.332 23.986 8.741 24 12 24s3.668-.014 4.948-.072c1.855-.085 3.697-.601 5.038-1.942 1.341-1.341 1.857-3.183 1.942-5.038.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.085-1.855-.601-3.697-1.942-5.038C20.645.673 18.803.157 16.948.072 15.668.014 15.259 0 12 0m0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324M12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8" />
-                  </svg>
+                    {skill.trim()}
+                  </li>
+                ))}
+              </ul>
+
+              <h2 className="page-label mt-5 border-t border-secondary/10 pt-4">
+                Hours
+              </h2>
+              {workingHours.map((slot) => (
+                <p
+                  key={slot.days}
+                  className="mt-1.5 font-body text-[14px] leading-[1.6]"
+                >
+                  {slot.days} &middot; {slot.hours}
+                </p>
+              ))}
+
+              <a
+                href={bookingHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`mt-5 flex w-full items-center justify-center rounded-[10px] bg-primary-strong px-5 py-3 font-body text-[14px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
+              >
+                Book with {therapist.name}
+              </a>
+
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+                <a
+                  href={contact.phoneHref}
+                  className={`font-body text-[14px] tabular-nums transition-colors duration-300 hover:text-primary ${FOCUS}`}
+                >
+                  {contact.phone}
                 </a>
-              </>
-            ) : null}
-          </Reveal>
-
-          <Reveal delay={200}>
-            <Image
-              src={therapist.sceneImage}
-              alt=""
-              aria-hidden
-              width={1300}
-              height={1200}
-              sizes="(max-width: 1023px) 90vw, 390px"
-              className="h-auto w-full rounded-[var(--radius-2x)] object-cover"
-            />
-
-            <div className="mt-10 text-center">
-              <h2 className="text-[var(--fs-h4)]">Her Approach</h2>
-              <p className="mt-2 text-[16px] leading-[1.625]">
-                {therapist.approach}
-              </p>
-
-              <div className="mt-6 flex justify-center">
-                <ButtonLink href="/contact-us" variant="dark">
-                  Contact Now
-                </ButtonLink>
+                {therapist.instagram ? (
+                  <a
+                    href={therapist.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`font-body text-[14px] underline decoration-secondary/25 underline-offset-[5px] transition-colors duration-300 hover:text-primary ${FOCUS}`}
+                  >
+                    Instagram
+                  </a>
+                ) : null}
               </div>
             </div>
-          </Reveal>
+
+            <div className={`mt-3 ${CARD} p-5`}>
+              <h2 className="page-label">The other practitioner</h2>
+              <ul className="mt-3">
+                {therapists
+                  .filter((other) => other.slug !== therapist.slug)
+                  .map((other) => (
+                    <li key={other.slug}>
+                      <ButtonLink
+                        href={`/therapist/${other.slug}`}
+                        className="w-full"
+                      >
+                        {other.name}
+                      </ButtonLink>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          </aside>
         </div>
       </section>
     </>

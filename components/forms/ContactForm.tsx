@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
+import { FIELD } from "@/components/ui/tokens";
 
 /** Service options, in the same order as the WordPress select. */
 const serviceOptions = [
@@ -14,32 +15,30 @@ const serviceOptions = [
   "Full Body Relaxing Massage",
 ];
 
-/* 1px black border, 10px radius, transparent fill; placeholders are lowercase
-   in the markup and capitalised by CSS, exactly as on the original. */
-const fieldClass =
-  "w-full rounded-[var(--radius-1x)] border border-secondary bg-transparent " +
-  "p-[var(--input-padding)] font-body text-[16px] text-body-text outline-none " +
-  "placeholder:capitalize placeholder:text-body-text/60 focus:border-primary";
-
 /**
  * Contact form — presentation only. The brief defers wiring a backend, so
- * submitting shows a local confirmation instead of posting anywhere. Field names
- * match the original Contact Form 7 setup.
+ * submitting shows a local confirmation instead of posting anywhere. Field
+ * names match the original Contact Form 7 setup.
+ *
+ * Fields are labelled visibly rather than by placeholder alone: the original
+ * relied on placeholders, which vanish as soon as anyone types.
  */
 export default function ContactForm() {
   const [sent, setSent] = useState(false);
 
+  const label = "page-label mb-1.5 block";
+
   return (
     <form
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-4"
       onSubmit={(event) => {
         event.preventDefault();
         setSent(true);
       }}
     >
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="your-name" className="sr-only">
+          <label htmlFor="your-name" className={label}>
             Name
           </label>
           <input
@@ -49,13 +48,12 @@ export default function ContactForm() {
             required
             maxLength={400}
             autoComplete="name"
-            placeholder="name"
-            className={`${fieldClass} h-[50px]`}
+            className={FIELD}
           />
         </div>
 
         <div>
-          <label htmlFor="your-email" className="sr-only">
+          <label htmlFor="your-email" className={label}>
             Email
           </label>
           <input
@@ -65,22 +63,21 @@ export default function ContactForm() {
             required
             maxLength={400}
             autoComplete="email"
-            placeholder="email"
-            className={`${fieldClass} h-[50px]`}
+            className={FIELD}
           />
         </div>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="service" className="sr-only">
+          <label htmlFor="service" className={label}>
             Service
           </label>
           <select
             id="service"
             name="How"
             defaultValue="Select Services"
-            className={`${fieldClass} h-[49px] border-0 py-[10px] pr-[30px] pl-[10px]`}
+            className={FIELD}
           >
             {serviceOptions.map((option) => (
               <option key={option} value={option}>
@@ -91,39 +88,39 @@ export default function ContactForm() {
         </div>
 
         <div>
-          <label htmlFor="phone" className="sr-only">
+          <label htmlFor="phone" className={label}>
             Phone number
           </label>
           <input
             id="phone"
             name="phone"
             type="tel"
-            inputMode="numeric"
+            inputMode="tel"
             required
-            placeholder="phone number"
-            className={`${fieldClass} h-[50px]`}
+            autoComplete="tel"
+            className={FIELD}
           />
         </div>
       </div>
 
       <div>
-        <label htmlFor="your-message" className="sr-only">
+        <label htmlFor="your-message" className={label}>
           Message
         </label>
         <textarea
           id="your-message"
           name="your-message"
           maxLength={2000}
-          placeholder="message here"
-          className={`${fieldClass} h-[115px] resize-y`}
+          rows={4}
+          className={`${FIELD} resize-y`}
         />
       </div>
 
       <div className="flex flex-wrap items-center gap-4">
-        <Button type="submit" className="capitalize">
+        <Button type="submit" variant="solid">
           Send Message
         </Button>
-        <p aria-live="polite" className="text-[15px] text-primary">
+        <p aria-live="polite" className="font-body text-[14px] text-primary">
           {sent ? "Thanks — we’ll be in touch shortly." : ""}
         </p>
       </div>

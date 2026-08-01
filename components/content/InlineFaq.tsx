@@ -15,25 +15,31 @@ export default function InlineFaq({
   const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <div className="my-8 flex max-w-[820px] flex-col gap-[11px]">
+    <div className="my-8 flex max-w-[68ch] flex-col">
       {items.map((item, i) => {
         const isOpen = open === i;
         const panelId = `inline-faq-panel-${i}`;
         const buttonId = `inline-faq-button-${i}`;
 
         return (
-          <div key={item.question}>
+          <div key={item.question} className="border-t border-secondary/10">
             <button
               type="button"
               id={buttonId}
               aria-expanded={isOpen}
               aria-controls={panelId}
               onClick={() => setOpen(isOpen ? null : i)}
-              className="flex w-full items-center justify-between gap-4 py-[10px] text-left font-body text-[16px] text-primary"
+              className="flex w-full items-center justify-between gap-4 py-3.5 text-left font-body text-[15px] leading-snug font-bold transition-colors duration-300 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               <span>{item.question}</span>
-              <span aria-hidden className="text-[18px] leading-none">
-                {isOpen ? "−" : "+"}
+              <span
+                aria-hidden
+                className={`relative h-3.5 w-3.5 shrink-0 text-primary transition-transform duration-300 ${
+                  isOpen ? "rotate-45" : ""
+                }`}
+              >
+                <span className="absolute top-1/2 left-0 h-[2px] w-3.5 -translate-y-1/2 bg-current" />
+                <span className="absolute top-0 left-1/2 h-3.5 w-[2px] -translate-x-1/2 bg-current" />
               </span>
             </button>
 
@@ -42,9 +48,9 @@ export default function InlineFaq({
               role="region"
               aria-labelledby={buttonId}
               hidden={!isOpen}
-              className="pb-3"
+              className="pb-4"
             >
-              <p className="text-[16px] leading-[1.625] text-body-text">
+              <p className="font-body text-[15px] leading-[1.75] text-body-text/80">
                 {item.answer}
               </p>
             </div>

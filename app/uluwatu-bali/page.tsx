@@ -15,8 +15,10 @@ export default function UluwatuBaliArchive() {
   return (
     <>
       <PageHero
-        title="Category: Uluwatu Bali"
+        title="Uluwatu Bali"
+        eyebrow="Category"
         crumbs={[{ label: "Uluwatu Bali" }]}
+        lead="Articles about wellness, recovery, and bodywork at our studio in Uluwatu, Bali."
       />
       <CategoryArchiveGrid posts={postsInCategory("uluwatu-bali")} />
     </>

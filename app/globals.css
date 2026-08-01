@@ -8,6 +8,10 @@
 @theme {
   /* Palette */
   --color-primary: #7f8c3a;
+  /* Same olive, one step down, used only where the brand green has to carry
+     white text: #7f8c3a behind 15px white is 3.67:1, this is 4.76:1. The brand
+     colour itself is untouched — this is a filled-surface variant of it. */
+  --color-primary-strong: #6d7932;
   --color-secondary: #000000;
   --color-tertiary: #dcdddc;
   --color-cream: #f0efeb;
@@ -123,161 +127,125 @@
 
 @layer components {
   /* ==========================================================================
-     Layout primitives
+     Layout primitives (2026 redesign)
+
+     The measure is set against Stretchr — the actual peer, an assisted-
+     stretching studio — not against the gym reference: display type tops out
+     near 56px, the ground stays cream, corners are the theme's own 10px, and
+     bands run dense rather than airy. Written as explicit media queries
+     because Tailwind's arbitrary breakpoint variants do not survive
+     compilation reliably in this project.
+
+     The theme's own layout primitives — the 1810px Elementor container, the
+     74px photo title band, the 50/60/70/80/100/130px `--band-gap` scale and
+     the decorative PNG masks — were removed with the pages that used them.
+     They are in git history if a comparison against the WordPress site is ever
+     needed again.
      ========================================================================== */
 
-  /* Elementor boxed container: capped at 1810px with a 20px gutter. */
-  .container-boxed {
+  /* Narrower than the theme's 1810px Elementor container: at studio scale a
+     1240px measure keeps three cards on a row without stranding them. Header,
+     footer and every page body share it, so nothing sits off the page's line. */
+  .page-wrap {
     width: 100%;
-    max-width: 1810px;
+    max-width: 1240px;
     margin-inline: auto;
-    padding-inline: 20px;
+    padding-inline: 24px;
   }
 
-  /* Inner-page title band (`.main-title-section` in breadcrumb.css). The heading
-     steps down at the theme's breakpoints rather than scaling fluidly. */
-  .page-hero-container {
-    padding-block: clamp(2.1875rem, 1.7092rem + 2.551vw, 3.75rem);
-  }
-
-  @media only screen and (min-width: 1281px) {
-    .page-hero-container {
-      padding-block: clamp(5.625rem, 2.0127rem + 4.5119vw, 9.0625rem);
+  @media only screen and (max-width: 640px) {
+    .page-wrap {
+      padding-inline: 20px;
     }
   }
 
-  .page-hero-title {
-    font-size: 74px; /* --wdtFontSize_H1 */
-    margin-block-end: 5px;
+  /* One vertical step for every band. Clamped so a laptop never gets the
+     cavernous 100px gaps the old theme left. */
+  .page-band {
+    padding-block: clamp(2.75rem, 4.4vw, 4.25rem);
   }
 
-  @media only screen and (max-width: 767px) {
-    .page-hero-title {
-      font-size: 40px; /* --wdtFontSize_H4 */
-    }
+  .page-band-line {
+    border-top: 1px solid color-mix(in oklab, var(--color-secondary) 10%, transparent);
   }
 
-  @media only screen and (max-width: 479px) {
-    .page-hero-title {
-      font-size: 32px; /* --wdtFontSize_H5 */
-    }
+  /* Small uppercase label used for eyebrows, tile terms and meta. */
+  .page-label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-body-text) 58%, transparent);
   }
 
-  /* The theme separates its major bands with one stepped scale, used both by
-     `#header-wrapper`'s margin-bottom (header.css) and the footer's top padding
-     (post-236.css). Defined once here and consumed by `.hero-gap-top` and
-     `.footer-gap-top` below. */
-  :root {
-    --band-gap: 50px;
-  }
-
-  @media only screen and (min-width: 480px) {
-    :root {
-      --band-gap: 60px;
-    }
-  }
-
-  @media only screen and (min-width: 768px) {
-    :root {
-      --band-gap: 70px;
-    }
-  }
-
-  @media only screen and (min-width: 1025px) {
-    :root {
-      --band-gap: 80px;
-    }
-  }
-
-  @media only screen and (min-width: 1281px) {
-    :root {
-      --band-gap: 100px;
-    }
-  }
-
-  @media only screen and (min-width: 1541px) {
-    :root {
-      --band-gap: 130px;
-    }
-  }
-
-  /* Gap before page content. Applied as top padding on the content section
-     after `PageHero` rather than on the hero itself, so it can be adopted
-     per-page without affecting sections that already tuned their own spacing. */
-  .hero-gap-top {
-    padding-top: var(--band-gap);
-  }
-
-  /* Same scale above the footer's first row. */
-  .footer-gap-top {
-    padding-top: var(--band-gap);
-  }
-
-  /* Wavy bottom edge on treatment-card photos, using the same PNG mask the
-     WordPress plugin applies to `.image-item`. */
-  .wave-edge {
-    border-radius: var(--radius-2x);
+  /* Continuous strip of treatment names under the hero. Doubled in the markup,
+     so translating one half brings the copy exactly into place. */
+  .marquee-viewport {
     overflow: hidden;
-    -webkit-mask: url("/shapes/service-img-path.png") 0% 100% / cover no-repeat;
-    mask: url("/shapes/service-img-path.png") 0% 100% / cover no-repeat;
+    -webkit-mask: linear-gradient(
+      90deg,
+      transparent,
+      #000 5%,
+      #000 95%,
+      transparent
+    );
+    mask: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
   }
 
-  /* Organic blob crop on the team portraits ("Meet My Team"). The original
-     masks these with `Team-mask-img.png`; this is that outline traced off the
-     live page and rebuilt as SVG, so no binary is vendored in. `none` for
-     preserveAspectRatio lets it stretch to the frame like the PNG's `contain`
-     did at the card's fixed ratio. */
-  .team-mask {
-    border-radius: var(--radius-2x);
-    -webkit-mask: url("/shapes/team-mask.svg") center / 100% 100% no-repeat;
-    mask: url("/shapes/team-mask.svg") center / 100% 100% no-repeat;
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marqueeSlide 42s linear infinite;
   }
 
-  /* Scalloped bottom edge on the "Complete Wellness" photo. */
-  .section-mask {
-    -webkit-mask: url("/shapes/section-mask-bg.png") 50% 100% / cover no-repeat;
-    mask: url("/shapes/section-mask-bg.png") 50% 100% / cover no-repeat;
-  }
-
-  /* One vertical step for every band on the redesigned home page. Clamped so it
-     never opens the cavernous gaps a flat 100px leaves on a laptop, and closes
-     to something workable on a phone. */
-  .band {
-    padding-block: clamp(3rem, 5.2vw, 5.25rem);
-  }
-
-  .band-b {
-    padding-bottom: clamp(3rem, 5.2vw, 5.25rem);
-  }
-
-  /* Hairline that separates bands without a heavy rule. */
-  .band-line {
-    border-top: 1px solid color-mix(in oklab, var(--color-secondary) 12%, transparent);
-  }
-
-  /* Home hero panel. Its height steps at the theme's breakpoints — measured on
-     the original at 960px (phones), 1025px, and 902px from 1541px up. */
-  .hero-panel {
-    height: 1025px;
-  }
-
-  @media only screen and (max-width: 767px) {
-    .hero-panel {
-      height: 960px;
+  @keyframes marqueeSlide {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
     }
   }
 
-  @media only screen and (min-width: 1541px) {
-    .hero-panel {
-      height: 902px;
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
     }
   }
 
-  /* Cream wave painted over the bottom of the hero panel. */
-  .hero-wave {
-    background-color: var(--color-cream);
-    -webkit-mask: url("/shapes/hero-wave.png") 50% 100% / contain no-repeat;
-    mask: url("/shapes/hero-wave.png") 50% 100% / contain no-repeat;
+  /* Gallery mosaic. Two even columns on phones; from 1024px the first frame
+     takes a 2x2 block so the wall reads as a composition, not a contact sheet. */
+  .mosaic {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 132px;
+    gap: 10px;
+  }
+
+  @media only screen and (min-width: 640px) {
+    .mosaic {
+      grid-auto-rows: 168px;
+    }
+  }
+
+  @media only screen and (min-width: 1024px) {
+    .mosaic {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-auto-rows: 186px;
+      gap: 12px;
+    }
+
+    .mosaic > :first-child {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+
+    .mosaic > :nth-child(2),
+    .mosaic > :nth-child(5),
+    .mosaic > :nth-child(6) {
+      grid-column: span 2;
+    }
   }
 
   /* Clover-glyph bullet list ("Complete Wellness"). */
@@ -304,22 +272,6 @@
     mask: url("/shapes/bullet-clover.svg") center / contain no-repeat;
   }
 
-  /* Priced service card. The two-layer shadows and lift on hover come straight
-     from the WordPress plugin's `.dt-service-card.modern-card` rules. */
-  .service-card {
-    box-shadow:
-      0 4px 14px rgba(0, 0, 0, 0.04),
-      0 10px 25px rgba(0, 0, 0, 0.04);
-    transition: all 0.3s;
-  }
-
-  .service-card:hover {
-    transform: translateY(-4px);
-    box-shadow:
-      0 10px 25px rgba(0, 0, 0, 0.08),
-      0 18px 40px rgba(0, 0, 0, 0.1);
-  }
-
   /* Kept in the DOM for SEO/heading order but not shown, matching the
      `visibility: hidden` intro headings on the WordPress service pages. */
   .heading-hidden {
@@ -334,33 +286,64 @@
      Rich text (blog posts + service page body copy)
      ========================================================================== */
 
-  /* Elementor gives every widget a flat 20px bottom margin, so body copy uses
-     uniform gaps rather than a typographic rhythm. */
+  /* Elementor gave every widget a flat 20px bottom margin, so an article had no
+     typographic rhythm: a heading sat as far from the paragraph it introduced as
+     from the one it followed. Headings now bind to the text underneath them, and
+     the body measure is capped so long articles stay readable. */
   .prose-flex > * {
-    margin-block: 0 20px;
+    margin-block: 0 1.15em;
   }
 
   .prose-flex > :last-child {
     margin-block-end: 0;
   }
 
-  /* Body headings keep the same fluid scale as the rest of the page. */
+  .prose-flex :where(p, li) {
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.75;
+    color: color-mix(in oklab, var(--color-body-text) 82%, transparent);
+  }
+
+  .prose-flex :where(p) {
+    max-width: 68ch;
+  }
+
+  .prose-flex :where(h2, h3, h4) {
+    font-weight: 700;
+    line-height: 1.1;
+    margin-block: 1.9em 0.6em;
+  }
+
+  .prose-flex > :where(h2, h3, h4):first-child {
+    margin-block-start: 0;
+  }
+
   .prose-flex :where(h2) {
-    font-size: var(--fs-h2);
+    font-size: clamp(1.5rem, 1.3rem + 1vw, 2.125rem);
   }
 
   .prose-flex :where(h3) {
-    font-size: var(--fs-h3);
+    font-size: clamp(1.375rem, 1.25rem + 0.6vw, 1.75rem);
   }
 
   .prose-flex :where(h4) {
-    font-size: var(--fs-h4);
+    font-size: 1.375rem;
   }
 
   .prose-flex :where(a) {
     color: var(--color-primary);
     text-decoration: underline;
     text-underline-offset: 3px;
+  }
+
+  .prose-flex :where(a):hover {
+    color: var(--color-primary-strong);
+  }
+
+  .prose-flex :where(a):focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   .prose-flex :where(strong) {
@@ -381,158 +364,6 @@
 
   .prose-flex :where(li) {
     margin-block: 0.35em;
-  }
-
-  /* Site header. Its height follows the logo, which sits in a 20px well: 70px
-     logo in a 110px band on phones, 100px in a 140px band up to 1280px. From
-     1281px the theme switches arrangement — the logo grows to 170px, centres
-     itself, and drops so its middle rests on the band's bottom edge, letting it
-     overhang the page below. Written out here rather than as Tailwind
-     `min-[...]`/`max-[...]` utilities, which did not survive compilation. */
-  .site-header-inner {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    min-height: 140px;
-  }
-
-  .site-header-logo img {
-    width: 100px;
-    height: 100px;
-  }
-
-  @media only screen and (max-width: 479px) {
-    .site-header-inner {
-      min-height: 110px;
-    }
-
-    .site-header-logo img {
-      width: 70px;
-      height: 70px;
-    }
-  }
-
-  @media only screen and (min-width: 1281px) {
-    .site-header-inner {
-      min-height: 184px;
-    }
-
-    .site-header-logo {
-      position: absolute;
-      top: 99px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    .site-header-logo img {
-      width: 170px;
-      height: 170px;
-    }
-  }
-
-  /* Which header pieces show depends on the theme's 1281px arrangement change:
-     above it the inline nav and slide-menu trigger, below it the drawer. These
-     sit on bare wrappers so no Tailwind `display` utility competes with them. */
-  .header-wide-only {
-    display: none;
-  }
-
-  .header-narrow-only {
-    display: flex;
-    align-items: center;
-  }
-
-  @media only screen and (min-width: 1281px) {
-    .header-wide-only {
-      display: flex;
-      align-items: center;
-    }
-
-    .header-narrow-only {
-      display: none;
-    }
-  }
-
-  /* The narrow-width CTA drops away entirely on the smallest phones. */
-  @media only screen and (max-width: 479px) {
-    .header-narrow-cta {
-      display: none;
-    }
-  }
-
-  /* Content container on a service page. The original steps its max-width down
-     at the theme's breakpoints; written out here rather than as Tailwind
-     `max-[...]` utilities, whose emit order puts the wider rule last. */
-  .service-container {
-    width: 100%;
-    max-width: 1810px;
-    margin-inline: auto;
-  }
-
-  @media only screen and (max-width: 1540px) {
-    .service-container {
-      max-width: 1300px;
-    }
-  }
-
-  @media only screen and (max-width: 1024px) {
-    .service-container {
-      max-width: 760px;
-    }
-  }
-
-  /* Running copy on a service page. The original puts it in a column that is
-     narrower than the container and carries a right-hand gutter, so the text
-     measure stays short while the banner above runs full width. Both the width
-     and the gutter step at the theme's breakpoints. */
-  .service-copy {
-    width: 100%;
-    padding-bottom: 70px;
-  }
-
-  @media only screen and (min-width: 1025px) {
-    .service-copy {
-      width: 70%;
-      padding-right: 50px;
-      padding-bottom: 0;
-    }
-  }
-
-  @media only screen and (min-width: 1281px) {
-    .service-copy {
-      padding-right: 90px;
-    }
-  }
-
-  @media only screen and (min-width: 1541px) {
-    .service-copy {
-      width: 100%;
-      padding-right: 100px;
-    }
-  }
-
-  /* Service body headings are theme heading widgets, so they run 1.2 rather
-     than the 1.26 headings get elsewhere. */
-  .service-copy .prose-flex :where(h2, h3, h4) {
-    line-height: 1.2;
-  }
-
-  /* Vertical rhythm inside that column, measured off the original: 18px under a
-     heading, 60px under a paragraph or list. Scoped to `.service-copy` because
-     the blog template sets its own spacing. */
-  .service-copy .prose-flex > * {
-    margin-block: 0 18px;
-  }
-
-  .service-copy .prose-flex > p,
-  .service-copy .prose-flex > ul,
-  .service-copy .prose-flex > ol {
-    margin-block-end: 60px;
-  }
-
-  .service-copy .prose-flex > :last-child {
-    margin-block-end: 0;
   }
 
   /* Star-bulleted list used by the service pages' "Why Choose..." widgets.
@@ -570,31 +401,20 @@
   }
 
   /* ==========================================================================
-     Motion — entrance animations mirroring Elementor's fadeIn* helpers
+     Motion
+
+     The site has one authored moment — the home page's treatment ticker, above.
+     The Elementor-style entrance fade that used to run on ~23 elements per page
+     is gone: it shipped content at `opacity: 0` in the server HTML, so a page
+     whose observer never fired simply rendered blank.
      ========================================================================== */
 
-  @keyframes flexFadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  .animate-fade-in-up {
-    animation: flexFadeInUp 0.9s ease-out both;
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .animate-fade-in-up {
-      animation: none;
-    }
     *,
     *::before,
     *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
   }

@@ -57,12 +57,12 @@ export default function RootLayout({
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `<!--
-THESIS: recovery bodywork is trusted through specific hands, not a service menu; this home page refuses the anonymous spa-grid where every treatment is an equal tile.
-OWN-WORLD: pinned brand — olive #7f8c3a, cream #f0efeb, black; Amatic SC display over Andika body; existing logo and studio photography. Structure only: hairline-separated bands, one clamped vertical step, editorial index rows, no eyebrows, no matched cards.
-STORY: a visitor sore from training learns this is assessed one-to-one bodywork, meets Ginny and Yuni, understands what the two price tiers actually buy, finds their treatment, and messages WhatsApp.
-FIRST VIEWPORT: studio footage under the theme wash; claim low-left at display scale, WhatsApp and treatments beneath it, both practitioners named with portraits on the same screen.
-FORM: practitioner-led; candidate 4 of the grounded list; seed key e90fd7cf.
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md.
+THESIS: someone sore from training decides in seconds and books from a phone, so this page states what the work is, what it costs and who performs it before it asks for anything.
+OWN-WORLD: pinned brand — olive #7f8c3a, cream #f0efeb, black; Amatic SC display over Andika body; existing logo and studio photography; the studio's own words, verbatim. The redesign owns structure only: a 1240px measure, one clamped band step, 10px corners, white cards on cream, hairlines instead of rules.
+STORY: what this is and what an hour costs, the range on offer, what the hour involves, who performs it, the room, the questions, then WhatsApp.
+FIRST VIEWPORT: claim and studio footage side by side; rate, session length and home service stated as three tiles; both practitioners anchored to the video.
+SCALE: calibrated against stretchr.com, an assisted-stretching peer — 56px display, light ground — not against the gym reference that produced the rejected 118px build.
+MOTION: one moving strip of treatment names. Nothing on this page ships at opacity 0.
 -->`,
           }}
         />

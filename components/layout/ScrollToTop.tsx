@@ -25,7 +25,7 @@ export default function ScrollToTop() {
             : "smooth",
         })
       }
-      className="fixed right-6 bottom-6 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-md transition-all duration-300 hover:bg-[#6d7932]"
+      className="fixed right-6 bottom-6 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-primary-strong text-white shadow-md transition-all duration-300 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       style={{
         opacity: visible ? 1 : 0,
         pointerEvents: visible ? "auto" : "none",

@@ -2,9 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 import BlogSidebar from "@/components/blog/BlogSidebar";
-import Container from "@/components/ui/Container";
 import PageHero from "@/components/ui/PageHero";
-import Reveal from "@/components/ui/Reveal";
+import { BAND, FOCUS, WRAP } from "@/components/ui/tokens";
 import RichText from "./RichText";
 import type { Post } from "@/types";
 
@@ -13,7 +12,7 @@ const categoryLabels: Record<Post["category"], string> = {
   "injury-guide": "Injury Guide",
 };
 
-/** Single blog post: featured image, meta, body, prev/next, and the sidebar. */
+/** Single blog post: featured image, body, prev/next, and the sidebar. */
 export default function PostArticle({
   post,
   previous,
@@ -27,82 +26,69 @@ export default function PostArticle({
     <>
       <PageHero
         title={post.title}
+        eyebrow={`${post.date} · ${categoryLabels[post.category]}`}
         crumbs={[
           { label: categoryLabels[post.category], href: `/${post.category}` },
           { label: post.title },
         ]}
       />
 
-      <section className="hero-gap-top pb-[80px]">
-        <Container>
-          <div className="grid gap-12 lg:grid-cols-[1fr_minmax(0,320px)]">
-            <article>
-              {post.image ? (
-                <Reveal>
-                  <Image
-                    src={post.image}
-                    alt={post.title}
-                    width={1024}
-                    height={621}
-                    priority
-                    sizes="(max-width: 1023px) 90vw, 900px"
-                    className="h-auto w-full rounded-[var(--radius-2x)] object-cover"
-                  />
-                </Reveal>
-              ) : null}
+      <section className={`${WRAP} ${BAND}`}>
+        <div className="grid gap-[clamp(1.75rem,3vw,3rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,280px)]">
+          <article>
+            {post.image ? (
+              <Image
+                src={post.image}
+                alt=""
+                aria-hidden
+                width={1024}
+                height={621}
+                priority
+                sizes="(max-width: 1023px) 92vw, 820px"
+                className="aspect-[16/8] w-full rounded-[10px] object-cover"
+              />
+            ) : null}
 
-              <div className="mt-6 flex flex-wrap items-center gap-4 font-body text-[15px] text-subtle">
-                <time>{post.date}</time>
-                <span aria-hidden>·</span>
-                <Link
-                  href={`/${post.category}`}
-                  className="hover:text-primary"
-                >
-                  {categoryLabels[post.category]}
-                </Link>
-              </div>
+            <RichText blocks={post.body} className={post.image ? "mt-7" : ""} />
 
-              <Reveal>
-                <RichText blocks={post.body} className="mt-6" />
-              </Reveal>
+            {previous || next ? (
+              <nav
+                aria-label="Post navigation"
+                className="mt-8 grid gap-3 border-t border-secondary/10 pt-7 sm:grid-cols-2"
+              >
+                {previous ? (
+                  <Link
+                    href={`/${previous.category}/${previous.slug}`}
+                    rel="prev"
+                    className={`rounded-[10px] border border-secondary/10 bg-white p-4 transition-colors duration-300 hover:border-primary/45 ${FOCUS}`}
+                  >
+                    <span className="page-label">Previous</span>
+                    <span className="mt-2 block font-display text-[20px] leading-[1.15] font-bold">
+                      {previous.title}
+                    </span>
+                  </Link>
+                ) : (
+                  <span />
+                )}
 
-              {previous || next ? (
-                <nav
-                  aria-label="Post navigation"
-                  className="mt-12 flex flex-wrap justify-between gap-6 border-t border-tertiary pt-8"
-                >
-                  {previous ? (
-                    <Link
-                      href={`/${previous.category}/${previous.slug}`}
-                      rel="prev"
-                      className="max-w-[45%] font-body hover:text-primary"
-                    >
-                      <span className="block text-[14px] text-subtle">
-                        Previous
-                      </span>
-                      <span className="block text-[16px]">{previous.title}</span>
-                    </Link>
-                  ) : (
-                    <span />
-                  )}
+                {next ? (
+                  <Link
+                    href={`/${next.category}/${next.slug}`}
+                    rel="next"
+                    className={`rounded-[10px] border border-secondary/10 bg-white p-4 transition-colors duration-300 hover:border-primary/45 sm:text-right ${FOCUS}`}
+                  >
+                    <span className="page-label">Next</span>
+                    <span className="mt-2 block font-display text-[20px] leading-[1.15] font-bold">
+                      {next.title}
+                    </span>
+                  </Link>
+                ) : null}
+              </nav>
+            ) : null}
+          </article>
 
-                  {next ? (
-                    <Link
-                      href={`/${next.category}/${next.slug}`}
-                      rel="next"
-                      className="max-w-[45%] text-right font-body hover:text-primary"
-                    >
-                      <span className="block text-[14px] text-subtle">Next</span>
-                      <span className="block text-[16px]">{next.title}</span>
-                    </Link>
-                  ) : null}
-                </nav>
-              ) : null}
-            </article>
-
-            <BlogSidebar />
-          </div>
-        </Container>
+          <BlogSidebar />
+        </div>
       </section>
     </>
   );

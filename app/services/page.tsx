@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 import ServicePriceCard from "@/components/cards/ServicePriceCard";
-import Container from "@/components/ui/Container";
+import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
-import Reveal from "@/components/ui/Reveal";
-import SectionHeading from "@/components/ui/SectionHeading";
+import { BAND, LINK, WRAP } from "@/components/ui/tokens";
 import { serviceBySlug } from "@/lib/data/services";
+import { contact, wordpressUrls } from "@/lib/site";
 
 const description =
   "Check out our services that offer massage, stretching, and therapy to improve mobility and support your health.";
@@ -40,28 +40,40 @@ export default function ServicesPage() {
 
   return (
     <>
-      <PageHero title="Services" crumbs={[{ label: "Services" }]} />
+      <PageHero
+        title="Massage & Treatments"
+        eyebrow="Come & Explore!"
+        crumbs={[{ label: "Services" }]}
+        lead="Experience pure relaxation with our range of massages and treatments, thoughtfully designed to rejuvenate your body and mind."
+        actions={
+          <ButtonLink href={contact.whatsapp} external variant="solid">
+            Book on WhatsApp
+          </ButtonLink>
+        }
+      />
 
-      <section className="hero-gap-top pb-[80px]">
-        <Container>
-          <Reveal>
-            <SectionHeading
-            eyebrow="Come &amp; Explore!"
-            title="Massage &Treatments"
-            description="Experience pure relaxation with our range of massages and treatments, thoughtfully designed to rejuvenate your body and mind."
-          />
-          </Reveal>
+      <section className={`${WRAP} ${BAND}`}>
+        {/* Every card carries both rates, so this grid is the price list in
+            miniature; the full one stays on WordPress. */}
+        <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
+          <p className="page-label">Every treatment, both tiers, prices in IDR</p>
+          <a
+            href={wordpressUrls.priceList}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={LINK}
+          >
+            Full price list
+          </a>
+        </div>
 
-          {/* `h-full` on the reveal and the card so they stretch to a common
-              row height, as the original's grid does. */}
-          <div className="mt-10 grid gap-6 min-[769px]:grid-cols-2 min-[1201px]:grid-cols-3">
-            {services.map((service, i) => (
-              <Reveal key={service.slug} delay={(i % 3) * 120} className="h-full">
-                <ServicePriceCard service={service} />
-              </Reveal>
-            ))}
-          </div>
-        </Container>
+        <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {services.map((service) => (
+            <li key={service.slug}>
+              <ServicePriceCard service={service} />
+            </li>
+          ))}
+        </ul>
       </section>
     </>
   );

@@ -1,32 +1,26 @@
-import ArchivePostCard from "@/components/cards/ArchivePostCard";
-import Container from "@/components/ui/Container";
-import Reveal from "@/components/ui/Reveal";
-import { packColumns } from "@/lib/masonry";
+import PostCard from "@/components/cards/PostCard";
+import { BAND, WRAP } from "@/components/ui/tokens";
 import type { Post } from "@/types";
 
 /**
- * WordPress's category archive listing (/uluwatu-bali/, /injury-guide/): the
- * masonry grid with no sidebar, and the black-badge card style — distinct from
- * the main /blog/ listing.
+ * Category archive listing (/uluwatu-bali/, /injury-guide/). It now uses the
+ * same card as the blog listing — the theme had a separate one for archives,
+ * with a black date badge and no excerpt, for no reason a reader could see.
  */
 export default function CategoryArchiveGrid({ posts }: { posts: Post[] }) {
-  const columns = packColumns(posts);
-
   return (
-    <section className="py-[80px]">
-      <Container>
-        <div className="grid gap-x-10 gap-y-16 sm:grid-cols-2">
-          {columns.map((column, columnIndex) => (
-            <div key={columnIndex} className="flex flex-col gap-16">
-              {column.map((post, i) => (
-                <Reveal key={post.slug} delay={i * 100}>
-                  <ArchivePostCard post={post} />
-                </Reveal>
-              ))}
-            </div>
+    <section className={`${WRAP} ${BAND}`}>
+      {posts.length ? (
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post) => (
+            <li key={post.slug}>
+              <PostCard post={post} />
+            </li>
           ))}
-        </div>
-      </Container>
+        </ul>
+      ) : (
+        <p className="font-body text-[15px]">No posts in this category yet.</p>
+      )}
     </section>
   );
 }

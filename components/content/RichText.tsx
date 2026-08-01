@@ -108,7 +108,7 @@ export default function RichText({
                 alt={block.alt}
                 width={block.width}
                 height={block.height}
-                className="my-8 h-auto w-full rounded-[var(--radius-2x)] object-cover"
+                className="my-8 h-auto w-full rounded-[10px] object-cover"
               />
             );
 
@@ -121,14 +121,14 @@ export default function RichText({
             return (
               <div
                 key={i}
-                className="relative my-[50px] overflow-hidden rounded-[20px] bg-primary p-[50px] max-[767px]:p-8"
+                className="relative my-10 overflow-hidden rounded-[10px] bg-primary-strong p-8 max-[767px]:p-6"
               >
-                <h2 className="relative z-10 text-left text-[30px] leading-[1.26] font-body text-white">
+                <h2 className="relative z-10 max-w-[54ch] text-left font-body text-[22px] leading-[1.45] text-white">
                   {block.text}
                 </h2>
                 <span
                   aria-hidden
-                  className="absolute right-8 bottom-8 block h-[75px] w-[75px] bg-white/90"
+                  className="absolute right-6 bottom-6 block h-12 w-12 bg-white/80"
                   style={{
                     maskImage: "url('/shapes/quote-mark.svg')",
                     WebkitMaskImage: "url('/shapes/quote-mark.svg')",

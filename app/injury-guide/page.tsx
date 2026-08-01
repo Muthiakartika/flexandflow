@@ -15,8 +15,10 @@ export default function InjuryGuideArchive() {
   return (
     <>
       <PageHero
-        title="Category: Injury Guide"
+        title="Injury Guide"
+        eyebrow="Category"
         crumbs={[{ label: "Injury Guide" }]}
+        lead="Guides on preventing and recovering from common injuries, from surfing to sitting too long."
       />
       <CategoryArchiveGrid posts={postsInCategory("injury-guide")} />
     </>

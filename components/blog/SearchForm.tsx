@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { FIELD, FOCUS } from "@/components/ui/tokens";
+
 /** Sidebar keyword search; routes to the blog listing with a `?s=` query. */
 export default function SearchForm() {
   const [keyword, setKeyword] = useState("");
@@ -11,7 +13,7 @@ export default function SearchForm() {
   return (
     <form
       role="search"
-      className="mt-4 flex items-center gap-2"
+      className="mt-3 flex items-center gap-2"
       onSubmit={(event) => {
         event.preventDefault();
         const trimmed = keyword.trim();
@@ -28,12 +30,12 @@ export default function SearchForm() {
         value={keyword}
         onChange={(event) => setKeyword(event.target.value)}
         placeholder="Enter Keyword"
-        className="min-w-0 flex-1 rounded-[var(--radius-1x)] border border-secondary bg-white p-[var(--input-padding)] font-body text-[16px] outline-none placeholder:text-subtle focus:border-primary"
+        className={`${FIELD} min-w-0 flex-1`}
       />
       <button
         type="submit"
         aria-label="Search"
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-1x)] bg-primary text-white transition-colors duration-300 hover:bg-[#6d7932]"
+        className={`flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-[10px] bg-primary-strong text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
       >
         <svg
           viewBox="0 0 24 24"

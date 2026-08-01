@@ -32,7 +32,11 @@ export default async function BlogPage(props: PageProps<"/blog">) {
 
   return (
     <>
-      <PageHero title="Blog" crumbs={[{ label: "Blog" }]} />
+      <PageHero
+        title="Blog"
+        crumbs={[{ label: "Blog" }]}
+        lead={description}
+      />
       <BlogListing
         posts={filtered}
         page={1}

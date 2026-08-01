@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import Container from "@/components/ui/Container";
 import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
 import { contact, primaryNav, siteConfig } from "@/lib/site";
@@ -15,7 +14,7 @@ import { contact, primaryNav, siteConfig } from "@/lib/site";
 export default function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-secondary/10 bg-cream/85 backdrop-blur-md">
-      <Container className="flex min-h-[76px] items-center gap-6 max-[479px]:min-h-[64px]">
+      <div className="page-wrap flex min-h-[76px] items-center gap-6 max-[479px]:min-h-[64px]">
         <Link
           href="/"
           aria-label={siteConfig.name}
@@ -39,7 +38,7 @@ export default function Header() {
             href={contact.whatsapp}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center rounded-[10px] bg-primary px-6 py-3 font-body text-[13px] tracking-[0.12em] text-white uppercase transition-colors duration-300 hover:bg-[#6d7932] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex items-center rounded-[10px] bg-primary-strong px-6 py-3 font-body text-[13px] tracking-[0.12em] text-white uppercase transition-colors duration-300 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             Book now
           </a>
@@ -51,13 +50,13 @@ export default function Header() {
             href={contact.whatsapp}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center rounded-[10px] bg-primary px-5 py-2.5 font-body text-[12px] tracking-[0.12em] text-white uppercase transition-colors duration-300 hover:bg-[#6d7932] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary max-[380px]:hidden"
+            className="inline-flex items-center rounded-[10px] bg-primary-strong px-5 py-2.5 font-body text-[12px] tracking-[0.12em] text-white uppercase transition-colors duration-300 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary max-[380px]:hidden"
           >
             Book
           </a>
           <MobileNav items={primaryNav} />
         </div>
-      </Container>
+      </div>
     </header>
   );
 }

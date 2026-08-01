@@ -1,27 +1,33 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 
+import { FOCUS } from "./tokens";
+
 type Variant = "outline" | "solid" | "dark";
 
+/**
+ * The site's button.
+ *
+ * The theme's version was a 2.5em pill with a 3px border, filled with
+ * `--color-primary` — white on `#7f8c3a` is 3.67:1 and fails AA. This is the
+ * redesign's shape (10px, no heavy border) filled with
+ * `--color-primary-strong`, the same olive one step down at 4.76:1. The brand
+ * colour is untouched and still owns every accent; see `DESIGN.md`.
+ */
 const base =
-  "inline-flex items-center justify-center text-center font-body " +
-  "leading-[1.25] rounded-[var(--radius-part)] border-[3px] border-solid " +
-  "text-[length:var(--btn-font-size)] " +
-  "transition-[background-color,color,border-color] duration-300 ease-linear";
+  "inline-flex items-center justify-center gap-2 text-center font-body " +
+  "text-[15px] leading-none rounded-[10px] px-6 py-3 " +
+  `transition-colors duration-300 ${FOCUS}`;
 
 const variants: Record<Variant, string> = {
-  /* Global kit default: white fill with primary text/border, inverting on hover. */
+  /** Default: quiet, for secondary actions and anything sitting on a card. */
   outline:
-    "bg-white text-primary border-primary hover:bg-primary hover:text-white",
-  solid:
-    "bg-primary text-white border-primary hover:bg-white hover:text-primary",
-  /* Black "Contact Now" pill used on the therapist profile pages. */
-  dark: "bg-black text-white border-black hover:bg-white hover:text-black",
+    "border border-secondary/20 hover:border-primary hover:text-primary",
+  /** The page's primary action. */
+  solid: "bg-primary-strong text-white hover:bg-secondary",
+  /** Black pill kept for the therapist profiles' "Contact Now". */
+  dark: "bg-secondary text-white hover:bg-primary-strong",
 };
-
-/** The theme's button padding is a 3-value shorthand of clamps, which Tailwind
- *  can't express as an arbitrary class — so it's applied inline. */
-const paddingStyle = { padding: "var(--btn-padding)" } as const;
 
 const classes = (variant: Variant, className: string) =>
   `${base} ${variants[variant]} ${className}`.trim();
@@ -50,7 +56,6 @@ export function ButtonLink({
       <a
         href={href}
         className={classes(variant, className)}
-        style={paddingStyle}
         {...(href.startsWith("http")
           ? { target: "_blank", rel: "noopener noreferrer" }
           : {})}
@@ -61,11 +66,7 @@ export function ButtonLink({
   }
 
   return (
-    <Link
-      href={href}
-      className={classes(variant, className)}
-      style={paddingStyle}
-    >
+    <Link href={href} className={classes(variant, className)}>
       {children}
     </Link>
   );
@@ -78,11 +79,7 @@ export function Button({
   ...rest
 }: CommonProps & Omit<ComponentProps<"button">, "className" | "children">) {
   return (
-    <button
-      className={classes(variant, className)}
-      style={paddingStyle}
-      {...rest}
-    >
+    <button className={classes(variant, className)} {...rest}>
       {children}
     </button>
   );

@@ -1,10 +1,15 @@
 import Link from "next/link";
 
-const linkClass =
-  "flex h-11 min-w-11 items-center justify-center rounded-[var(--radius-1x)] px-3 " +
-  "font-body text-[16px] transition-colors duration-300";
+import { FOCUS } from "@/components/ui/tokens";
 
-/** Numbered pagination matching the theme's blog listing. */
+const base =
+  "flex h-10 min-w-10 items-center justify-center rounded-[10px] px-3 " +
+  `font-body text-[14px] leading-none transition-colors duration-300 ${FOCUS}`;
+
+const idle =
+  "border border-secondary/15 bg-white hover:border-primary hover:text-primary";
+
+/** Numbered pagination for the blog listing. */
 export default function Pagination({
   current,
   total,
@@ -20,14 +25,14 @@ export default function Pagination({
   const pages = Array.from({ length: total }, (_, i) => i + 1);
 
   return (
-    <nav aria-label="Blog pagination" className="mt-12">
-      <ul className="flex flex-wrap items-center justify-center gap-2">
+    <nav aria-label="Blog pagination" className="mt-8">
+      <ul className="flex flex-wrap items-center gap-2">
         {current > 1 ? (
           <li>
             <Link
               href={hrefFor(current - 1)}
               rel="prev"
-              className={`${linkClass} border border-tertiary bg-white hover:border-primary hover:text-primary`}
+              className={`${base} ${idle}`}
             >
               Previous
             </Link>
@@ -39,15 +44,12 @@ export default function Pagination({
             {page === current ? (
               <span
                 aria-current="page"
-                className={`${linkClass} bg-primary text-white`}
+                className={`${base} bg-primary-strong text-white`}
               >
                 {page}
               </span>
             ) : (
-              <Link
-                href={hrefFor(page)}
-                className={`${linkClass} border border-tertiary bg-white hover:border-primary hover:text-primary`}
-              >
+              <Link href={hrefFor(page)} className={`${base} ${idle}`}>
                 {page}
               </Link>
             )}
@@ -59,7 +61,7 @@ export default function Pagination({
             <Link
               href={hrefFor(current + 1)}
               rel="next"
-              className={`${linkClass} border border-tertiary bg-white hover:border-primary hover:text-primary`}
+              className={`${base} ${idle}`}
             >
               Next
             </Link>

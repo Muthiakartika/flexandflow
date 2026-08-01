@@ -1,7 +1,5 @@
 import PostCard from "@/components/cards/PostCard";
-import Container from "@/components/ui/Container";
-import Reveal from "@/components/ui/Reveal";
-import { packColumns } from "@/lib/masonry";
+import { BAND, WRAP } from "@/components/ui/tokens";
 import BlogSidebar from "./BlogSidebar";
 import Pagination from "./Pagination";
 import type { Post } from "@/types";
@@ -9,7 +7,12 @@ import type { Post } from "@/types";
 /** Posts per page, matching the WordPress listing. */
 export const POSTS_PER_PAGE = 6;
 
-/** Shared layout for the blog listing and the category archives. */
+/**
+ * Blog listing: uniform cards in a plain grid rather than the theme's masonry.
+ * The posts have wildly different image ratios, and packing them into columns
+ * left the two sides of the page ending at different heights with no reading
+ * order to speak of.
+ */
 export default function BlogListing({
   posts,
   page = 1,
@@ -26,36 +29,28 @@ export default function BlogListing({
     (page - 1) * POSTS_PER_PAGE,
     page * POSTS_PER_PAGE,
   );
-  const columns = packColumns(visible);
 
   return (
-    <section className="py-[80px]">
-      <Container>
-        {/* Sidebar sits on the left, as on the original. */}
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,300px)_1fr]">
-          <BlogSidebar />
+    <section className={`${WRAP} ${BAND}`}>
+      <div className="grid gap-[clamp(1.75rem,3vw,3rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,280px)]">
+        <div>
+          {visible.length ? (
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {visible.map((post) => (
+                <li key={post.slug}>
+                  <PostCard post={post} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="font-body text-[15px]">{emptyMessage}</p>
+          )}
 
-          <div>
-            {visible.length ? (
-              <div className="grid gap-[30px] sm:grid-cols-2">
-                {columns.map((column, columnIndex) => (
-                  <div key={columnIndex} className="flex flex-col gap-[30px]">
-                    {column.map((post, i) => (
-                      <Reveal key={post.slug} delay={i * 100}>
-                        <PostCard post={post} />
-                      </Reveal>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-[16px]">{emptyMessage}</p>
-            )}
-
-            <Pagination current={page} total={totalPages} hrefFor={hrefFor} />
-          </div>
+          <Pagination current={page} total={totalPages} hrefFor={hrefFor} />
         </div>
-      </Container>
+
+        <BlogSidebar />
+      </div>
     </section>
   );
 }

@@ -35,27 +35,39 @@ owner rejected as "terlalu besar … kurang bagus untuk website assisted stretch
 
 ### Where it stands
 
-Four preview routes exist, none yet promoted to the live homepage:
+**The redesign is live on every page**, home page first and then the rest, all
+awaiting the owner's review. The system — measure, scale, surfaces, motion, the
+derived-price rule, the copy rule — is documented in **`DESIGN.md`**; read that before
+changing any of it. Shared class strings live in `components/ui/tokens.ts`.
+
+The only pages left on WordPress are the **price list** and the **appointment/booking**
+flow, which were never in scope. Link to them through `wordpressUrls`, never
+`next/link`.
+
+Verified at 390 / 768 / 1280px across every route: no horizontal overflow, nothing
+shipping at `opacity: 0`, header/body/footer gutters aligned, build generating all 32
+pages.
+
+Removed with the pages that used them, and recoverable from git history: `Reveal.tsx`
+(the fade-up that shipped content invisible), `SectionHeading.tsx`, `Container.tsx`,
+`ArchivePostCard.tsx`, `TreatmentCard.tsx`, `lib/masonry.ts`, `sections/home/Session.tsx`
+and `Tiers.tsx` (both carried headings written for them rather than the studio's own
+copy), and the theme's layout CSS — the 1810px container, the 74px photo title band,
+`--band-gap`, `.service-copy`, `.hero-panel`, and the decorative PNG masks.
+
+The four preview routes stay as history, none of them live, still on the old classes:
 
 | Route | Direction | Verdict |
 |---|---|---|
 | `/preview/a` | Quiet — minimal, no cards, big air | rejected, "too simple" |
 | `/preview/b` | Warm — rounded, casual, friendly triage | rejected, "too simple" |
 | `/preview/c` | Clear — structural, prices in the open | rejected, "too simple" |
-| `/preview/d` | **Studio — current candidate** | latest iteration, unreviewed |
+| `/preview/d` | Studio — the basis for the live page | superseded by `/` |
 
-`/preview/d` now carries the whole homepage with original copy: hero (compact split,
-rate tiles), chip bar, treatments (3-col cards w/ real price + duration), One on One
-Private Therapy (+ benefit icons), Complete Wellness (+ clover list), therapists,
-gallery, FAQs beside a Visit card. h1 56px desktop / 34px mobile, page ~4,820px.
-
-**The live homepage (`app/page.tsx`) still renders an earlier, rejected design** —
-`Hero / Practitioners / Tiers / Treatments / Session / Gallery / Faqs / BookClose` in
-`sections/home/`. Promote a preview or rebuild before shipping.
-
-**Header and footer were already rebuilt globally** and apply to every page: 77px sticky
-header (`components/layout/Header.tsx`, uppercase tracked nav), and a deliberately small
-**white** footer (`components/layout/Footer.tsx`). A black footer was tried and rejected.
+**Header and footer** apply to every page: 76px sticky header
+(`components/layout/Header.tsx`, uppercase tracked nav) and a deliberately small
+**white** footer (`components/layout/Footer.tsx`). A black footer was tried and
+rejected. Both now sit on `.page-wrap`, so they share the page body's 1240px measure.
 
 ---
 
@@ -108,42 +120,46 @@ and can invert the tier hierarchy (Master appearing cheaper than Therapist). Fil
 duration and/or to services offering both tiers. Also **some `price` strings already
 carry an `Rp` prefix and some do not** — normalise to digits before formatting.
 
+**`lib/pricing.ts` now does all of this.** Use it rather than parsing tiers again:
+`priceAmount` (digits only), `tierMinutes` (falls back to the service-level label —
+pregnancy massage's cheaper tier has no `duration` of its own), `serviceMinutes`,
+`ratesFor`, and `lowestHourlyRate` (60-minute sessions at both-tier services only).
+
 ---
 
 ## Outstanding
 
-- **Button contrast:** the shared button is white-on-olive / olive-on-white at 15px =
-  **3.67:1**, under 4.5:1. `#6d7932` (already used for a hover in `ScrollToTop.tsx`) gives
-  **4.76:1** and would fix it without touching `--color-primary`. Owner decision pending;
-  `/preview/c` and `/preview/d` already use it for buttons.
+- **Owner review of the redesigned site** is the next step. Ask for screenshots rather
+  than iterating blind (gotcha 1).
+- **Button contrast — decision still open.** Filled surfaces site-wide now use
+  `--color-primary-strong: #6d7932` (**4.76:1** with white at 15px) instead of
+  `--color-primary` `#7f8c3a` (**3.67:1**, fails AA). The brand colour is untouched and
+  still owns every accent; reverting is one line in `app/globals.css`.
 - **No social proof.** Both reference sites lead on star ratings and named reviews; this
   site has none. Owner needs to supply a real Google rating and quotes. Do not invent them.
-- **Motion:** one identical 900ms fade-up is applied to ~23 elements across every section,
-  and content ships `opacity-0` in the server HTML. Needs one authored moment instead.
-- **Focus states** are missing on interactive elements added during the redesign;
-  `NewsletterForm.tsx` sets `outline-none` with no replacement.
-- `DESIGN.md` has not been written. Every page except the homepage still has the old body
-  design under the new header/footer.
+- **Forms post nowhere.** `ContactForm` and `NewsletterForm` acknowledge locally, per
+  the brief. Wiring a backend is unstarted.
+- Focus states and motion are done everywhere: `FOCUS` / `FOCUS_ON_OLIVE` in
+  `components/ui/tokens.ts`, and one ticker as the only authored animation.
 
 ---
 
-## Phase 1 — completed clone fidelity work
+## Phase 1 — completed clone fidelity work (superseded)
 
-All verified against the live site by DOM measurement. Key custom classes in
-`app/globals.css`:
+Phase 1 reproduced the WordPress layout by DOM measurement, and Phase 2 has now
+replaced it everywhere. Its layout CSS — `--band-gap` and the 50/60/70/80/100/130px
+step, `.service-container` / `.service-copy`, `.site-header-inner`, `.hero-panel`,
+`.hero-wave`, `.team-mask`, `.wave-edge`, `.section-mask`, `.container-boxed`,
+`.page-hero-title` — was removed with the components that used it. **It is all in git
+history**, along with the measurements behind it, if the WordPress site ever needs to
+be compared against again.
 
-- `--band-gap` — the theme's shared stepped scale (50/60/70/80/100/130px), consumed by
-  `.hero-gap-top` (space under the page hero) and `.footer-gap-top`.
-- `.service-container` / `.service-copy` — service page shell: container steps
-  1810 → 1300 → 760px; copy column is 70% with a stepped right gutter.
-- `.icon-list` — star bullets: 14px olive stars, **column-wise** fill via CSS multi-column
-  (the original is two side-by-side `<ul>`s).
-- `.site-header-inner` / `.site-header-logo` — header 110/140/184px, logo 70/100/170px.
-- `.hero-panel` — home hero heights 960/1025/902px.
-- `.team-mask` + `public/shapes/team-mask.svg` — the About-us portrait blob, traced from
-  the original PNG at 64 radial samples (75.7% coverage vs the original's 75.9%).
-- `.heading-hidden` — service banner titles are `visibility:hidden` on the original.
+What survives from Phase 1, because the content still needs it:
 
-Also fixed: services-listing cards stretch to a common 412px; the footer is white with an
-Elementor-style cream shape-divider wave; the home hero panel rides `container-boxed` so
-its wave mask never leaves uncovered strips at wide viewports.
+- `.icon-list` — star bullets: 14px olive stars, **column-wise** fill via CSS
+  multi-column (the original is two side-by-side `<ul>`s).
+- `.clover-list` — clover-glyph bullets, still used by "Complete Wellness".
+- `.heading-hidden` — service banner titles are `visibility:hidden` on the original,
+  so they stay in the DOM for heading order and are never painted.
+- The ported copy and data in `lib/data/`, which remain verbatim.
+- Every original asset under `public/`, including the masks the removed CSS used.

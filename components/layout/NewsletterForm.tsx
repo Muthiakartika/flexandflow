@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 
+import { FIELD, FOCUS } from "@/components/ui/tokens";
+
 /**
- * Newsletter sign-up. Measured off the original: a 52px transparent pill with a
- * 1px rule, and the Subscribe button pinned flush to its right edge at the same
- * height (the field reserves 128px of right padding for it).
+ * Newsletter sign-up in the footer.
  *
  * UI only for now — no backend is wired up yet, per the brief, so submitting
- * just acknowledges locally.
+ * just acknowledges locally. The field previously set `outline-none` with no
+ * replacement, leaving it invisible to keyboard users; it now takes the site's
+ * focus ring like everything else.
  */
 export default function NewsletterForm() {
   const [email, setEmail] = useState("");
@@ -16,13 +18,13 @@ export default function NewsletterForm() {
 
   return (
     <form
-      className="mt-5"
+      className="mt-4"
       onSubmit={(event) => {
         event.preventDefault();
         setSubmitted(true);
       }}
     >
-      <div className="relative">
+      <div className="flex flex-wrap gap-2">
         <label htmlFor="newsletter-email" className="sr-only">
           Email address
         </label>
@@ -34,17 +36,17 @@ export default function NewsletterForm() {
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="Email"
-          className="h-[52px] w-full rounded-[30px] border border-secondary bg-transparent pr-[128px] pl-5 font-body text-[16px] text-body-text outline-none placeholder:text-subtle"
+          className={`${FIELD} min-w-0 flex-1`}
         />
         <button
           type="submit"
-          className="absolute inset-y-0 right-0 rounded-[50px] border-[3px] border-primary bg-white px-[33px] font-body text-[16px] text-primary transition-colors duration-300 hover:bg-primary hover:text-white"
+          className={`shrink-0 rounded-[10px] bg-primary-strong px-5 font-body text-[14px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
         >
           Subscribe
         </button>
       </div>
 
-      <p aria-live="polite" className="sr-only">
+      <p aria-live="polite" className="mt-2 font-body text-[13px] text-primary">
         {submitted ? "Thanks for subscribing." : ""}
       </p>
     </form>

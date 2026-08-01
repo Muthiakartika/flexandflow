@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import Container from "@/components/ui/Container";
 import NewsletterForm from "./NewsletterForm";
 import { contact, siteConfig, workingHours } from "@/lib/site";
 
@@ -26,7 +25,7 @@ const nav = [
 export default function Footer() {
   return (
     <footer className="border-t border-secondary/10 bg-white">
-      <Container className="py-10">
+      <div className="page-wrap py-10">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,4fr)_minmax(0,3fr)_minmax(0,4fr)]">
           {/* Identity + reach */}
           <div>
@@ -113,13 +112,13 @@ export default function Footer() {
             </div>
           </div>
         </div>
-      </Container>
+      </div>
 
-      <Container className="border-t border-secondary/10 py-5">
+      <div className="page-wrap border-t border-secondary/10 py-5">
         <p className="font-body text-[13px] text-body-text/60">
           {siteConfig.copyright}
         </p>
-      </Container>
+      </div>
     </footer>
   );
 }

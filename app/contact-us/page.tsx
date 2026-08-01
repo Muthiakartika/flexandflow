@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 
 import ContactForm from "@/components/forms/ContactForm";
-import Container from "@/components/ui/Container";
+import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
-import Reveal from "@/components/ui/Reveal";
-import SectionHeading from "@/components/ui/SectionHeading";
-import { contact } from "@/lib/site";
+import { BAND, CARD, FOCUS, H2, WRAP } from "@/components/ui/tokens";
+import { contact, workingHours } from "@/lib/site";
 
 const description =
   "Get in touch with us! We’re here to answer any questions and help you with your wellness journey. Reach out today and let’s connect.";
@@ -32,110 +31,149 @@ const WHATSAPP_PATH =
 const INSTAGRAM_PATH =
   "M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.336 3.608 1.311.975.975 1.249 2.242 1.311 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.336 2.633-1.311 3.608-.975.975-2.242 1.249-3.608 1.311-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.336-3.608-1.311-.975-.975-1.249-2.242-1.311-3.608C2.175 15.586 2.163 15.206 2.163 12s.012-3.584.07-4.85c.062-1.366.336-2.633 1.311-3.608C4.519 2.567 5.786 2.293 7.152 2.231 8.418 2.175 8.796 2.163 12 2.163m0-2.163C8.741 0 8.332.014 7.052.072 5.197.157 3.355.673 2.014 2.014.673 3.355.157 5.197.072 7.052.014 8.332 0 8.741 0 12s.014 3.668.072 4.948c.085 1.855.601 3.697 1.942 5.038 1.341 1.341 3.183 1.857 5.038 1.942C8.332 23.986 8.741 24 12 24s3.668-.014 4.948-.072c1.855-.085 3.697-.601 5.038-1.942 1.341-1.341 1.857-3.183 1.942-5.038.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.085-1.855-.601-3.697-1.942-5.038C20.645.673 18.803.157 16.948.072 15.668.014 15.259 0 12 0m0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324M12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8";
 
-function SocialIcon({ path, label }: { path: string; label: string }) {
+function Social({
+  href,
+  path,
+  label,
+}: {
+  href: string;
+  path: string;
+  label: string;
+}) {
   return (
-    <span
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
       aria-label={label}
-      className="flex h-8 w-8 items-center justify-center rounded-full border border-secondary/60 text-secondary transition-colors duration-300 hover:border-primary hover:text-primary"
+      className={`flex h-10 w-10 items-center justify-center rounded-full border border-secondary/20 text-secondary transition-colors duration-300 hover:border-primary hover:text-primary ${FOCUS}`}
     >
-      <svg
-        viewBox="0 0 24 24"
-        aria-hidden
-        className="h-[14px] w-[14px]"
-        fill="currentColor"
-      >
+      <svg viewBox="0 0 24 24" aria-hidden className="h-4 w-4" fill="currentColor">
         <path d={path} />
       </svg>
-    </span>
+    </a>
   );
 }
 
 export default function ContactPage() {
+  const details = [
+    { term: "Address", detail: contact.address },
+    {
+      term: "Hours",
+      detail: workingHours
+        .map((slot) => `${slot.days} · ${slot.hours}`)
+        .join(" "),
+    },
+  ];
+
   return (
     <>
-      <PageHero title="Contact Us" crumbs={[{ label: "Contact Us" }]} />
+      <PageHero
+        title="Contact Us"
+        crumbs={[{ label: "Contact Us" }]}
+        lead={description}
+        actions={
+          <ButtonLink href={contact.whatsapp} external variant="solid">
+            Book on WhatsApp
+          </ButtonLink>
+        }
+      />
 
-      {/* Studio map, inset 20px with 20px rounded corners. */}
-      <section className="hero-gap-top px-5">
-        <iframe
-          src={MAP_SRC}
-          title="Flex &amp; Flow studio location"
-          loading="lazy"
-          allowFullScreen
-          referrerPolicy="no-referrer-when-downgrade"
-          className="h-[450px] w-full rounded-[var(--radius-2x)] border-0 max-[767px]:h-[320px]"
-        />
+      <section className={`${WRAP} ${BAND}`}>
+        <div className="grid gap-[clamp(1.75rem,3vw,3rem)] lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+          {/* ── The form ────────────────────────────────────────────────── */}
+          <div>
+            <h2 className={H2}>Stay In Touch</h2>
+            <div className={`mt-5 ${CARD} p-5`}>
+              <ContactForm />
+            </div>
+          </div>
+
+          {/* ── The studio's own details ────────────────────────────────── */}
+          <div>
+            <h2 className={H2}>Contact Us</h2>
+
+            <p className="mt-4 max-w-[52ch] font-body text-[15px] leading-[1.7] text-body-text/80">
+              Ready to start your journey with Flex &amp; Flow? Whether you have
+              a question, need support, or just want to say hello, we&rsquo;re
+              here for you! Reach out to us and experience the flow of seamless
+              communication and service.
+            </p>
+            <p className="mt-3 max-w-[52ch] font-body text-[15px] leading-[1.7] text-body-text/80">
+              We&rsquo;re excited to hear from you and ready to assist however we
+              can. Don&apos;t hesitate to connect with us today!
+            </p>
+
+            <dl className={`mt-6 ${CARD} p-5`}>
+              {details.map((row) => (
+                <div
+                  key={row.term}
+                  className="border-t border-secondary/10 py-3 first:border-t-0 first:pt-0"
+                >
+                  <dt className="page-label">{row.term}</dt>
+                  <dd className="mt-1.5 font-body text-[15px] leading-[1.6]">
+                    {row.detail}
+                  </dd>
+                </div>
+              ))}
+
+              <div className="border-t border-secondary/10 py-3">
+                <dt className="page-label">Email</dt>
+                <dd className="mt-1.5">
+                  <a
+                    href={`mailto:${contact.email}`}
+                    className={`font-body text-[15px] break-all transition-colors duration-300 hover:text-primary ${FOCUS}`}
+                  >
+                    {contact.email}
+                  </a>
+                </dd>
+              </div>
+
+              <div className="border-t border-secondary/10 py-3">
+                <dt className="page-label">Phone</dt>
+                <dd className="mt-1.5">
+                  <a
+                    href={contact.phoneHref}
+                    className={`font-body text-[15px] font-bold tabular-nums transition-colors duration-300 hover:text-primary ${FOCUS}`}
+                  >
+                    {contact.phone}
+                  </a>
+                </dd>
+              </div>
+
+              <div className="border-t border-secondary/10 pt-4">
+                <dt className="page-label">Social</dt>
+                <dd className="mt-2.5 flex items-center gap-2">
+                  <Social
+                    href={contact.whatsapp}
+                    path={WHATSAPP_PATH}
+                    label="WhatsApp"
+                  />
+                  <Social
+                    href={contact.instagram}
+                    path={INSTAGRAM_PATH}
+                    label="Instagram"
+                  />
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
       </section>
 
-      <section className="pt-[90px] pb-[100px]">
-        <Container>
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-5">
-            <Reveal>
-              <SectionHeading align="left" title="Stay In Touch" />
-              <div className="mt-8">
-                <ContactForm />
-              </div>
-            </Reveal>
-
-            <Reveal delay={120}>
-              <SectionHeading align="left" title="Contact Us" />
-
-              <div className="mt-6 flex flex-col gap-4 text-[16px] leading-[1.625]">
-                <p>
-                  Ready to start your journey with Flex &amp; Flow? Whether you
-                  have a question, need support, or just want to say hello,
-                  we&rsquo;re here for you! Reach out to us and experience the
-                  flow of seamless communication and service.
-                </p>
-                <p>
-                  We&rsquo;re excited to hear from you and ready to assist
-                  however we can. Don&apos;t hesitate to connect with us today!
-                </p>
-
-                <p>
-                  <strong className="font-bold">Address :</strong>{" "}
-                  {contact.address}
-                </p>
-
-                <p className="flex flex-wrap items-baseline gap-x-8 gap-y-2">
-                  <span>
-                    <strong className="font-bold">Email :</strong>{" "}
-                    <a
-                      href={`mailto:${contact.email}`}
-                      className="hover:text-primary"
-                    >
-                      {contact.email}
-                    </a>
-                  </span>
-                  <span>
-                    <strong className="font-bold">Phone :</strong>{" "}
-                    <a href={contact.phoneHref} className="hover:text-primary">
-                      {contact.phone}
-                    </a>
-                  </span>
-                </p>
-
-                <p className="flex flex-wrap items-center gap-3">
-                  <strong className="font-bold">Social :</strong>
-                  <a
-                    href={contact.whatsapp}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <SocialIcon path={WHATSAPP_PATH} label="Whatsapp" />
-                  </a>
-                  <a
-                    href={contact.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <SocialIcon path={INSTAGRAM_PATH} label="Instagram" />
-                  </a>
-                </p>
-              </div>
-            </Reveal>
-          </div>
-        </Container>
+      {/* ── Where the studio is ───────────────────────────────────────── */}
+      <section className="page-band-line">
+        <div className={`${WRAP} ${BAND}`}>
+          <h2 className="sr-only">Find the studio</h2>
+          <iframe
+            src={MAP_SRC}
+            title="Flex &amp; Flow studio location"
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+            className="h-[420px] w-full rounded-[10px] border border-secondary/10 max-[767px]:h-[300px]"
+          />
+        </div>
       </section>
     </>
   );

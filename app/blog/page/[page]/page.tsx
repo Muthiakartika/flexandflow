@@ -39,7 +39,11 @@ export default async function BlogPaginatedPage(
 
   return (
     <>
-      <PageHero title="Blog" crumbs={[{ label: "Blog" }]} />
+      <PageHero
+        title="Blog"
+        eyebrow={`Page ${current}`}
+        crumbs={[{ label: "Blog" }]}
+      />
       <BlogListing
         posts={posts}
         page={current}

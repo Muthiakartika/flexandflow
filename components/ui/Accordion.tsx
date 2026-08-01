@@ -35,7 +35,9 @@ export default function Accordion({
         return (
           <div
             key={item.question}
-            className="overflow-hidden rounded-[var(--radius-1x)] bg-white/60"
+            className={`overflow-hidden rounded-[10px] border bg-white transition-colors duration-300 ${
+              isOpen ? "border-primary/45" : "border-secondary/10"
+            }`}
           >
             <h3 className="m-0">
               <button
@@ -44,7 +46,7 @@ export default function Accordion({
                 aria-expanded={isOpen}
                 aria-controls={panelId}
                 onClick={() => setOpen(isOpen ? null : i)}
-                className="flex w-full items-center justify-between gap-4 px-6 py-4 text-left font-display text-[26px] leading-[1.26] text-primary transition-colors duration-300 hover:text-link-hover"
+                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-display text-[22px] leading-[1.2] font-bold transition-colors duration-300 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
               >
                 <span>{item.question}</span>
                 <span
@@ -64,9 +66,9 @@ export default function Accordion({
               role="region"
               aria-labelledby={buttonId}
               hidden={!isOpen}
-              className="px-6 pb-5"
+              className="px-5 pb-5"
             >
-              <p className="text-[16px] leading-[1.625] text-body-text">
+              <p className="max-w-[68ch] font-body text-[15px] leading-[1.75] text-body-text/80">
                 {item.answer}
               </p>
             </div>
