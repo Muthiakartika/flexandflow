@@ -222,7 +222,7 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
                               : undefined
                           }
                           onClick={close}
-                          className="mt-3 block font-body text-[15px] text-body-text transition-colors duration-300 hover:text-primary"
+                          className="-mx-2 mt-2 block rounded-[8px] px-2 py-2 font-body text-[15px] text-body-text transition-colors duration-300 hover:text-primary"
                         >
                           {item.mega.footer.label}
                         </a>

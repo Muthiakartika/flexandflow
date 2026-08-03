@@ -125,17 +125,19 @@ export default function DesktopNav({ items }: { items: NavItem[] }) {
               ) : null}
 
               {mega ? (
-                <div className={`${panelClass} w-[480px] p-6`}>
+                <div className={`${panelClass} w-[620px] p-6`}>
                   <HoverBridge />
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-3 gap-6">
                     {mega.groups.map((group) => (
                       <div key={group.title}>
                         <p className="font-body text-[12px] tracking-[0.14em] text-primary uppercase">
                           {group.title}
                         </p>
-                        <p className="mt-1 mb-2 font-body text-[12px] text-muted">
-                          {group.note}
-                        </p>
+                        {group.note ? (
+                          <p className="mt-1 mb-2 font-body text-[12px] text-muted">
+                            {group.note}
+                          </p>
+                        ) : null}
                         <ul className="-mx-3">
                           {group.items.map((child) => (
                             <li key={child.label}>

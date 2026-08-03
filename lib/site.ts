@@ -37,6 +37,12 @@ export const academyUrl = "https://flexnflow-academy.vercel.app";
 const academyCourse = (slug: string, mode: "online" | "onsite") =>
   `${academyUrl}/courses/${slug}/${mode}`;
 
+const academyPage = (label: string, path: string): NavItem => ({
+  label,
+  href: `${academyUrl}/${path}`,
+  external: true,
+});
+
 export const contact = {
   address: "Jl. Toya Ning II, Ungasan, Kec. Kuta Sel., Denpasar, Bali",
   email: "Flexandflow06@gmail.com",
@@ -65,7 +71,7 @@ export type NavItem = {
 export type NavMegaGroup = {
   title: string;
   /** Small qualifier under the column title, e.g. "2 days · max 6 students". */
-  note: string;
+  note?: string;
   items: NavItem[];
 };
 
@@ -151,6 +157,18 @@ export const primaryNav: NavItem[] = [
               href: academyCourse("sports-massage", "onsite"),
               external: true,
             },
+          ],
+        },
+        {
+          /* The academy's own remaining nav, so the whole site is reachable
+             from this panel and not only its courses. */
+          title: "Plan your course",
+          note: "Dates, resources & help",
+          items: [
+            academyPage("Schedule", "schedule"),
+            academyPage("Materials", "materials"),
+            academyPage("FAQ", "faq"),
+            academyPage("Contact", "contact"),
           ],
         },
       ],
