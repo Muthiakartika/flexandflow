@@ -8,7 +8,9 @@ import { siteConfig } from "@/lib/site";
 
 import "./globals.css";
 
-/* The original loads `Amatic SC:400,700` and `Andika:400` from Google Fonts. */
+/* The original loads `Amatic SC:400,700` and `Andika:400` from Google Fonts.
+   Andika 700 is added on top: the redesign marks the current nav item by
+   weight, and without the real face the browser smears a faux bold. */
 const amatic = Amatic_SC({
   variable: "--font-amatic",
   weight: ["400", "700"],
@@ -18,7 +20,7 @@ const amatic = Amatic_SC({
 
 const andika = Andika({
   variable: "--font-andika",
-  weight: "400",
+  weight: ["400", "700"],
   subsets: ["latin", "latin-ext"],
   display: "swap",
 });

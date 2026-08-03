@@ -27,6 +27,16 @@ export const wordpressUrls = {
   booking: "https://flexandflow.fit/appointment/",
 } as const;
 
+/**
+ * The training academy is a separate app on its own domain. Same rule as the
+ * WordPress pages: absolute URLs only, never `next/link` routes. Course paths
+ * mirror the academy's own menu — `/courses/<slug>/<online|onsite>`.
+ */
+export const academyUrl = "https://flexnflow-academy.vercel.app";
+
+const academyCourse = (slug: string, mode: "online" | "onsite") =>
+  `${academyUrl}/courses/${slug}/${mode}`;
+
 export const contact = {
   address: "Jl. Toya Ning II, Ungasan, Kec. Kuta Sel., Denpasar, Bali",
   email: "Flexandflow06@gmail.com",
@@ -47,6 +57,22 @@ export type NavItem = {
   /** Absolute links leave the Next.js app (WordPress pages, socials). */
   external?: boolean;
   children?: NavItem[];
+  /** Wide multi-column panel, used where a plain list would not group well. */
+  mega?: NavMega;
+};
+
+/** One labelled column of a mega menu. */
+export type NavMegaGroup = {
+  title: string;
+  /** Small qualifier under the column title, e.g. "2 days · max 6 students". */
+  note: string;
+  items: NavItem[];
+};
+
+export type NavMega = {
+  groups: NavMegaGroup[];
+  /** Optional link along the foot of the panel. */
+  footer?: NavItem;
 };
 
 /** Primary navigation, in the same order as the WordPress menu. */
@@ -77,7 +103,64 @@ export const primaryNav: NavItem[] = [
       },
     ],
   },
-  { label: "Academy", href: "https://flexnflow-academy.vercel.app/" },
+  {
+    label: "Academy",
+    href: academyUrl,
+    external: true,
+    /* Mirrors the academy's own Courses menu: the same three courses in each
+       delivery mode, so the two sites agree on what is on offer. */
+    mega: {
+      groups: [
+        {
+          title: "Online courses",
+          note: "Self-paced · start today",
+          items: [
+            {
+              label: "Lymphatic Drainage",
+              href: academyCourse("lymphatic-drainage", "online"),
+              external: true,
+            },
+            {
+              label: "Assisted Stretching",
+              href: academyCourse("assisted-stretching", "online"),
+              external: true,
+            },
+            {
+              label: "Sports Massage",
+              href: academyCourse("sports-massage", "online"),
+              external: true,
+            },
+          ],
+        },
+        {
+          title: "Onsite courses",
+          note: "2 days · max 6 students",
+          items: [
+            {
+              label: "Lymphatic Drainage",
+              href: academyCourse("lymphatic-drainage", "onsite"),
+              external: true,
+            },
+            {
+              label: "Assisted Stretching",
+              href: academyCourse("assisted-stretching", "onsite"),
+              external: true,
+            },
+            {
+              label: "Sports Massage",
+              href: academyCourse("sports-massage", "onsite"),
+              external: true,
+            },
+          ],
+        },
+      ],
+      footer: {
+        label: "Compare everything →",
+        href: `${academyUrl}/courses`,
+        external: true,
+      },
+    },
+  },
   { label: "Blog", href: "/blog" },
   { label: "Contact Us", href: "/contact-us" },
 ];

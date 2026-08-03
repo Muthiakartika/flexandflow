@@ -13,22 +13,35 @@ import { contact, primaryNav, siteConfig } from "@/lib/site";
  */
 export default function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-secondary/10 bg-cream/85 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-secondary/10 bg-white/95 backdrop-blur-md">
       <div className="page-wrap flex min-h-[76px] items-center gap-6 max-[479px]:min-h-[64px]">
         <Link
           href="/"
           aria-label={siteConfig.name}
-          className="shrink-0 rounded-[6px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+          className="flex shrink-0 items-center gap-3 rounded-[6px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
         >
           <Image
             src={siteConfig.logo}
-            alt={siteConfig.name}
+            alt=""
             width={861}
             height={861}
             priority
             sizes="56px"
             className="h-14 w-14 object-contain max-[479px]:h-11 max-[479px]:w-11"
           />
+          {/* Wordmark in the academy's lockup: the studio name on the display
+              face, what it does tracked out underneath. */}
+          <span
+            aria-hidden
+            className="font-display text-[30px] leading-none whitespace-nowrap text-body-text max-[479px]:text-[24px]"
+          >
+            {siteConfig.shortName}
+            {/* 9px on tighter tracking keeps the longer second line close to
+                the width of the name above it. */}
+            <span className="mt-1 block font-body text-[9px] leading-none font-bold tracking-[0.14em] text-subtle uppercase">
+              Assisted Stretching
+            </span>
+          </span>
         </Link>
 
         <div className="ml-auto flex items-center gap-7 max-[1180px]:hidden">

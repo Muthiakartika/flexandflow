@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 
+import useIsActive from "./useIsActive";
 import { ButtonLink } from "@/components/ui/Button";
 import { contact, wordpressUrls, type NavItem } from "@/lib/site";
 
@@ -15,6 +17,19 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const panelId = useId();
+  const isActive = useIsActive();
+
+  /* The drawer is portalled to <body>. It has to be: the header carries
+     `backdrop-blur`, and a backdrop-filter makes its element the containing
+     block for fixed descendants — left in place, the panel resolves `h-full`
+     against the 76px header and opens as a clipped strip.
+
+     `document` only exists after hydration, hence the client/server split. */
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   /* Any link tap dismisses the drawer, so it never lingers after navigating. */
   const close = () => setOpen(false);
@@ -37,23 +52,8 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
     };
   }, [open]);
 
-  return (
+  const drawer = (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-expanded={open}
-        aria-controls={panelId}
-        className="flex items-center font-body text-[16px] text-body-text transition-colors duration-300 hover:text-primary"
-      >
-        <span aria-hidden className="flex w-[18px] flex-col gap-[5px]">
-          <span className="h-[2px] w-full bg-current" />
-          <span className="h-[2px] w-full bg-current" />
-          <span className="h-[2px] w-full bg-current" />
-        </span>
-        <span className="sr-only">Menu</span>
-      </button>
-
       {/* Backdrop */}
       <div
         onClick={close}
@@ -87,22 +87,40 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
         <nav aria-label="Primary" className="mt-6">
           <ul className="flex flex-col">
             {items.map((item) => {
-              const hasChildren = Boolean(item.children?.length);
+              /* A mega menu collapses to the same accordion here, keeping its
+                 column titles as sub-headings. */
+              const groups =
+                item.mega?.groups ??
+                (item.children?.length
+                  ? [{ title: "", note: "", items: item.children }]
+                  : []);
+              const hasChildren = groups.length > 0;
               const isExpanded = expanded === item.label;
+              /* Same cue as the header panel — olive bold on a surface — but
+                 inverted: the drawer's own ground is cream, so the band that
+                 lifts off it is white. The negative margin lets the band sit
+                 wider than the text without moving the text. */
+              const topClass =
+                "-mx-2 block flex-1 rounded-[8px] px-2 py-3 font-body text-[16px] " +
+                (isActive(item)
+                  ? "bg-white font-bold text-primary"
+                  : "text-body-text");
 
               return (
                 <li
                   key={item.label}
                   className="border-b border-tertiary last:border-b-0"
                 >
-                  <div className="flex items-center justify-between">
+                  {/* py-1 keeps the active band clear of the row's divider
+                      instead of sitting flush against it. */}
+                  <div className="flex items-center justify-between py-1">
                     {item.external ? (
                       <a
                         href={item.href}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={close}
-                        className="block flex-1 py-3 font-body text-[16px] text-body-text"
+                        className={topClass}
                       >
                         {item.label}
                       </a>
@@ -110,7 +128,8 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
                       <Link
                         href={item.href}
                         onClick={close}
-                        className="block flex-1 py-3 font-body text-[16px] text-body-text"
+                        aria-current={isActive(item) ? "page" : undefined}
+                        className={topClass}
                       >
                         {item.label}
                       </Link>
@@ -140,19 +159,75 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
                   </div>
 
                   {hasChildren && isExpanded ? (
-                    <ul className="pb-3 pl-4">
-                      {item.children!.map((child) => (
-                        <li key={child.label}>
-                          <Link
-                            href={child.href}
-                            onClick={close}
-                            className="block py-2 font-body text-[15px] text-body-text transition-colors duration-300 hover:text-primary"
-                          >
-                            {child.label}
-                          </Link>
-                        </li>
+                    <div className="pt-1 pb-4 pl-4">
+                      {groups.map((group, index) => (
+                        <div key={group.title || index} className={index ? "mt-5" : ""}>
+                          {group.title ? (
+                            <p className="font-body text-[12px] tracking-[0.14em] text-primary uppercase">
+                              {group.title}
+                            </p>
+                          ) : null}
+                          {group.note ? (
+                            <p className="mb-1 font-body text-[12px] text-muted">
+                              {group.note}
+                            </p>
+                          ) : null}
+                          <ul className="flex flex-col gap-1">
+                            {group.items.map((child) => {
+                              const childClass =
+                                "-mx-2 block rounded-[8px] px-2 py-2 font-body text-[15px] " +
+                                "transition-colors duration-300 hover:text-primary " +
+                                (isActive(child)
+                                  ? "bg-white font-bold text-primary"
+                                  : "text-body-text");
+
+                              return (
+                                <li key={child.label}>
+                                  {child.external ? (
+                                    <a
+                                      href={child.href}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={close}
+                                      className={childClass}
+                                    >
+                                      {child.label}
+                                    </a>
+                                  ) : (
+                                    <Link
+                                      href={child.href}
+                                      onClick={close}
+                                      aria-current={
+                                        isActive(child) ? "page" : undefined
+                                      }
+                                      className={childClass}
+                                    >
+                                      {child.label}
+                                    </Link>
+                                  )}
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
                       ))}
-                    </ul>
+
+                      {item.mega?.footer ? (
+                        <a
+                          href={item.mega.footer.href}
+                          target={item.mega.footer.external ? "_blank" : undefined}
+                          rel={
+                            item.mega.footer.external
+                              ? "noopener noreferrer"
+                              : undefined
+                          }
+                          onClick={close}
+                          className="mt-3 block font-body text-[15px] text-body-text transition-colors duration-300 hover:text-primary"
+                        >
+                          {item.mega.footer.label}
+                        </a>
+                      ) : null}
+                    </div>
                   ) : null}
                 </li>
               );
@@ -174,6 +249,30 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
           <p className="text-body-text">{contact.address}</p>
         </div>
       </div>
+    </>
+  );
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-expanded={open}
+        aria-controls={panelId}
+        className="relative flex items-center font-body text-[16px] text-body-text transition-colors duration-300 hover:text-primary"
+      >
+        {/* The bars are 18×16; this stretches the tap target to 42×40 without
+            moving anything in the header row. */}
+        <span aria-hidden className="absolute -inset-x-3 -inset-y-3" />
+        <span aria-hidden className="flex w-[18px] flex-col gap-[5px]">
+          <span className="h-[2px] w-full bg-current" />
+          <span className="h-[2px] w-full bg-current" />
+          <span className="h-[2px] w-full bg-current" />
+        </span>
+        <span className="sr-only">Menu</span>
+      </button>
+
+      {mounted ? createPortal(drawer, document.body) : null}
     </>
   );
 }
