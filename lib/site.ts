@@ -77,6 +77,7 @@ export const primaryNav: NavItem[] = [
       },
     ],
   },
+  { label: "Academy", href: "https://flexnflow-academy.vercel.app/" },
   { label: "Blog", href: "/blog" },
   { label: "Contact Us", href: "/contact-us" },
 ];
