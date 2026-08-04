@@ -139,109 +139,33 @@ export const services: Service[] = [
     },
     body: [
       {
-        type: "heading",
-        level: 2,
-        text: "What is Sport Massage ?",
+        type: "paragraph",
+        text: "Our sports massage in Uluwatu, Bali, is built for active bodies that need real recovery. Targeted, hands-on treatment helps release tight muscles, reduce soreness and support faster recovery so you can keep moving, training and exploring with confidence.",
       },
       {
         type: "paragraph",
-        text: "Sports massage is a targeted form of massage therapy designed specifically for active bodies, combining deep tissue work, stretching, and trigger point techniques to address the muscles you use most. Unlike a relaxation massage, it focuses on the areas under strain from training, competition, or everyday activity, working to release tension, break down adhesions, improve flexibility, and increase blood flow to fatigued muscles. The result is faster recovery, reduced soreness, better range of motion, and a lower risk of injury.",
-      },
-      {
-        type: "paragraph",
-        text: "Our sports massage in Bali is built around what your body is actually doing here. Surfing, long rides, gym sessions, or full days of exploring all create their own patterns of tightness, and our treatments are adjusted accordingly rather than following a fixed routine.",
-      },
-      {
-        type: "paragraph",
-        text: "We begin every session by identifying where your tension is really coming from, since the sore spot and the source aren’t always the same place. Whether you’re training toward a specific goal, working through stiffness that won’t shift, or just want to feel loose again before your next session, we’ll build the treatment around it.",
+        text: "We understand how important it is for athletes and fitness enthusiasts to maintain peak performance. That’s why we specializes in sports massage therapy designed to help you excel. Our [skilled therapists](https://flexandflow.fit/about-us/) can pinpoint what you need. Whether you’re feeling sore, stiff, or just want to get better at sports, our sports massage therapy speeds up your recovery.",
       },
       {
         type: "heading",
         level: 2,
-        text: "How We Do sport massage Therapy ?",
+        text: "Enhancing Performance and Recovery",
       },
       {
         type: "paragraph",
-        text: "We use advanced sports massage techniques, including deep tissue massage, stretching, and mobility exercises. These methods are designed to boost flexibility, reduce muscle spasms, and improve overall tissue health. Whether you’re gearing up for a competition or recovering post-event, our therapies keep you performing at your best in the vibrant environment of Bali.",
+        text: "Staying active and injury-free is essential, and our sports massage services are tailored to enhance athletic performance and accelerate recovery. By relieving muscle tension, improving circulation, and increasing flexibility, our therapy helps you perform better and recover faster. Athletes and fitness lovers in Uluwatu can benefit from our focused approach to wellness and recovery.",
       },
       {
         type: "heading",
         level: 2,
-        text: "What Is the Difference Between Sports Massage Therapy and Deep Tissue Massage ?",
-      },
-      {
-        type: "paragraph",
-        text: "The main difference lies in their purpose. Deep tissue massage aims to relieve chronic tension wherever it builds up in the body, while sports massage focuses on movement. Here’s an explanation:",
-      },
-      {
-        type: "heading",
-        level: 3,
-        text: "Purpose",
-      },
-      {
-        type: "paragraph",
-        text: "Deep tissue focuses on releasing long-held tension and knots. Sports massage focuses on performance, recovery, and injury prevention.",
-      },
-      {
-        type: "heading",
-        level: 3,
-        text: "Technique",
-      },
-      {
-        type: "paragraph",
-        text: "Deep tissue relies mainly on slow, sustained pressure into the deeper layers of muscle and fascia. Sports massage combines that pressure with stretching, joint mobilisation, compression, and friction work.",
-      },
-      {
-        type: "heading",
-        level: 3,
-        text: "Focus area",
-      },
-      {
-        type: "paragraph",
-        text: "Deep tissue often covers the whole body or one problem area. Sports massage targets the specific muscle groups your activity loads most, such as shoulders and lats for surfers or quads and calves for runners.",
-      },
-      {
-        type: "heading",
-        level: 3,
-        text: "Pace and pressure",
-      },
-      {
-        type: "paragraph",
-        text: "Deep tissue is slow and steady throughout. Sports massage varies its pace, moving between deep work, brisker strokes, and active movement.",
-      },
-      {
-        type: "heading",
-        level: 3,
-        text: "Timing",
-      },
-      {
-        type: "paragraph",
-        text: "Deep tissue can be booked any time. Sports massage is often timed around activity: lighter and more stimulating before an event, more restorative afterwards.",
-      },
-      {
-        type: "heading",
-        level: 3,
-        text: "How it feels after",
-      },
-      {
-        type: "paragraph",
-        text: "Deep tissue can leave you feeling heavy and deeply relaxed. Sports massage usually leaves you feeling looser and readier to move.",
-      },
-      {
-        type: "paragraph",
-        text: "We will assess you at the start of your session and adjust the treatment accordingly.",
-      },
-      {
-        type: "heading",
-        level: 2,
-        text: "Why Choose Our Sport Massage ?",
+        text: "Why Choose Our Sport Massage",
       },
       {
         type: "columns",
         items: [
           "We offer top-notch care, making sure you're always at your best.",
           "Flex & Flow specializes in sports massage therapy for athletes and fitness enthusiasts.",
-          "We are dedicated to improving performance and aiding recovery.",
+          "Our therapists are dedicated to improving performance and aiding recovery.",
           "Flex & Flow provides customized treatments to address specific athletic concerns.",
           "Sports massages improve flexibility, reduce muscle stiffness, and prevent injuries.",
           "Regular sessions can enhance circulation and speed up muscle repair.",
@@ -252,100 +176,25 @@ export const services: Service[] = [
       {
         type: "heading",
         level: 2,
-        text: "How long does a sports massage last ?",
+        text: "Reduced Muscle Pain",
       },
       {
         type: "paragraph",
-        text: "Our sports massage sessions are available in 60 until 90 minutes, and the right length depends on how much of your body needs attention. A 60-minute session is ideal when you have one or two specific areas to work on, such as tight shoulders after a week of surfing or stiff legs following a long ride. There’s enough time to warm the muscles properly and do focused, effective work without rushing.",
-      },
-      {
-        type: "paragraph",
-        text: "The 90-minute session is the better option if you’re carrying tension in several areas, want full-body coverage, or are dealing with something that has been building up over weeks. The extra half hour gives us room to work through more muscle groups thoroughly, include stretching and mobilisation, and finish with a proper wind-down rather than stopping the moment the deep work is done.",
-      },
-      {
-        type: "paragraph",
-        text: "If you’re unsure which to book, most first-time clients find 90 minutes worthwhile, since it allows time for a fuller assessment of how your body is moving. From there, we can recommend the format and frequency that suits your training and recovery needs going forward.",
+        text: "Muscle pain can disrupt your training routine, but our sports massage services in Bali provide effective relief. By improving blood flow and flushing out toxins, we help reduce muscle tightness and speed up recovery. Our techniques complement physiotherapy, restoring muscle balance, easing chronic pain, and improving coordination.",
       },
       {
         type: "heading",
         level: 2,
-        text: "What to Avoid After Sports Massage ?",
+        text: "Technique of Sport Massage Therapy",
       },
       {
         type: "paragraph",
-        text: "Your muscles stay in a recovery state for roughly 24 to 48 hours after a sports massage, and what you do in that window affects how much benefit you actually get from the session. Here’s what we suggest avoiding while your body settles:",
-      },
-      {
-        type: "heading",
-        level: 3,
-        text: "Hard training or a heavy session",
-      },
-      {
-        type: "paragraph",
-        text: "Give it at least 24 hours before loading the muscles again. Working freshly released tissue too soon is the quickest way to tighten straight back up.",
-      },
-      {
-        type: "heading",
-        level: 3,
-        text: "Alcohol",
-      },
-      {
-        type: "paragraph",
-        text: "it dehydrates you and slows the repair process at exactly the point your muscles are rebuilding.",
-      },
-      {
-        type: "heading",
-        level: 3,
-        text: "Long sun exposure and saunas",
-      },
-      {
-        type: "paragraph",
-        text: "Both add dehydration on top of a treatment that already increases your fluid needs. Save the beach session for later in the day.",
-      },
-      {
-        type: "heading",
-        level: 3,
-        text: "Sitting still for hours",
-      },
-      {
-        type: "paragraph",
-        text: "A full afternoon on the laptop or a long transfer will stiffen you up. Get up and move a little every so often.",
-      },
-      {
-        type: "heading",
-        level: 3,
-        text: "Anti-inflammatories for normal soreness",
-      },
-      {
-        type: "paragraph",
-        text: "Masking post-massage tenderness makes it harder to tell what your body is telling you. If pain is sharp rather than dull, contact us instead.",
-      },
-      {
-        type: "heading",
-        level: 3,
-        text: "Skipping water and food",
-      },
-      {
-        type: "paragraph",
-        text: "Hydrate through the day and eat something with decent protein to support muscle repair.",
-      },
-      {
-        type: "heading",
-        level: 3,
-        text: "Cold ocean swims immediately after",
-      },
-      {
-        type: "paragraph",
-        text: "Wait a couple of hours so the muscles stay warm while the work settles.",
-      },
-      {
-        type: "paragraph",
-        text: "The day after, light movement is your friend. An easy walk, gentle stretching, or a slow swim keeps blood flowing to the areas we worked on and helps the results hold longer. Then get back to training feeling looser than you started.",
+        text: "We use advanced sports massage techniques, including deep tissue massage, stretching, and mobility exercises. These methods are designed to boost flexibility, reduce muscle spasms, and improve overall tissue health. Whether you’re gearing up for a competition or recovering post-event, our therapies keep you performing at your best in the vibrant environment of Bali.",
       },
       {
         type: "heading",
         level: 2,
-        text: "Find Sports Massage Near You",
+        text: "Find Sports Massage Near Me",
       },
       {
         type: "paragraph",
@@ -359,56 +208,6 @@ export const services: Service[] = [
       {
         type: "paragraph",
         text: "We take your health seriously. We offer sports massage services for athletes and active people. Trust [Flex & Flow](https://flexandflow.fit/) for quality coaching and guidance on your fitness journey. Your health and well-being are in our hands.",
-      },
-      {
-        type: "heading",
-        level: 2,
-        text: "Learn More About Sport Massage",
-      },
-      {
-        type: "faq",
-        items: [
-          {
-            question: "Is sports massage painful?",
-            answer: "Sports massage can be uncomfortable at times, especially when working on tight muscles or trigger points, but it should not be excessively painful. We will adjust the pressure to suit your comfort level and recovery goals.",
-          },
-          {
-            question: "Who should get a sports massage?",
-            answer: "Sports massage is suitable for athletes, gym-goers, runners, surfers, cyclists, and anyone with an active lifestyle. It can also benefit people with muscle tightness, stiffness, or repetitive strain from work or daily activities.",
-          },
-          {
-            question: "How often should you get a sports massage?",
-            answer: "It depends on your activity level and goals. Active individuals often benefit from a sports massage every 2 to 4 weeks, while those training for an event or recovering from intense exercise may benefit from more frequent sessions.",
-          },
-          {
-            question: "Can sports massage help prevent injuries?",
-            answer: "Yes. Sports massage helps improve flexibility, reduce muscle tension, and identify tight areas before they become injuries. Combined with proper training and recovery, it can lower your risk of muscle strains and overuse injuries.",
-          },
-          {
-            question: "What should I wear to a sports massage?",
-            answer: "Wear comfortable, loose-fitting clothing. Depending on the areas being treated, we may ask you to remove some clothing while ensuring you remain appropriately covered throughout the session.",
-          },
-          {
-            question: "Should I get a sports massage before or after exercise?",
-            answer: "Both are beneficial but serve different purposes. Before exercise, sports massage prepares the muscles for activity. After exercise, it helps reduce muscle soreness, improve recovery, and restore mobility.",
-          },
-          {
-            question: "Can sports massage help with muscle soreness?",
-            answer: "Yes. Sports massage can reduce delayed onset muscle soreness (DOMS) by improving circulation, releasing muscle tension, and promoting faster recovery after exercise or sports.",
-          },
-          {
-            question: "When should you avoid a sports massage?",
-            answer: "Avoid sports massage if you have a fever, an active infection, an open wound, a recent fracture, or a blood clot. If you’re recovering from surgery or have a medical condition, consult your healthcare provider before treatment.",
-          },
-          {
-            question: "Can sports massage improve flexibility?",
-            answer: "Yes. Sports massage helps release tight muscles and improve joint mobility, making it easier to move comfortably and perform physical activities with a greater range of motion.",
-          },
-          {
-            question: "Is sports massage worth it for non-athletes?",
-            answer: "Absolutely. You don’t need to be an athlete to benefit from sports massage. It can help relieve muscle tension, improve posture, reduce stiffness from desk work, and support overall mobility and well-being.",
-          },
-        ],
       },
     ],
     duration: "Duration : 1 hr",
@@ -622,7 +421,7 @@ export const services: Service[] = [
       },
       {
         type: "paragraph",
-        text: "We make it easy for you to find professional cupping therapy in Uluwatu. Our wellness center is conveniently located, and we provide a comfortable environment where your health and relaxation are our priorities. [Our team](https://green-hare-976010.hostingersite.com/about-us/) of experienced therapists ensures that each session is customized to your needs. Simply search for “cupping therapy in Uluwatu” to find us and discover the rejuvenating benefits we offer.",
+        text: "We make it easy for you to find professional cupping therapy in Uluwatu. Our wellness center is conveniently located, and we provide a comfortable environment where your health and relaxation are our priorities. [Our team](https://flexandflow.fit/about-us/) of experienced therapists ensures that each session is customized to your needs. Simply search for “cupping therapy in Uluwatu” to find us and discover the rejuvenating benefits we offer.",
       },
       {
         type: "heading",
@@ -663,35 +462,30 @@ export const services: Service[] = [
     },
     body: [
       {
-        type: "heading",
-        level: 2,
-        text: "What is lymphatic drainage ?",
+        type: "paragraph",
+        text: "Our lymphatic drainage sessions in Uluwatu, Bali help your body refresh, renew and flow with ease. Gentle, rhythmic techniques support natural detoxification, boost circulation and ease puffiness so you feel lighter, calmer and more balanced from head to toe.",
       },
       {
         type: "paragraph",
-        text: "Lymphatic drainage is a gentle therapeutic massage technique that stimulates the body’s lymphatic system to support the natural elimination of excess fluid and waste. Using light, rhythmic movements, this technique helps reduce swelling, improve circulation, promote detoxification, and enhance your overall sense of balance and well-being.",
-      },
-      {
-        type: "paragraph",
-        text: "We offer lymphatic drainage sessions in Uluwatu, Bali, to help your body refresh, restore your energy, and improve its natural flow. Visit us to experience a treatment tailored to your needs, leaving you feeling refreshed, lighter, and re-energized.",
+        text: "Our Lymphatic Drainage Massage is designed to detoxify the body, reduce swelling, and enhance overall immunity, complementing the relaxation and health benefits often associated with Balinese massage. Visit us to experience personalized care that leaves you feeling refreshed and revitalized!",
       },
       {
         type: "heading",
         level: 2,
-        text: "How does Lymphatic Drainage Massage work ?",
+        text: "Lymphatic Drainage Massage Techniques",
       },
       {
         type: "paragraph",
-        text: "We use gentle, targeted techniques such as light stretching, circular movements, and gentle pressure to stimulate lymphatic flow. These methods help reduce swelling, relieve fluid retention, and enhance your body’s natural balance.",
+        text: "Our [expert therapists](https://flexandflow.fit/about-us/) use gentle, targeted techniques such as soft stretching, circular motions, and light pressure to stimulate lymphatic flow. These methods help reduce puffiness, relieve water retention, and promote a sense of balance.",
       },
       {
         type: "paragraph",
-        text: "Whether you’re managing swelling, supporting your body’s natural detoxification process, or simply looking to feel refreshed, we ensure that every session is personalized to meet your individual needs.",
+        text: "Whether you’re managing swelling, supporting detoxification, or simply seeking a refreshing reset, our skilled team ensures each session is effective and tailored to your needs.",
       },
       {
         type: "heading",
-        level: 2,
-        text: "Why Choose Lymphatic Drainage Massage ?",
+        level: 3,
+        text: "Why Choose Lymphatic Drainage Massage",
       },
       {
         type: "columns",
@@ -709,15 +503,11 @@ export const services: Service[] = [
       {
         type: "heading",
         level: 2,
-        text: "How long does lymphatic drainage last ?",
+        text: "Detoxification and Improved Immunity",
       },
       {
         type: "paragraph",
-        text: "A typical lymphatic drainage session lasts between 60 and 90 minutes, depending on your individual needs and the areas being treated. The effects of the massage can be felt immediately, with our many clients noticing reduced puffiness, a lighter feeling in the body, and improved energy right after their session. These initial benefits generally last from a few days up to a week, as your lymphatic system continues to process and eliminate excess fluid and toxins in the hours following the treatment.",
-      },
-      {
-        type: "paragraph",
-        text: "For longer-lasting results, we recommend a series of regular sessions, as the benefits of lymphatic drainage are cumulative. Clients who book weekly or bi-weekly treatments often experience sustained improvements in circulation, digestion, skin clarity, and overall well-being.",
+        text: "Lymphatic drainage massage is a powerful tool for enhancing your body’s detoxification process and strengthening your immune system. By improving lymph flow, toxins are flushed out, and overall health is elevated. Weekly sessions are ideal for intensive detoxification, while monthly treatments help maintain wellness.",
       },
       {
         type: "paragraph",
@@ -726,50 +516,20 @@ export const services: Service[] = [
       {
         type: "heading",
         level: 2,
-        text: "What to Do After Lymphatic Drainage ?",
+        text: "Enhanced Circulation",
       },
       {
         type: "paragraph",
-        text: "To get the most out of your lymphatic drainage session, it’s important to support your body’s natural detoxification process in the hours that follow. The massage stimulates your lymphatic system to release excess fluid and toxins, so what you do afterward can enhance or slow down these benefits. Here are our top recommendations for aftercare:",
-      },
-      {
-        type: "columns",
-        items: [
-          "Drink plenty of water hydration helps your lymphatic system flush out toxins and excess fluid released during the massage.",
-          "Avoid alcohol and caffeine for at least 24 hours, as they can dehydrate your body and slow the elimination process.",
-          "Eat light, healthy meals, skip heavy or salty foods that may cause your body to retain fluid again.",
-          "Keep moving gently such as a relaxed walk along the beach, light stretching, or easy yoga helps keep your lymph flowing.",
-          "Skip intense workouts and prolonged sun exposure for the rest of the day.",
-        ],
-      },
-      {
-        type: "paragraph",
-        text: "Many of our clients in Uluwatu, Bali combine their session with a quiet afternoon of relaxation, which is the perfect way to maximize the refreshing, re-energizing benefits of lymphatic drainage.",
+        text: "Beyond detoxification, lymphatic drainage massage improves blood circulation and promotes the removal of waste from the body. Techniques like compressing, gliding, and stretching are employed to ease fluid buildup and support overall health. Regular treatments help reduce swelling, alleviate discomfort, and leave you feeling refreshed. Start with weekly sessions, then transition to monthly visits to maintain your results.",
       },
       {
         type: "heading",
         level: 2,
-        text: "What to Avoid After Lymphatic Drainage ?",
+        text: "Relaxation and Stress Relief",
       },
       {
         type: "paragraph",
-        text: "While lymphatic drainage is a gentle treatment, your body continues working to eliminate fluid and toxins for up to 48 hours after your session. Avoiding certain habits during this time helps you get the full benefits of the massage and prevents your lymphatic system from becoming sluggish again. Here’s recommend staying away from:",
-      },
-      {
-        type: "columns",
-        items: [
-          "**Alcohol**: It dehydrates the body and adds extra toxins for your lymphatic system to process, working directly against the treatment.",
-          "**Salty and processed foods**: Excess sodium encourages fluid retention, which can quickly undo the de-bloating effects of your session.",
-          "**Caffeine**: Coffee and energy drinks act as diuretics and can leave your body dehydrated when it needs fluids most.",
-          "**Intense exercise**: Heavy workouts place stress on your body while it's in recovery mode; save the gym or surf session for the next day.",
-          "**Hot environments**: Saunas, hot tubs, and long sunbathing sessions can cause dehydration and increase swelling.",
-          "**Tight clothing**: Restrictive waistbands, compression wear, or tight activewear can block the lymphatic pathways we just stimulated.",
-          "**Large, heavy meals**: Digestion diverts energy away from detoxification, so opt for light, nourishing food instead.",
-        ],
-      },
-      {
-        type: "paragraph",
-        text: "By steering clear of these for a day or two after your visit, you’ll feel the lighter, refreshed effects of your lymphatic drainage massage for much longer. If you have any questions about your aftercare, our team in Uluwatu is always happy to help.",
+        text: "In addition to its physical benefits, our lymphatic drainage massage offers profound mental relaxation. Gentle, rhythmic pressure relieves muscle tension and promotes a deep state of calm. This therapy is ideal for those seeking stress relief and better sleep. Whether you book a 15-minute or 60-minute session, our session provides a serene environment for your ultimate relaxation.",
       },
       {
         type: "heading",
@@ -778,53 +538,7 @@ export const services: Service[] = [
       },
       {
         type: "paragraph",
-        text: "Enjoy the luxury of professional care without leaving your home. [Our home service](https://flexandflow.fit/contact-us/) brings the benefits of lymphatic drainage massage to your doorstep in Uluwatu. Perfect for unwinding in your private space, this option ensures you feel rejuvenated and balanced.",
-      },
-      {
-        type: "heading",
-        level: 2,
-        text: "Learn More About Lymphatic Drainage Massage",
-      },
-      {
-        type: "faq",
-        items: [
-          {
-            question: "Is lymphatic drainage massage painful?",
-            answer: "No. Lymphatic drainage massage is a very gentle treatment that uses light, rhythmic movements rather than deep pressure. Most people find it deeply relaxing, and the massage should never be painful. If you experience any discomfort, let we know so the pressure can be adjusted.",
-          },
-          {
-            question: "How many lymphatic drainage sessions do I need?",
-            answer: "The number of sessions depends on your goals. Some people notice improvements after just one treatment, while others benefit from weekly or bi-weekly sessions for ongoing support with circulation, fluid retention, recovery, or overall wellness.",
-          },
-          {
-            question: "Can lymphatic drainage help reduce bloating?",
-            answer: "Yes. Lymphatic drainage massage may help reduce temporary bloating caused by fluid retention by encouraging the movement of lymphatic fluid throughout the body.",
-          },
-          {
-            question: "Is lymphatic drainage good for swelling?",
-            answer: "Yes. Lymphatic drainage massage is commonly used to help reduce mild swelling caused by fluid retention. By stimulating the lymphatic system, the treatment encourages excess fluid to move through the body more efficiently. If your swelling is caused by a medical condition, [consult with us](https://flexandflow.fit/contact-us/) before booking a massage.",
-          },
-          {
-            question: "Can lymphatic drainage improve skin appearance?",
-            answer: "Yes. Improved lymphatic circulation may help reduce puffiness, support healthy circulation, and promote a brighter, more refreshed complexion. While it is not a replacement for medical or cosmetic treatments, many people notice their skin looks healthier after regular sessions.",
-          },
-          {
-            question: "When should you avoid lymphatic drainage massage?",
-            answer: "Avoid lymphatic drainage massage if you have an active infection, uncontrolled heart failure, blood clots (DVT), severe kidney disease, or another serious medical condition without your doctor’s approval.",
-          },
-          {
-            question: "Is lymphatic drainage massage good for slimming?",
-            answer: "Lymphatic drainage massage is not a weight loss treatment. However, it can reduce water retention and bloating, helping your body look more contoured and feel lighter. For long-term fat loss, healthy diet and exercise are still essential.",
-          },
-          {
-            question: "Where do toxins go after a lymphatic drainage massage?",
-            answer: "Lymphatic drainage supports your body’s natural waste removal process. Waste is filtered by the lymph nodes and processed by the liver and kidneys before leaving the body through urine, stool, and sweat. Staying hydrated after your massage helps support this process.",
-          },
-          {
-            question: "How often should I get a lymphatic drainage massage?",
-            answer: "For general wellness, many clients schedule a session every two to four weeks. If you’re addressing fluid retention, post-travel swelling, or specific recovery goals, we may recommend weekly treatments until your desired results are achieved.",
-          },
-        ],
+        text: "Enjoy the luxury of professional care without leaving your home. [Our home service](https://flexandflow.fit/uluwatu-bali/outcall-home-service-massage/) brings the benefits of lymphatic drainage massage to your doorstep in Uluwatu. Perfect for unwinding in your private space, this option ensures you feel rejuvenated and balanced.",
       },
     ],
     duration: "Duration : 1 hr",
@@ -859,7 +573,7 @@ export const services: Service[] = [
       },
       {
         type: "paragraph",
-        text: "After years of working with the body through [sports massage](https://green-hare-976010.hostingersite.com/uluwatu-bali/sport-massage/), [assisted stretching](https://green-hare-976010.hostingersite.com/uluwatu-bali/assisted-stretching/), and mobility therapy, we have felt the need to offer something deeper.",
+        text: "After years of working with the body through [sports massage](https://flexandflow.fit/uluwatu-bali/sport-massage/), [assisted stretching](https://flexandflow.fit/uluwatu-bali/assisted-stretching/), and mobility therapy, we have felt the need to offer something deeper.",
       },
       {
         type: "paragraph",

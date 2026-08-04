@@ -120,6 +120,16 @@ and can invert the tier hierarchy (Master appearing cheaper than Therapist). Fil
 duration and/or to services offering both tiers. Also **some `price` strings already
 carry an `Rp` prefix and some do not** — normalise to digits before formatting.
 
+**Re-synced against the live site on 2026-08-04.** Seven of the eight service pages
+matched. Two did not: **sport massage** and **lymphatic drainage** carried long-form
+bodies (deep-tissue comparison, aftercare sections, ten-item FAQs) that
+flexandflow.fit no longer serves — the live pages are the older, shorter versions.
+Both bodies were replaced with what the live site actually publishes, so **the removed
+copy is in git history, not a bug**; do not restore it without asking the owner. The
+same pass fixed three body links still pointing at the `green-hare-976010.hostingersite.com`
+staging host, and reordered the home grid to the live sequence (men's detox, trauma,
+stretching, sport, cupping, drainage).
+
 **`lib/pricing.ts` now does all of this.** Use it rather than parsing tiers again:
 `priceAmount` (digits only), `tierMinutes` (falls back to the service-level label —
 pregnancy massage's cheaper tier has no `duration` of its own), `serviceMinutes`,

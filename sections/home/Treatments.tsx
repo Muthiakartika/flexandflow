@@ -8,12 +8,12 @@ import { BAND, CARD, FOCUS, H2, LINK, WRAP } from "@/components/ui/tokens";
 
 /** Treatments featured on the home page, in the original order. */
 const featured = [
+  "lymphatic-detox-massage-for-men",
+  "trauma-healing",
   "assisted-stretching",
   "sport-massage",
-  "lymphatic-drainage",
   "cupping-therapy",
-  "trauma-healing",
-  "lymphatic-detox-massage-for-men",
+  "lymphatic-drainage",
 ];
 
 /**
