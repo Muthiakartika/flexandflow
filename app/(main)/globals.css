@@ -1,0 +1,430 @@
+@import "tailwindcss";
+
+/* Detection starts from this file's directory, which since the merge holds
+   only the main site's routes. Its components, sections and data live above
+   it, so they are declared explicitly. The academy is deliberately absent: it
+   compiles its own stylesheet from its own tokens, and the two never load on
+   the same page. */
+@source "../../components";
+@source "../../sections";
+@source "../../lib";
+
+/* ==========================================================================
+   Design tokens — ported 1:1 from the WordPress "miss-spa" theme + Elementor
+   kit so the clone keeps the original visual identity.
+   ========================================================================== */
+
+@theme {
+  /* Palette */
+  --color-primary: #7f8c3a;
+  /* Same olive, one step down, used only where the brand green has to carry
+     white text: #7f8c3a behind 15px white is 3.67:1, this is 4.76:1. The brand
+     colour itself is untouched — this is a filled-surface variant of it. */
+  --color-primary-strong: #6d7932;
+  --color-secondary: #000000;
+  --color-tertiary: #dcdddc;
+  --color-cream: #f0efeb;
+  --color-link: #000000;
+  --color-link-hover: #738b69;
+  --color-accent-text: #ffffff;
+  --color-body-text: #000000;
+  --color-muted: #444444;
+  --color-subtle: #777777;
+  --color-price: #2d2d2d;
+  --color-star: #f49911;
+
+  /* Typography */
+  --font-body: var(--font-andika), sans-serif;
+  --font-display: var(--font-amatic), cursive;
+
+  /* Radius */
+  --radius-1x: 10px;
+  --radius-2x: 20px;
+  --radius-3x: 30px;
+  --radius-4x: 40px;
+  --radius-part: 2.5em;
+  --radius-card: 24px;
+  --radius-tier: 18px;
+}
+
+@theme inline {
+  --color-background: var(--color-cream);
+  --color-foreground: var(--color-body-text);
+}
+
+:root {
+  /* Fluid heading scale (theme.css "Custom Heading Style") */
+  --fs-h1: clamp(2.5rem, 2.0096rem + 2.1795vw, 4.625rem);
+  --fs-h2: clamp(2.375rem, 2rem + 1.6667vw, 4rem);
+  --fs-h3: clamp(2.25rem, 2.0769rem + 0.7692vw, 3rem);
+  --fs-h4: clamp(2.125rem, 2.0385rem + 0.3846vw, 2.5rem);
+  --fs-h5: 32px;
+  --fs-h6: 24px;
+  --lh-heading: 1.26;
+
+  /* Button metrics (--wdtPadding_Btn / .wdt-button-size-nm) */
+  --btn-padding: clamp(0.5rem, 0.4423rem + 0.2564vw, 0.75rem)
+    clamp(1.25rem, 0.9327rem + 1.4103vw, 2.625rem)
+    clamp(0.625rem, 0.5385rem + 0.3846vw, 1rem);
+  --btn-font-size: clamp(0.875rem, 0.8462rem + 0.1282vw, 1rem);
+  --input-padding: 12px 20px;
+
+  /* Transitions */
+  --transition-base: all 0.3s linear 0s;
+  --transition-alt: all 0.35s ease-in-out 0s;
+  --transition-ext: 0.4s ease-in-out;
+
+  /* Hand-drawn squiggle under service card blurbs (from the plugin CSS). */
+  --divider-squiggle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='20'%3E%3Cpath d='M5 10 C20 0 40 20 60 10 C80 0 100 20 115 10' stroke='%237F8C3A' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-body-text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.625;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-body-text);
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: var(--lh-heading);
+    letter-spacing: 0;
+  }
+
+  h1 {
+    font-size: var(--fs-h1);
+  }
+  h2 {
+    font-size: var(--fs-h2);
+  }
+  h3 {
+    font-size: var(--fs-h3);
+  }
+  h4 {
+    font-size: var(--fs-h4);
+  }
+  h5 {
+    font-size: var(--fs-h5);
+  }
+  h6 {
+    font-size: var(--fs-h6);
+  }
+
+  a {
+    color: var(--color-link);
+    transition: var(--transition-base);
+  }
+
+  a:hover {
+    color: var(--color-link-hover);
+  }
+}
+
+@layer components {
+  /* ==========================================================================
+     Layout primitives (2026 redesign)
+
+     The measure is set against Stretchr — the actual peer, an assisted-
+     stretching studio — not against the gym reference: display type tops out
+     near 56px, the ground stays cream, corners are the theme's own 10px, and
+     bands run dense rather than airy. Written as explicit media queries
+     because Tailwind's arbitrary breakpoint variants do not survive
+     compilation reliably in this project.
+
+     The theme's own layout primitives — the 1810px Elementor container, the
+     74px photo title band, the 50/60/70/80/100/130px `--band-gap` scale and
+     the decorative PNG masks — were removed with the pages that used them.
+     They are in git history if a comparison against the WordPress site is ever
+     needed again.
+     ========================================================================== */
+
+  /* Narrower than the theme's 1810px Elementor container: at studio scale a
+     1240px measure keeps three cards on a row without stranding them. Header,
+     footer and every page body share it, so nothing sits off the page's line. */
+  .page-wrap {
+    width: 100%;
+    max-width: 1240px;
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+
+  @media only screen and (max-width: 640px) {
+    .page-wrap {
+      padding-inline: 20px;
+    }
+  }
+
+  /* One vertical step for every band. Clamped so a laptop never gets the
+     cavernous 100px gaps the old theme left. */
+  .page-band {
+    padding-block: clamp(2.75rem, 4.4vw, 4.25rem);
+  }
+
+  .page-band-line {
+    border-top: 1px solid color-mix(in oklab, var(--color-secondary) 10%, transparent);
+  }
+
+  /* Small uppercase label used for eyebrows, tile terms and meta. */
+  .page-label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-body-text) 58%, transparent);
+  }
+
+  /* Continuous strip of treatment names under the hero. Doubled in the markup,
+     so translating one half brings the copy exactly into place. */
+  .marquee-viewport {
+    overflow: hidden;
+    -webkit-mask: linear-gradient(
+      90deg,
+      transparent,
+      #000 5%,
+      #000 95%,
+      transparent
+    );
+    mask: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marqueeSlide 42s linear infinite;
+  }
+
+  @keyframes marqueeSlide {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+    }
+  }
+
+  /* Gallery mosaic. Two even columns on phones; from 1024px the first frame
+     takes a 2x2 block so the wall reads as a composition, not a contact sheet. */
+  .mosaic {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 132px;
+    gap: 10px;
+  }
+
+  @media only screen and (min-width: 640px) {
+    .mosaic {
+      grid-auto-rows: 168px;
+    }
+  }
+
+  @media only screen and (min-width: 1024px) {
+    .mosaic {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-auto-rows: 186px;
+      gap: 12px;
+    }
+
+    .mosaic > :first-child {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+
+    .mosaic > :nth-child(2),
+    .mosaic > :nth-child(5),
+    .mosaic > :nth-child(6) {
+      grid-column: span 2;
+    }
+  }
+
+  /* Clover-glyph bullet list ("Complete Wellness"). */
+  .clover-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .clover-list > li {
+    position: relative;
+    padding-inline-start: 28px;
+    line-height: 1.625;
+  }
+
+  .clover-list > li::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.42em;
+    width: 14px;
+    height: 14px;
+    background-color: var(--color-primary);
+    -webkit-mask: url("/shapes/bullet-clover.svg") center / contain no-repeat;
+    mask: url("/shapes/bullet-clover.svg") center / contain no-repeat;
+  }
+
+  /* Kept in the DOM for SEO/heading order but not shown, matching the
+     `visibility: hidden` intro headings on the WordPress service pages. */
+  .heading-hidden {
+    visibility: hidden;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  /* ==========================================================================
+     Rich text (blog posts + service page body copy)
+     ========================================================================== */
+
+  /* Elementor gave every widget a flat 20px bottom margin, so an article had no
+     typographic rhythm: a heading sat as far from the paragraph it introduced as
+     from the one it followed. Headings now bind to the text underneath them, and
+     the body measure is capped so long articles stay readable. */
+  .prose-flex > * {
+    margin-block: 0 1.15em;
+  }
+
+  .prose-flex > :last-child {
+    margin-block-end: 0;
+  }
+
+  .prose-flex :where(p, li) {
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.75;
+    color: color-mix(in oklab, var(--color-body-text) 82%, transparent);
+  }
+
+  .prose-flex :where(p) {
+    max-width: 68ch;
+  }
+
+  .prose-flex :where(h2, h3, h4) {
+    font-weight: 700;
+    line-height: 1.1;
+    margin-block: 1.9em 0.6em;
+  }
+
+  .prose-flex > :where(h2, h3, h4):first-child {
+    margin-block-start: 0;
+  }
+
+  .prose-flex :where(h2) {
+    font-size: clamp(1.5rem, 1.3rem + 1vw, 2.125rem);
+  }
+
+  .prose-flex :where(h3) {
+    font-size: clamp(1.375rem, 1.25rem + 0.6vw, 1.75rem);
+  }
+
+  .prose-flex :where(h4) {
+    font-size: 1.375rem;
+  }
+
+  .prose-flex :where(a) {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .prose-flex :where(a):hover {
+    color: var(--color-primary-strong);
+  }
+
+  .prose-flex :where(a):focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  .prose-flex :where(strong) {
+    font-weight: 700;
+  }
+
+  .prose-flex :where(ul, ol) {
+    padding-inline-start: 1.25em;
+  }
+
+  .prose-flex :where(ul) {
+    list-style: disc;
+  }
+
+  .prose-flex :where(ol) {
+    list-style: decimal;
+  }
+
+  .prose-flex :where(li) {
+    margin-block: 0.35em;
+  }
+
+  /* Star-bulleted list used by the service pages' "Why Choose..." widgets.
+     The original splits these into two side-by-side `<ul>`s, so the items read
+     down the left column before the right. CSS columns reproduce that fill
+     order from the single flat list the extractor produces. */
+  .icon-list {
+    column-gap: 48px;
+  }
+
+  @media only screen and (min-width: 640px) {
+    .icon-list {
+      columns: 2;
+    }
+  }
+
+  .icon-list > li {
+    position: relative;
+    padding-inline-start: 22.5px; /* 14px star + the icon span's 5px pad */
+    line-height: 1.8;
+    margin-block: 0 4px;
+    break-inside: avoid;
+  }
+
+  .icon-list > li::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.5em; /* centres the 14px star on the first 28.8px line */
+    width: 14px;
+    height: 14px;
+    background-color: var(--color-primary);
+    -webkit-mask: url("/shapes/bullet-star.svg") center / contain no-repeat;
+    mask: url("/shapes/bullet-star.svg") center / contain no-repeat;
+  }
+
+  /* ==========================================================================
+     Motion
+
+     The site has one authored moment — the home page's treatment ticker, above.
+     The Elementor-style entrance fade that used to run on ~23 elements per page
+     is gone: it shipped content at `opacity: 0` in the server HTML, so a page
+     whose observer never fired simply rendered blank.
+     ========================================================================== */
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
