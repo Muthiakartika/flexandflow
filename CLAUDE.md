@@ -45,7 +45,18 @@ Things that follow from this and will bite otherwise:
   Both layouts declare `icons` in their metadata instead.
 - Academy routes are typed as `PageProps<"/academy/…">`; the group name is not in the URL.
 - `next.config.ts` keeps 308s from the academy's old top-level paths (`/courses/…`,
-  `/schedule`, `/materials/…`, `/register/…`) to their `/academy` homes.
+  `/schedule`, `/materials/…`, `/register/…`) to their `/academy` homes — but only while
+  the academy is published; see below.
+
+**The academy is currently unpublished.** `ACADEMY_ENABLED` in `lib/flags.ts` is `false`,
+which drops it from `primaryNav`, 307s `/academy/*` to the home page, retires the legacy
+aliases above, and marks the group `noindex, nofollow`. Nothing is deleted and everything
+still builds; publishing it is that one value going back to `true`. `/academy` has never
+been a live URL on this domain, so nothing was withdrawn from the index by doing this.
+
+**`SITE-STRUCTURE.md` is the owner-facing map** of which header and footer belongs to
+which site, written because the two-root-layout split is genuinely confusing from the
+outside. Keep it current when nav or layout files move.
 
 The two pre-merge projects are gone from disk. Their history is on GitHub — the studio
 site at `Muthiakartika/flexandflow`, the academy at `Muthiakartika/flexnflow-academy`
@@ -173,6 +184,16 @@ same pass fixed three body links still pointing at the `green-hare-976010.hostin
 staging host, and reordered the home grid to the live sequence (men's detox, trauma,
 stretching, sport, cupping, drainage).
 
+**There are nine services, and two of them are not on any menu.** `full-body-massage`
+was ported on 2026-08-18 — it is a live, indexable page listed in
+`dt_service-sitemap.xml`, so leaving it out would have 404'd an indexed URL — and like
+`facial-massage` it appears in neither the WordPress services grid nor the nav, only in
+the sitemap and in search. Both are therefore absent from the `order` array in
+`app/(main)/services/page.tsx` and from `primaryNav`, on purpose. Neither has published
+rates, so both carry `tiers: []` and render the aside with no price rows. The body copy
+of the full-body page was taken from the live HTML verbatim, stray comma and "Let us to
+transform" included; do not tidy it.
+
 **`lib/pricing.ts` now does all of this.** Use it rather than parsing tiers again:
 `priceAmount` (digits only), `tierMinutes` (falls back to the service-level label —
 pregnancy massage's cheaper tier has no `duration` of its own), `serviceMinutes`,
@@ -184,6 +205,14 @@ pregnancy massage's cheaper tier has no `duration` of its own), `serviceMinutes`
 
 - **Owner review of the redesigned site** is the next step. Ask for screenshots rather
   than iterating blind (gotcha 1).
+- **Meta re-synced against the live site on 2026-08-18.** All 27 indexable URLs now match
+  flexandflow.fit character for character on title, description and robots — including the
+  archives' and profiles' `noindex, follow` with no description at all, and the
+  `max-image-preview:large, max-snippet:-1, max-video-preview:-1` that Yoast puts on every
+  indexable page (dropping those would visibly shrink the search result). `trailingSlash:
+  true` was turned on the same day so the served URLs match the indexed ones.
+  `SITE-STRUCTURE.md` records the rules; re-verify with the `curl` one-liner there rather
+  than by eye.
 - **Button contrast — decision still open.** Filled surfaces site-wide now use
   `--color-primary-strong: #6d7932` (**4.76:1** with white at 15px) instead of
   `--color-primary` `#7f8c3a` (**3.67:1**, fails AA). The brand colour is untouched and

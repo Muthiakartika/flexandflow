@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Amatic_SC, Andika } from "next/font/google";
 import { SiteHeader } from "@/components/academy/site-header";
 import { SiteFooter } from "@/components/academy/site-footer";
+import { ACADEMY_ENABLED } from "@/lib/flags";
 import "./academy.css";
 
 /**
@@ -41,6 +42,11 @@ export const metadata: Metadata = {
      layout owns — so the academy declares its icon the same way the main site
      does, from the logo its own header already loads. */
   icons: { icon: "/photos/logo.png", apple: "/photos/logo.png" },
+  /* Second line of defence while the academy is unpublished. The redirects in
+     `next.config.ts` mean these pages should never render at all, but a host
+     that serves the build without them would otherwise expose an indexable
+     site. Inherited by every page in the group, none of which set `robots`. */
+  ...(ACADEMY_ENABLED ? {} : { robots: { index: false, follow: false } }),
 };
 
 export default function RootLayout({

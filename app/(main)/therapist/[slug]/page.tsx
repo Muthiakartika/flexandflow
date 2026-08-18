@@ -19,10 +19,16 @@ export async function generateMetadata(
   const therapist = therapistBySlug.get(slug);
   if (!therapist) return {};
 
+  /* Mirrors the live WordPress head: therapist profiles are `noindex, follow`
+     there and carry no meta description, only an og:description. Keep both —
+     dropping the profiles out of the index is deliberate on the source site. */
   return {
     title: therapist.seoTitle,
-    description: therapist.approach,
+    /* `null`, not omitted: an absent field inherits the root layout's
+       description, which would put the home page's wording on every profile. */
+    description: null,
     alternates: { canonical: `/therapist/${therapist.slug}/` },
+    robots: { index: false, follow: true },
     openGraph: {
       title: therapist.seoTitle,
       description: therapist.approach,

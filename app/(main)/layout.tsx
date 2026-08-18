@@ -28,10 +28,26 @@ const andika = Andika({
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Flex and Flow - Assisted Stretching Studio",
+    default: "Flex and Flow - Wellness Studio",
     template: "%s",
   },
   description: siteConfig.description,
+  /**
+   * Yoast puts these on every indexable page of flexandflow.fit, and they are
+   * not defaults: without them Google falls back to a small thumbnail and a
+   * clipped snippet, so the search result would visibly shrink the day this
+   * app replaced WordPress. Inherited by every page; the archives, the
+   * therapist profiles and the previews replace the whole object with their
+   * own `noindex`, exactly as Yoast does. Next serialises the directives in a
+   * different order from Yoast, which robots.txt syntax does not care about.
+   */
+  robots: {
+    index: true,
+    follow: true,
+    "max-image-preview": "large",
+    "max-snippet": -1,
+    "max-video-preview": -1,
+  },
   icons: {
     icon: siteConfig.logo,
     apple: siteConfig.logo,

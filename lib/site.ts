@@ -6,6 +6,8 @@
  * `wordpressUrls`. Never route those through `next/link`.
  */
 
+import { ACADEMY_ENABLED } from "./flags";
+
 export const siteConfig = {
   name: "Flex and Flow",
   shortName: "Flex & Flow",
@@ -83,8 +85,14 @@ export type NavMega = {
   footer?: NavItem;
 };
 
-/** Primary navigation, in the same order as the WordPress menu. */
-export const primaryNav: NavItem[] = [
+/**
+ * Primary navigation, in the same order as the WordPress menu.
+ *
+ * Written out in full, then filtered — see `primaryNav` below. The Academy
+ * entry stays here while the academy is unpublished so that turning it back on
+ * restores the mega menu exactly as it was, rather than needing it rewritten.
+ */
+const allNavItems: NavItem[] = [
   { label: "Home", href: "/" },
   { label: "About us", href: "/about-us" },
   { label: "Price List", href: wordpressUrls.priceList, external: true },
@@ -176,6 +184,15 @@ export const primaryNav: NavItem[] = [
   { label: "Blog", href: "/blog" },
   { label: "Contact Us", href: "/contact-us" },
 ];
+
+/**
+ * What the header actually renders — every nav consumer reads this, so hiding
+ * the academy here hides it from the desktop nav and the mobile drawer at
+ * once. See `ACADEMY_ENABLED` in `lib/flags.ts` for the rest of the switch.
+ */
+export const primaryNav: NavItem[] = allNavItems.filter(
+  (item) => ACADEMY_ENABLED || item.href !== academyUrl,
+);
 
 /**
  * The off-canvas slide menu's "Our Services" list — thumbnail links, in the

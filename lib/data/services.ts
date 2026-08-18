@@ -948,6 +948,111 @@ export const services: Service[] = [
       },
     ],
   },
+  /**
+   * Not on the WordPress services grid and not in its menu — the page is
+   * reachable only from the sitemap and from search, exactly like
+   * `facial-massage`, and it is left out of the grid order in
+   * `app/(main)/services/page.tsx` for the same reason. No rates are published
+   * for it anywhere on the source site, hence `tiers: []`.
+   */
+  {
+    slug: "full-body-massage",
+    title: "Full Body Relaxing Massage",
+    excerpt: "Experience ultimate relaxation with our full-body relaxing massage that relieves tension and leaves you feeling rejuvenated and stress-free.",
+    image: "/images/2025/02/body-massage-New-warm.jpg",
+    tiers: [],
+    seo: {
+      title: "Full Body Massage in Uluwatu, Bali - Flex & Flow",
+      description: "Experience ultimate relaxation with our full-body relaxing massage that relieves tension and leaves you feeling rejuvenated and stress-free.",
+      canonicalPath: "/uluwatu-bali/full-body-massage/",
+      ogImage: "/images/2025/02/body-massage-New-warm.jpg",
+    },
+    body: [
+      {
+        type: "heading",
+        level: 2,
+        text: "Full Body Relaxing Massage in Bali",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Full Body Massage Meaning",
+      },
+      {
+        type: "paragraph",
+        text: "A full body massage is a comprehensive treatment aimed at enhancing both physical and mental well-being. This massage goes beyond stress relief by improving circulation and delivering essential nutrients to the body. With increased blood flow, you can enjoy glowing skin, better focus, and overall vitality. For those in Bali, seeking a full body massage can be a transformative experience, helping you relax and reset amidst the island’s serene environment.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Full Body Massage Technique",
+      },
+      {
+        type: "paragraph",
+        text: "Our therapists use a variety of techniques tailored to your needs. Sessions begin with the neck and shoulders to release tension before progressing to other areas of the body. Techniques such as soft kneading, rhythmic movements, and gentle stretching are designed to provide holistic rejuvenation. Whether you’re a visitor to Bali or a local in Uluwatu, our approach ensures that your experience is both restorative and personalized.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Why Choose Our Full Body Massage",
+      },
+      {
+        type: "columns",
+        items: [
+          "Full body massages are designed to foster relaxation and rejuvenation.",
+          "Massages can last anywhere from 30 to 90 minutes, depending on the type.",
+          "Regular massage sessions contribute to long-term wellness benefits.",
+          "Our full body massage techniques combine traditional and modern methods for optimal relaxation.",
+          "The full body massage market shows segmentation, indicating different consumer preferences.",
+          "Skilled therapists can target both physical and mental stress effectively.",
+          "Customizable massage pressure ensures comfort and caters to individual preferences",
+          "The use of natural oils and aromatherapy enhances the sensory experience and nourishes the skin.",
+          "Our serene and hygienic environment is designed to provide a truly peaceful escape.",
+          "Our skilled therapists are trained to identify tension points, ensuring a personalized and effective treatment experience.",
+        ],
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Relieve Muscle Injury",
+      },
+      {
+        type: "paragraph",
+        text: "Recovering from a muscle injury requires careful attention to improve healing and reduce strain. A full body massage can help release tension, improve blood circulation, and reduce inflammation, speeding up the recovery process.",
+      },
+      {
+        type: "paragraph",
+        text: "Our therapists focus on affected areas, providing targeted care to restore mobility and alleviate pain. This treatment is perfect for active individuals in Bali seeking to maintain their performance and well-being.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "How to Prepare for Full Body Massage",
+      },
+      {
+        type: "paragraph",
+        text: "Preparing for your massage session ensures maximum benefits. A warm shower beforehand relaxes the muscles and helps you enter a state of calm. Staying hydrated before and after the massage enhances relaxation and supports muscle recovery.",
+      },
+      {
+        type: "paragraph",
+        text: "At Flex & Flow in Uluwatu, we take extra care to use products that suit your skin, ensuring a safe and enjoyable experience. Sharing any preferences or sensitivities with our therapists helps us provide the best possible care.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Let Flex & Flow Come to You!",
+      },
+      {
+        type: "paragraph",
+        text: "Our home massage services in Uluwatu, bring the spa experience to your door. Enjoy the luxury of a professional full body massage without leaving the comfort of your villa or home.",
+      },
+      {
+        type: "paragraph",
+        text: "Relaxation has never been so convenient. Let us to transform your space into a sanctuary where you can rejuvenate and recharge during your time in Bali.",
+      },
+    ],
+    bannerImage: "/images/2025/02/body-massage-New-warm.jpg",
+  },
 ];
 
 export const serviceBySlug = new Map(services.map((s) => [s.slug, s]));

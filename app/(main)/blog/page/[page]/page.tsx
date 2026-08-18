@@ -14,16 +14,19 @@ export function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata(
-  props: PageProps<"/blog/page/[page]">,
-): Promise<Metadata> {
-  const { page } = await props.params;
+/**
+ * WordPress gives every paginated page the same `<head>` as /blog/ itself —
+ * same title, same description, and a canonical pointing back at /blog/ — so
+ * the pages consolidate there rather than being suppressed. Mirrored exactly:
+ * an earlier version numbered the title and self-canonicalised under noindex,
+ * which is a cleaner pattern but is not what Google has on record.
+ */
+export function generateMetadata(): Metadata {
   return {
-    title: `Blog - Page ${page} - Flex and Flow`,
+    title: "Blog - Flex and Flow",
     description:
       "Explore our blog for expert tips on yoga, flexibility training, and Physical Therapy in Uluwatu to support your overall well-being.",
-    alternates: { canonical: `/blog/page/${page}/` },
-    robots: { index: false, follow: true },
+    alternates: { canonical: "/blog/" },
   };
 }
 

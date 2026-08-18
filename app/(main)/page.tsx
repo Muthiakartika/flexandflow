@@ -12,11 +12,11 @@ import Treatments from "@/sections/home/Treatments";
 import { siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Flex and Flow - Assisted Stretching Studio",
+  title: "Flex and Flow - Wellness Studio",
   description: siteConfig.description,
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Flex and Flow - Assisted Stretching Studio",
+    title: "Flex and Flow - Wellness Studio",
     description: siteConfig.description,
     url: "/",
     type: "website",
