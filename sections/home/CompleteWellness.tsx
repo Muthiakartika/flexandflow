@@ -50,10 +50,10 @@ export default function CompleteWellness() {
               className="absolute inset-0 translate-x-3 translate-y-3 rounded-[10px] bg-primary/15"
             />
             <Image
-              src="/images/2026/06/Complete-Wellness-homepage-new.jpg"
+              src="/images/2026/08/complete-wellness.jpg"
               alt="A treatment in progress at the Flex &amp; Flow studio"
-              width={1300}
-              height={752}
+              width={2400}
+              height={1920}
               sizes="(max-width: 1023px) 92vw, 42vw"
               className="relative aspect-[5/4] w-full rounded-[10px] object-cover"
             />

@@ -152,12 +152,18 @@
      needed again.
      ========================================================================== */
 
-  /* Narrower than the theme's 1810px Elementor container: at studio scale a
-     1240px measure keeps three cards on a row without stranding them. Header,
-     footer and every page body share it, so nothing sits off the page's line. */
+  /* Narrower than the theme's 1810px Elementor container, wider than the 1240
+     this redesign started on. 1240 was set to keep three cards on a row without
+     stranding them, and it does — but on a wide monitor it left the footer's
+     three columns crowded into two thirds of the screen with the paragraph
+     running to within a gutter of the next column. Header, footer and every
+     page body share this, so nothing sits off the page's line.
+
+     Long-form copy does not widen with it: the article body is capped at 68ch
+     and the hero and section leads at 52ch, so only layout gains the space. */
   .page-wrap {
     width: 100%;
-    max-width: 1240px;
+    max-width: 1440px;
     margin-inline: auto;
     padding-inline: 24px;
   }

@@ -79,7 +79,7 @@ export default function ServiceArticle({ service }: { service: Service }) {
               width={1300}
               height={620}
               priority
-              sizes="(max-width: 1023px) 92vw, 820px"
+              sizes="(max-width: 1023px) 92vw, 1024px"
               className="aspect-[16/8] w-full rounded-[10px] object-cover"
             />
             {bannerTitle ? <h2 className="heading-hidden">{bannerTitle}</h2> : null}

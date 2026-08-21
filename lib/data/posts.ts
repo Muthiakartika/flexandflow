@@ -1061,14 +1061,14 @@ export const posts: Post[] = [
     title: "Outcall & Home Service Massage in Uluwatu",
     excerpt: "Relax, refresh, and enjoy expert therapy at your convenience with outcall and home service massage in Uluwatu, Bali.",
     date: "May 2, 2025",
-    image: "/images/2023/09/home-banner-example.jpg",
-    imageWidth: 1770,
-    imageHeight: 986,
+    image: "/images/2026/08/home-service.jpg",
+    imageWidth: 2400,
+    imageHeight: 1350,
     seo: {
       title: "Outcall & Home Service Massage in Uluwatu, Bali",
       description: "Relax, refresh, and enjoy expert therapy at your convenience with outcall and home service massage in Uluwatu, Bali.",
       canonicalPath: "/uluwatu-bali/outcall-home-service-massage/",
-      ogImage: "/images/2023/09/home-banner-example.jpg",
+      ogImage: "/images/2026/08/home-service.jpg",
     },
     body: [
       {

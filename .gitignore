@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Client photo/video masters. Kept on disk, out of the repo: these are
+# multi-megabyte camera originals, and the web-ready crops derived from them
+# live in public/images/. Remove this line if you want them versioned.
+/source-photos

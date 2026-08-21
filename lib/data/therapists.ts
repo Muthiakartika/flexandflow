@@ -25,8 +25,8 @@ export const therapists: Therapist[] = [
     name: "Ginny",
     role: "Founder & Bodywork Specialist",
     teamRole: "Founder & Bodywork Specialist",
-    portrait: "/images/2023/10/Ginny-1.jpg",
-    sceneImage: "/images/2023/10/ginnys-theraphy-section-new.jpg",
+    portrait: "/images/2026/08/ginny-portrait.jpg",
+    sceneImage: "/images/2026/08/ginny-session.jpg",
     specializedIn:
       "Bodywork Therapy • Healing Massage • Sports Massage • Assisted Stretching • Lymphatic Drainage",
     about: [
@@ -45,8 +45,8 @@ export const therapists: Therapist[] = [
     name: "Yuni",
     role: "Javanese Massage & Lymphatic Specialist",
     teamRole: "Javanese Massage Therapist",
-    portrait: "/images/2023/10/Yuni.jpg",
-    sceneImage: "/images/2025/11/yunis-theraphy-section.jpg",
+    portrait: "/images/2026/08/yuni-portrait.jpg",
+    sceneImage: "/images/2026/08/yuni-session.jpg",
     specializedIn:
       "Traditional Javanese Massage • Lymphatic Drainage • Deep Relaxation",
     about: [

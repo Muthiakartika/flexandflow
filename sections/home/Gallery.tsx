@@ -3,13 +3,17 @@ import Image from "next/image";
 import { BAND, WRAP } from "@/components/ui/tokens";
 
 /** The six studio photographs, in the original's order. */
+/* Order matters: `.mosaic` gives the first photo a 2x2 block and photos 2,
+   5 and 6 a double-width strip, so each file is cut to the shape of the cell
+   it lands in — see the crop table in SITE-STRUCTURE.md. Room and hands
+   alternate so the block does not read as six pictures of the same floor. */
 const photos = [
-  { src: "/images/2026/06/Gallery-1.jpg", width: 1024, height: 621 },
-  { src: "/images/2026/06/gallery-2.jpg", width: 1024, height: 840 },
-  { src: "/images/2026/06/Gallery-3.jpg", width: 1024, height: 494 },
-  { src: "/images/2026/07/Gallery-5-new.jpg", width: 1024, height: 494 },
-  { src: "/images/2026/06/Gallery-4-new.jpg", width: 1024, height: 621 },
-  { src: "/images/2026/06/gallery-6.jpg", width: 1024, height: 840 },
+  { src: "/images/2026/08/gallery-1.jpg", width: 1600, height: 1067 },
+  { src: "/images/2026/08/gallery-2.jpg", width: 1800, height: 900 },
+  { src: "/images/2026/08/gallery-3.jpg", width: 1200, height: 857 },
+  { src: "/images/2026/08/gallery-4.jpg", width: 1200, height: 857 },
+  { src: "/images/2026/08/gallery-5.jpg", width: 1800, height: 900 },
+  { src: "/images/2026/08/gallery-6.jpg", width: 1800, height: 900 },
 ];
 
 /**

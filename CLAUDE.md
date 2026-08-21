@@ -121,7 +121,7 @@ The four preview routes stay as history, none of them live, still on the old cla
 **Header and footer** apply to every page: 76px sticky header
 (`components/layout/Header.tsx`, uppercase tracked nav) and a deliberately small
 **white** footer (`components/layout/Footer.tsx`). A black footer was tried and
-rejected. Both now sit on `.page-wrap`, so they share the page body's 1240px measure.
+rejected. Both now sit on `.page-wrap`, so they share the page body's 1440px measure.
 
 ---
 
