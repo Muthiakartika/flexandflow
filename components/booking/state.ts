@@ -180,13 +180,23 @@ export type BookingState = {
   slotsToken: number;
 };
 
-export function initialState(step: StepId, month: string): BookingState {
+/**
+ * `preselected` is a therapist a "Book with Ginny" link already chose, resolved
+ * on the server so the very first render is already past step one. Discovering
+ * it in an effect instead made the staff step paint and then vanish, which read
+ * as a glitch rather than as a shortcut.
+ */
+export function initialState(
+  step: StepId,
+  month: string,
+  preselected: StaffOption | null = null,
+): BookingState {
   return {
     step,
     reschedule: null,
     rescheduleFailed: null,
-    staff: null,
-    staffOption: null,
+    staff: preselected?.id ?? null,
+    staffOption: preselected,
     variant: null,
     category: ALL_CATEGORIES,
     month,

@@ -6,7 +6,11 @@ import { useCallback, useEffect, useReducer, useRef } from "react";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { H2 } from "@/components/ui/tokens";
 import { studioMonthKey } from "@/lib/booking/time";
-import type { CreateBookingInput, StaffSelection } from "@/lib/booking/types";
+import type {
+  CreateBookingInput,
+  StaffOption,
+  StaffSelection,
+} from "@/lib/booking/types";
 
 import DateTimeStep from "./DateTimeStep";
 import DetailsStep, { validateDetails } from "./DetailsStep";
@@ -88,8 +92,11 @@ const SLOT_LOST_NOTICE =
  */
 export default function BookingWizard({
   cancelCutoffHours,
+  preselectedStaff = null,
 }: {
   cancelCutoffHours: number;
+  /** Resolved on the server from `?staff=<slug>`; null on an ordinary visit. */
+  preselectedStaff?: StaffOption | null;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -99,18 +106,26 @@ export default function BookingWizard({
      list of steps on the very first render, before the booking has arrived. */
   const urlToken = searchParams.get("reschedule") || null;
 
-  /* A therapist slug from a "Book with Ginny" link. The visitor answered step
-     one before they arrived, so the wizard fills it in and opens on the
-     treatment. Ignored during a reschedule, where the therapist is not a
-     question at all. */
-  const urlStaffSlug = urlToken ? null : searchParams.get("staff");
+  /* A "Book with Ginny" link answered step one before the visitor arrived, so
+     the wizard opens on the treatment. The therapist is resolved by the page,
+     on the server, and arrives as a prop — a reschedule ignores it, because
+     there the therapist is not a question at all. */
+  const preselected = urlToken ? null : preselectedStaff;
+
+  /* Past the staff step from the very first render when a link already named
+     the therapist, so that step never paints and then disappears. */
+  const openingStep: StepId = urlToken
+    ? RESCHEDULE_STEPS[0]
+    : preselected
+      ? "service"
+      : STEPS[0];
 
   const [state, dispatch] = useReducer(
     reducer,
-    urlToken ? RESCHEDULE_STEPS[0] : STEPS[0],
+    openingStep,
     /* The month the calendar opens on is the studio's current month, read
        through the timezone helper — the browser may well be somewhere else. */
-    (step) => initialState(step, studioMonthKey(new Date())),
+    (step) => initialState(step, studioMonthKey(new Date()), preselected),
   );
 
   /* A token the manage endpoint has already refused is not one to wait on
@@ -118,7 +133,12 @@ export default function BookingWizard({
      going to change within this visit. */
   const token = urlToken === state.rescheduleFailed ? null : urlToken;
   const steps: readonly StepId[] = token ? RESCHEDULE_STEPS : STEPS;
-  const urlStep = parseStep(searchParams.get("step"), steps);
+  /* A URL that names no step opens where this visit opens, which is not always
+     the first step: `?staff=ginny` starts on the treatment. Defaulting to
+     `STEPS[0]` here instead would let the clamping effect below drag the
+     wizard straight back to the question the link had already answered. */
+  const stepParam = searchParams.get("step");
+  const urlStep = stepParam ? parseStep(stepParam, steps) : openingStep;
 
   const moving = state.reschedule;
   const restored = useRef(false);
@@ -131,8 +151,26 @@ export default function BookingWizard({
     restored.current = true;
 
     const draft = loadDraft(token);
-    if (draft) dispatch({ type: "restore", draft: { ...draft, step: urlStep } });
-  }, [urlStep, token]);
+    /* No draft: the opening state already carries whatever the link chose. */
+    if (!draft) return;
+
+    if (preselected && draft.staff !== preselected.id) {
+      /* A half-finished booking in this tab chose somebody else. The link is
+         the more recent statement of intent, so it wins — and because a
+         different therapist means a different tier, the treatment and time the
+         draft was holding cannot survive the swap. `chooseStaff` is what clears
+         them; the details the visitor already typed are kept. */
+      dispatch({ type: "restore", draft: { ...draft, step: "service" } });
+      dispatch({
+        type: "chooseStaff",
+        staff: preselected.id,
+        option: preselected,
+      });
+      return;
+    }
+
+    dispatch({ type: "restore", draft: { ...draft, step: urlStep } });
+  }, [urlStep, token, preselected]);
 
   useEffect(() => {
     if (restored.current) saveDraft(state);
@@ -232,36 +270,6 @@ export default function BookingWizard({
   const staff = useResource(moving ? null : "staff", (signal) =>
     fetchStaff(signal),
   );
-
-  /* Applied once per slug. Without the guard this fires again on every render
-     the staff list settles on, which would drag someone who had gone back to
-     change their mind straight to the treatment step under the therapist they
-     were trying to leave. */
-  const preselected = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (urlStaffSlug === null || preselected.current === urlStaffSlug) return;
-    /* The draft is restored first, so a link that names a therapist wins over
-       whatever a half-finished booking in this tab had chosen — clicking
-       "Book with Yuni" is the more recent statement of intent. */
-    if (!restored.current || !staff.data) return;
-
-    preselected.current = urlStaffSlug;
-
-    const match = staff.data.find((option) => option.slug === urlStaffSlug);
-    /* An unknown slug — a renamed therapist, a mistyped link — is not worth an
-       error message. The wizard simply asks the question it always asks. */
-    if (!match) {
-      router.replace("/booking/?step=staff", { scroll: false });
-      return;
-    }
-
-    dispatch({ type: "chooseStaff", staff: match.id, option: match });
-    /* `replace`, not `push`: the staff step is still one click away in the
-       stepper, and a Back button that returned to a question already answered
-       by the link would feel like the click had not worked. */
-    router.replace("/booking/?step=service", { scroll: false });
-  }, [urlStaffSlug, staff.data, router]);
 
   const catalogueKey =
     moving || state.staff === null ? null : `services:${state.staff}`;
