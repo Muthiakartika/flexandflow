@@ -9,7 +9,7 @@ export const services: Service[] = [
     slug: "assisted-stretching",
     title: "Assisted Stretching Bali",
     excerpt: "Feel renewed with our assisted stretching, easing tight muscles and boosting your body’s natural flow",
-    image: "/images/2025/02/assistant-stretch-new-.jpg",
+    image: "/images/2026/08/assisted-stretching.jpg",
     tiers: [
       {
         label: "Master Therapist",
@@ -28,7 +28,7 @@ export const services: Service[] = [
       title: "Assisted Stretching Bali",
       description: "Feel renewed with our assisted stretching, easing tight muscles and boosting your body’s natural flow",
       canonicalPath: "/uluwatu-bali/assisted-stretching/",
-      ogImage: "/images/2025/02/assistant-stretch-new-.jpg",
+      ogImage: "/images/2026/08/assisted-stretching.jpg",
     },
     body: [
       {
@@ -110,13 +110,13 @@ export const services: Service[] = [
       },
     ],
     duration: "Duration : 1 hr",
-    bannerImage: "/images/2025/02/assistant-stretch-new-.jpg",
+    bannerImage: "/images/2026/08/assisted-stretching.jpg",
   },
   {
     slug: "sport-massage",
     title: "Sport Massage Bali",
     excerpt: "Boost your strength and ease muscle fatigue with our sport massage designed for active lifestyles",
-    image: "/images/2025/02/sport-massage-new-warm.jpg",
+    image: "/images/2026/08/sport-massage.jpg",
     tiers: [
       {
         label: "Master Therapist",
@@ -135,7 +135,7 @@ export const services: Service[] = [
       title: "Sport Massage Bali",
       description: "Recover faster with our sport massage in Bali. Relieve muscle tension, improve mobility, reduce soreness, and boost performance with expert therapists.",
       canonicalPath: "/uluwatu-bali/sport-massage/",
-      ogImage: "/images/2025/02/sport-massage-new-warm.jpg",
+      ogImage: "/images/2026/08/sport-massage.jpg",
     },
     body: [
       {
@@ -439,7 +439,7 @@ export const services: Service[] = [
     slug: "lymphatic-drainage",
     title: "Lymphatic Drainage",
     excerpt: "Supports detox and boosts immunity by gently stimulating your body’s lymph flow.",
-    image: "/images/2024/11/Lymphatic-Drainage.jpg",
+    image: "/images/2026/08/lymphatic-drainage.jpg",
     tiers: [
       {
         label: "Master Therapist",
@@ -458,7 +458,7 @@ export const services: Service[] = [
       title: "Lymphatic Drainage",
       description: "Supports detox and boosts immunity by gently stimulating your body’s lymph flow.",
       canonicalPath: "/uluwatu-bali/lymphatic-drainage/",
-      ogImage: "/images/2024/11/Lymphatic-Drainage.jpg",
+      ogImage: "/images/2026/08/lymphatic-drainage.jpg",
     },
     body: [
       {
@@ -547,7 +547,7 @@ export const services: Service[] = [
     slug: "trauma-healing",
     title: "Trauma Healing Bali",
     excerpt: "Trauma Healing Bali helps release emotional blocks, reduce stress, and restore inner balance and peace",
-    image: "/images/2025/06/lomi-lomi-massage.jpg",
+    image: "/images/2026/08/trauma-healing.jpg",
     tiers: [
       {
         label: "Master Therapist",
@@ -560,7 +560,7 @@ export const services: Service[] = [
       title: "Trauma Healing Bali",
       description: "Trauma Healing Bali helps release emotional blocks, reduce stress, and restore inner balance and peace.",
       canonicalPath: "/uluwatu-bali/trauma-healing/",
-      ogImage: "/images/2025/06/lomi-lomi-massage.jpg",
+      ogImage: "/images/2026/08/trauma-healing.jpg",
     },
     body: [
       {

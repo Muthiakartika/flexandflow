@@ -85,18 +85,18 @@ export default async function TherapistPage(
               <Image
                 src={therapist.portrait}
                 alt={therapist.name}
-                width={1300}
-                height={1200}
+                width={1600}
+                height={2000}
                 priority
-                sizes="(max-width: 640px) 92vw, 380px"
+                sizes="(max-width: 640px) 92vw, 506px"
                 className="aspect-[4/5] w-full rounded-[10px] object-cover object-top"
               />
               <Image
                 src={therapist.sceneImage}
                 alt={`${therapist.name} working with a client`}
-                width={1300}
-                height={1200}
-                sizes="(max-width: 640px) 92vw, 380px"
+                width={1800}
+                height={1800}
+                sizes="(max-width: 640px) 92vw, 506px"
                 className="aspect-[4/5] w-full rounded-[10px] object-cover"
               />
             </div>

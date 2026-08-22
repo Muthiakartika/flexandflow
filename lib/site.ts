@@ -233,12 +233,12 @@ export const slideMenuServices = [
   {
     label: "Assisted Stretching",
     href: "/uluwatu-bali/assisted-stretching",
-    image: "/images/2025/02/assistant-stretch-new-.jpg",
+    image: "/images/2026/08/assisted-stretching.jpg",
   },
   {
     label: "Sport Massage",
     href: "/uluwatu-bali/sport-massage",
-    image: "/images/2025/02/sport-massage-new-warm.jpg",
+    image: "/images/2026/08/sport-massage.jpg",
   },
   {
     label: "Facial Massage",
@@ -253,7 +253,7 @@ export const slideMenuServices = [
   {
     label: "Limphatic Drainage",
     href: "/uluwatu-bali/lymphatic-drainage",
-    image: "/images/2024/11/Lymphatic-Drainage.jpg",
+    image: "/images/2026/08/lymphatic-drainage.jpg",
   },
   {
     label: "Home Service",
@@ -263,7 +263,7 @@ export const slideMenuServices = [
   {
     label: "Trauma Healing",
     href: "/uluwatu-bali/trauma-healing",
-    image: "/images/2025/06/lomi-lomi-massage.jpg",
+    image: "/images/2026/08/trauma-healing.jpg",
   },
 ] as const;
 
@@ -284,5 +284,5 @@ export const paymentIcons = [
 /** Shared art. */
 export const assets = {
   pageHeroBackground: "/images/2024/11/Page-1-Yoga-Class.jpg",
-  heroVideo: "/video/home-banner.mp4",
+  heroVideo: "/video/home-hero.mp4",
 } as const;

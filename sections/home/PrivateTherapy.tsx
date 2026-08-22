@@ -30,20 +30,20 @@ export default function PrivateTherapy({
           {/* ── Two overlapping frames ─────────────────────────────────── */}
           <div className="relative">
             <Image
-              src="/images/2026/06/theraphy-section-with-client-ginny.jpg"
+              src="/images/2026/08/private-therapy.jpg"
               alt="A one-to-one session in progress at the studio"
-              width={1300}
-              height={1100}
+              width={2400}
+              height={1920}
               sizes="(max-width: 1023px) 92vw, 42vw"
               className="aspect-[5/4] w-full rounded-[10px] object-cover"
             />
 
             <Image
-              src="/images/2026/06/theraphy-section-ginny.jpg"
+              src="/images/2026/08/private-therapy-inset.jpg"
               alt=""
               aria-hidden
-              width={430}
-              height={700}
+              width={800}
+              height={1000}
               sizes="150px"
               className="absolute right-4 -bottom-6 hidden h-[190px] w-[150px] rounded-[10px] border-4 border-cream object-cover sm:block lg:-right-6"
             />

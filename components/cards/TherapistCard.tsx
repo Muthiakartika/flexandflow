@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { CARD, FOCUS, LINK } from "@/components/ui/tokens";
+import { CARD, FOCUS } from "@/components/ui/tokens";
 import { bookingUrlFor } from "@/lib/site";
 import type { Therapist } from "@/lib/data/therapists";
 
@@ -54,15 +54,35 @@ export default function TherapistCard({ therapist }: { therapist: Therapist }) {
         ))}
       </ul>
 
-      <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 pt-5">
+      {/* Two real controls rather than two lines of text. Both were links
+          before — a bold one and an underlined one, sitting side by side with
+          nothing to say which was the action and which was the detour. The
+          booking gets the filled surface, the profile an outline, at one step
+          down from the page's own buttons so a card does not outshout the
+          section it sits in.
+
+          The booking control opens the wizard with this therapist already
+          chosen, so the visitor lands on the treatment rather than on a
+          question their click answered. It used to open WhatsApp, which is why
+          it is a `Link` and no longer a new tab. */}
+      <div className="mt-auto flex flex-wrap items-center gap-2 pt-5">
         <Link
           href={bookingUrlFor(therapist.slug)}
-          className={`font-body text-[14px] leading-none font-bold transition-colors duration-300 hover:text-primary ${FOCUS}`}
+          className={`inline-flex items-center justify-center rounded-[10px] bg-primary-strong px-4 py-2.5 font-body text-[13px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
         >
           Book with {therapist.name}
         </Link>
-        <Link href={`/therapist/${therapist.slug}`} className={LINK}>
+        <Link
+          href={`/therapist/${therapist.slug}`}
+          className={`group/link inline-flex items-center gap-1.5 rounded-[10px] border border-secondary/20 px-4 py-2.5 font-body text-[13px] leading-none transition-colors duration-300 hover:border-primary hover:text-primary ${FOCUS}`}
+        >
           Full profile
+          <span
+            aria-hidden
+            className="transition-transform duration-300 group-hover/link:translate-x-0.5"
+          >
+            &rarr;
+          </span>
         </Link>
       </div>
     </article>

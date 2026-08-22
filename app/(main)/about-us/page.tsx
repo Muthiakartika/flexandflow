@@ -65,10 +65,10 @@ export default function AboutPage() {
           </div>
 
           <Image
-            src="/images/2026/06/studio-new.jpg"
+            src="/images/2026/08/about-studio.jpg"
             alt="The Flex &amp; Flow studio in Uluwatu"
-            width={1300}
-            height={1200}
+            width={2400}
+            height={1920}
             sizes="(max-width: 1023px) 92vw, 42vw"
             className="aspect-[5/4] w-full rounded-[10px] object-cover"
           />
@@ -105,8 +105,8 @@ export default function AboutPage() {
                 <Image
                   src={therapist.sceneImage}
                   alt={`${therapist.name} working with a client`}
-                  width={1300}
-                  height={1200}
+                  width={1800}
+                  height={1800}
                   sizes="(max-width: 640px) 92vw, 46vw"
                   className="aspect-[5/4] w-full object-cover"
                 />

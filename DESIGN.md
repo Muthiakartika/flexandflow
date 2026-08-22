@@ -22,7 +22,7 @@ assisted stretching."* Calibrate to Stretchr.
 
 | | Value | Where |
 |---|---|---|
-| Measure | 1240px, 24px gutter (20px ≤640px) | `.page-wrap` |
+| Measure | 1440px, 24px gutter (20px ≤640px) | `.page-wrap` |
 | Band step | `clamp(2.75rem, 4.4vw, 4.25rem)` | `.page-band` |
 | Band divider | 1px hairline at 10% black | `.page-band-line` |
 | Corner | 10px everywhere; full round only on pills | `--radius-1x` |
