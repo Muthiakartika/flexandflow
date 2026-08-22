@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 
 import useIsActive from "./useIsActive";
 import { ButtonLink } from "@/components/ui/Button";
-import { contact, wordpressUrls, type NavItem } from "@/lib/site";
+import { bookingUrl, contact, type NavItem } from "@/lib/site";
 
 /**
  * Drawer navigation for viewports below 1281px, standing in for the theme's
@@ -235,11 +235,9 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
           </ul>
         </nav>
 
-        <ButtonLink
-          href={wordpressUrls.booking}
-          external
-          className="mt-8 w-full"
-        >
+        {/* Internal now that booking lives in this app, so no `external` —
+            marking it so would open the studio's own page in a new tab. */}
+        <ButtonLink href={bookingUrl} className="mt-8 w-full">
           Book Appointment
         </ButtonLink>
 

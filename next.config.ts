@@ -71,8 +71,8 @@ const nextConfig: NextConfig = {
         destination: "/uluwatu-bali/lymphatic-drainage/",
         permanent: true,
       },
-      /* Price List and Booking are not cloned — they stay on WordPress. These
-         redirects catch anyone landing on the Next.js paths directly. */
+      /* The price list is not cloned — it stays on WordPress. These redirects
+         catch anyone landing on the Next.js paths directly. */
       {
         source: "/price-list",
         destination: "https://flexandflow.fit/price-list/",
@@ -83,15 +83,24 @@ const nextConfig: NextConfig = {
         destination: "https://flexandflow.fit/price-list/",
         permanent: false,
       },
-      {
-        source: "/booking",
-        destination: "https://flexandflow.fit/appointment/",
-        permanent: false,
-      },
+      /**
+       * Booking now runs in this app at `/booking/`. `/appointment/` is the URL
+       * WordPress published and the one Google has indexed, so it cannot simply
+       * stop resolving — it is redirected, permanently, because the move is.
+       *
+       * The destination carries its trailing slash written in: `trailingSlash`
+       * normalises incoming URLs but not redirect destinations, so without it
+       * this lands on a second 308 rather than on the page.
+       */
       {
         source: "/appointment",
-        destination: "https://flexandflow.fit/appointment/",
-        permanent: false,
+        destination: "/booking/",
+        permanent: true,
+      },
+      {
+        source: "/appointment/:path*",
+        destination: "/booking/",
+        permanent: true,
       },
       ...academyRedirects,
     ];

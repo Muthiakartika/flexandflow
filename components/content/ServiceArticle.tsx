@@ -6,7 +6,7 @@ import PageHero from "@/components/ui/PageHero";
 import { BAND, CARD, FOCUS, LINK, WRAP } from "@/components/ui/tokens";
 import { services } from "@/lib/data/services";
 import { formatIdr, priceAmount, serviceMinutes, tierMinutes } from "@/lib/pricing";
-import { contact, wordpressUrls } from "@/lib/site";
+import { bookingUrl, contact } from "@/lib/site";
 import RichText from "./RichText";
 import type { Service } from "@/types";
 
@@ -126,14 +126,12 @@ export default function ServiceArticle({ service }: { service: Service }) {
                 ))}
               </dl>
 
-              <a
-                href={wordpressUrls.booking}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href={bookingUrl}
                 className={`mt-4 flex w-full items-center justify-center rounded-[10px] bg-primary-strong px-5 py-3 font-body text-[14px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
               >
                 Book Session
-              </a>
+              </Link>
 
               <p className="mt-3 text-center">
                 <a

@@ -6,9 +6,11 @@ copy word for word. What follows is everything the redesign *does* own — measu
 scale, surface, motion — so the next change to the site can be made without
 re-deriving it.
 
-It applies to **every page**. The only pages still on WordPress are the price list and
-the appointment/booking flow, which were never cloned; link to them through
-`wordpressUrls`, never through `next/link`.
+It applies to **every page**, including the booking wizard added in Phase 3. The only
+page still on WordPress is the price list; link to it through `wordpressUrls`, never
+through `next/link`. The **admin panel** at `/admin` is the one surface outside this
+system — it is an internal tool on its own stylesheet, denser by design, but it keeps
+these colours and these two faces.
 
 ## Calibration
 
@@ -75,8 +77,14 @@ rendered invisible and the page stayed blank whenever the observer did not fire.
 
 ## Prices are derived, never written
 
-Every figure on the site goes through `lib/pricing.ts`. The source rows are not
-uniform and have produced false public prices three separate times:
+Every figure on the **marketing** pages goes through `lib/pricing.ts`. The booking wizard
+is the exception and reads its own catalogue out of the database, because what is bookable
+and what is advertised are not quite the same set — see `BOOKING-PLAN.md` §2.1. That is a
+second place a price can be wrong, so `npm run check:prices` compares the two and fails on
+any disagreement.
+
+The marketing source rows are not uniform, and have produced false public prices three
+separate times:
 
 - some `price` strings carry an `Rp` prefix, some do not — `priceAmount()` strips to digits;
 - sessions are not all 60 minutes — cupping is 30, trauma healing 90, pregnancy 90;
@@ -114,6 +122,9 @@ visible `h1` into an eyebrow; their `<title>` tags are unchanged.
 | `/therapist/[slug]` | Hero with a WhatsApp link that names them · portraits, bio, approach + sticky specialisms/hours card |
 | `/blog`, archives | Hero · uniform cards in a grid · sidebar (search, categories, book) |
 | `/[category]/[post]` | Hero with date and category · article · prev/next cards · sidebar |
+| `/booking` | Stepper · one white card per step: staff, service, calendar + slots, details, summary |
+| `/booking/confirmation/…` | Confirmation · booking card · add-to-calendar · what happens next |
+| `/booking/manage/…` | Booking card with status · cancel, or the reason it is too late to |
 
 On phones the two sticky asides come **first** — on a service page the rates otherwise
 landed below a 4,500px article, which is where nobody looks for a price.
@@ -135,6 +146,7 @@ generating all 32 pages.
 
 - **Social proof.** Both reference sites lead on ratings and named reviews. This site
   has none. Needs a real Google rating and quotes from the owner.
-- **Forms have no backend.** The contact form and the newsletter both acknowledge
-  locally and post nowhere, as the brief specified.
+- **The contact form and the newsletter have no backend.** Both acknowledge locally and
+  post nowhere, as the brief specified. The booking form is the exception: it is fully
+  wired, and its own rules are in `BOOKING-PLAN.md`.
 - `/preview/a`–`/preview/d` remain as history, on the old classes, `noindex`.

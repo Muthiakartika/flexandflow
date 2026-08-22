@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
 import { BAND, CARD, FOCUS, H3, WRAP } from "@/components/ui/tokens";
 import { therapistBySlug, therapists } from "@/lib/data/therapists";
-import { contact, workingHours } from "@/lib/site";
+import { bookingUrlFor, contact, workingHours } from "@/lib/site";
 
 export function generateStaticParams() {
   return therapists.map((therapist) => ({ slug: therapist.slug }));
@@ -55,9 +56,11 @@ export default async function TherapistPage(
   const therapist = therapistBySlug.get(slug);
   if (!therapist) notFound();
 
-  const bookingHref = `${contact.whatsapp}?text=${encodeURIComponent(
-    `Hi Flex & Flow, I'd like to book a session with ${therapist.name}.`,
-  )}`;
+  /* Into the wizard with this therapist already selected, rather than out to
+     WhatsApp: somebody on this page has read the bio and decided. The studio's
+     phone number stays under the button in the aside for anyone who would
+     rather just ask a question first. */
+  const bookingHref = bookingUrlFor(therapist.slug);
 
   return (
     <>
@@ -69,7 +72,7 @@ export default async function TherapistPage(
           { label: therapist.name },
         ]}
         actions={
-          <ButtonLink href={bookingHref} external variant="solid">
+          <ButtonLink href={bookingHref} variant="solid">
             Book with {therapist.name}
           </ButtonLink>
         }
@@ -145,14 +148,12 @@ export default async function TherapistPage(
                 </p>
               ))}
 
-              <a
+              <Link
                 href={bookingHref}
-                target="_blank"
-                rel="noopener noreferrer"
                 className={`mt-5 flex w-full items-center justify-center rounded-[10px] bg-primary-strong px-5 py-3 font-body text-[14px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
               >
                 Book with {therapist.name}
-              </a>
+              </Link>
 
               <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
                 <a

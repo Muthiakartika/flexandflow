@@ -1,9 +1,13 @@
 /**
  * Single source of truth for site-wide constants.
  *
- * Price List and Booking are intentionally NOT cloned into this Next.js app —
- * they stay on WordPress, so every link to them must be an absolute URL to
- * `wordpressUrls`. Never route those through `next/link`.
+ * The **price list** is still on WordPress: link to it with an absolute URL
+ * from `wordpressUrls`, never through `next/link`.
+ *
+ * **Booking is not.** It used to be — `/appointment/` on WordPress — and this
+ * file used to say so. It now runs inside this app at `bookingUrl`, which is an
+ * ordinary internal route and belongs in `next/link` like any other. See
+ * `BOOKING-PLAN.md`.
  */
 
 import { ACADEMY_ENABLED } from "./flags";
@@ -20,14 +24,41 @@ export const siteConfig = {
 } as const;
 
 /**
- * Pages that remain on WordPress. Verified against the live site:
- * `/price-list/` and `/appointment/` return 200, while the `/pricelist/` and
- * `/booking/` paths named in the brief both 404.
+ * What is still served by WordPress. Only the price list now — booking moved
+ * into this app. Verified against the live site: `/price-list/` returns 200,
+ * while the `/pricelist/` path named in the brief 404s.
  */
 export const wordpressUrls = {
   priceList: "https://flexandflow.fit/price-list/",
-  booking: "https://flexandflow.fit/appointment/",
 } as const;
+
+/**
+ * The booking flow — staff, service, date and time, details, summary.
+ *
+ * Internal, and every CTA on the site points here. The trailing slash is not
+ * decoration: `trailingSlash: true` in `next.config.ts` matches the shape
+ * WordPress published and Google indexed, and a link without one answers a 308
+ * before it resolves.
+ *
+ * `/appointment/` — the WordPress URL this replaced, and the one that is in
+ * Google's index — is redirected here permanently by `next.config.ts`.
+ */
+export const bookingUrl = "/booking/";
+
+/**
+ * The booking flow with a therapist already chosen.
+ *
+ * Sessions are priced by who performs them, so "Book with Ginny" is a decision
+ * the visitor has already made by the time they click it. Asking it again as
+ * step one is a step that can only be got wrong. The wizard reads `staff`,
+ * selects that therapist and opens on the treatment.
+ *
+ * The slug, not the database id: this link is rendered from
+ * `lib/data/therapists.ts`, which has never heard of the booking tables, and a
+ * URL somebody might read aloud should say `ginny` rather than a cuid.
+ */
+export const bookingUrlFor = (therapistSlug: string) =>
+  `${bookingUrl}?staff=${encodeURIComponent(therapistSlug)}`;
 
 /**
  * The training academy used to be a separate deployment on its own domain; it

@@ -428,3 +428,496 @@
     }
   }
 }
+
+/* ==========================================================================
+   Booking wizard (app/(main)/booking)
+
+   Deliberately unlayered, and appended after everything else.
+
+   Tailwind utilities sit in a later cascade layer than `@layer components`, so
+   a rule written there loses to any utility on the same element — which is how
+   a selected card keeps the `bg-white` it was given, and how a disabled
+   Confirm button still turns black under the cursor from `hover:bg-secondary`.
+   Rules outside every layer win against layered ones whatever the order, so
+   the selected, disabled and out-of-range states below hold without a single
+   `!important` and without arbitrary breakpoint variants, which do not survive
+   compilation reliably in this project (CLAUDE.md, gotcha 2).
+
+   Nothing here animates from `opacity: 0`, and no surface carries a shadow:
+   the wizard's depth is the same as the rest of the site's — a hairline border
+   on white, and a filled olive for the thing you have chosen. That olive is
+   `--color-primary-strong`, never `--color-primary`, because it is carrying
+   white text (DESIGN.md, "The olive that carries white text").
+   ========================================================================== */
+
+/* ── Stepper ─────────────────────────────────────────────────────────────── */
+
+.booking-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.booking-step {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.booking-step-body {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background-color: transparent;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.2;
+  text-align: left;
+  color: color-mix(in oklab, var(--color-secondary) 42%, transparent);
+  transition:
+    color 0.3s,
+    background-color 0.3s,
+    border-color 0.3s;
+}
+
+button.booking-step-body {
+  cursor: pointer;
+}
+
+.booking-step[data-state="done"] .booking-step-body {
+  border-color: color-mix(in oklab, var(--color-secondary) 12%, transparent);
+  color: var(--color-body-text);
+}
+
+.booking-step[data-state="done"] .booking-step-body:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.booking-step[data-state="current"] .booking-step-body {
+  border-color: var(--color-primary-strong);
+  background-color: var(--color-primary-strong);
+  color: #fff;
+  font-weight: 700;
+}
+
+.booking-step-number {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+}
+
+.booking-step-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Below the phone breakpoint five labels cannot share a line legibly, so only
+   the current one is drawn. The rest are clipped rather than `display: none`
+   so they stay in the accessible name and the list still reads as five steps. */
+@media only screen and (max-width: 640px) {
+  .booking-step {
+    flex: 0 0 auto;
+  }
+
+  .booking-step[data-state="current"] {
+    flex: 1 1 auto;
+  }
+
+  .booking-step:not([data-state="current"]) .booking-step-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* ── Choice cards (staff, treatment) ─────────────────────────────────────── */
+
+.booking-choice {
+  display: block;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--color-secondary) 10%, transparent);
+  border-radius: 10px;
+  background-color: #fff;
+  cursor: pointer;
+  transition:
+    border-color 0.3s,
+    background-color 0.3s,
+    color 0.3s;
+}
+
+.booking-choice:hover {
+  border-color: color-mix(in oklab, var(--color-primary) 45%, transparent);
+}
+
+.booking-choice[data-selected="true"] {
+  border-color: var(--color-primary-strong);
+  background-color: var(--color-primary-strong);
+  color: #fff;
+}
+
+.booking-choice-media {
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  background-color: var(--color-cream);
+  /* Set rather than inherited: the "Any Staff" tile has no photograph, and on
+     a selected card white lettering on cream would disappear. */
+  color: color-mix(in oklab, var(--color-secondary) 45%, transparent);
+}
+
+.booking-choice-media[data-shape="portrait"] {
+  aspect-ratio: 1 / 1;
+}
+
+.booking-choice-meta {
+  color: color-mix(in oklab, var(--color-secondary) 58%, transparent);
+}
+
+.booking-choice[data-selected="true"] .booking-choice-meta {
+  color: color-mix(in oklab, #fff 82%, transparent);
+}
+
+/* ── Category chips ──────────────────────────────────────────────────────── */
+
+.booking-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.booking-chip {
+  border: 1px solid color-mix(in oklab, var(--color-secondary) 18%, transparent);
+  border-radius: 999px;
+  padding: 8px 16px;
+  background-color: #fff;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 0.3s,
+    background-color 0.3s,
+    color 0.3s;
+}
+
+.booking-chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.booking-chip[data-active="true"] {
+  border-color: var(--color-primary-strong);
+  background-color: var(--color-primary-strong);
+  color: #fff;
+}
+
+/* ── Date & time ─────────────────────────────────────────────────────────── */
+
+.booking-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+/* The calendar comes first in the markup, so on a phone it is first on the
+   screen too — a visitor picks the day before there is a list of times to pick
+   from. The second column only appears once both fit without squeezing the
+   slot grid down to one per row. */
+@media only screen and (min-width: 900px) {
+  .booking-split {
+    grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+    gap: 28px;
+  }
+}
+
+/* Both columns are grid items; without this the calendar's 7 tracks and the
+   slot grid's `auto-fill` can each push the row wider than the card. */
+.booking-calendar,
+.booking-slots {
+  min-width: 0;
+}
+
+.booking-slots {
+  border-top: 1px solid color-mix(in oklab, var(--color-secondary) 10%, transparent);
+  padding-top: 20px;
+}
+
+@media only screen and (min-width: 900px) {
+  .booking-slots {
+    border-top: 0;
+    border-left: 1px solid color-mix(in oklab, var(--color-secondary) 10%, transparent);
+    padding-top: 0;
+    padding-left: 28px;
+  }
+}
+
+.booking-month-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  /* Inside the step's white card, a control reads as cream. On the cream
+     ground — the choice cards, the chips — it is the other way round. */
+  background-color: var(--color-cream);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 0.3s,
+    color 0.3s;
+}
+
+.booking-month-arrow:hover:enabled {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.booking-month-arrow:disabled {
+  border-color: color-mix(in oklab, var(--color-secondary) 8%, transparent);
+  color: color-mix(in oklab, var(--color-secondary) 28%, transparent);
+  cursor: default;
+}
+
+.booking-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.booking-weekday {
+  padding-block: 6px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+  color: color-mix(in oklab, var(--color-secondary) 55%, transparent);
+}
+
+.booking-day {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background-color: transparent;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition:
+    border-color 0.3s,
+    background-color 0.3s,
+    color 0.3s;
+}
+
+/* A day that can be booked is a filled target; everything else is flat text,
+   so the difference is legible before the cursor goes anywhere near it. */
+.booking-day[data-state="available"] {
+  background-color: var(--color-cream);
+  color: var(--color-body-text);
+  cursor: pointer;
+}
+
+.booking-day[data-state="available"]:hover {
+  border-color: var(--color-primary);
+}
+
+/* Open, but nothing left. Struck through rather than faded out: the studio is
+   trading that day, and it should read as "gone", not as "closed". */
+.booking-day[data-state="full"] {
+  color: color-mix(in oklab, var(--color-secondary) 42%, transparent);
+  text-decoration: line-through;
+  cursor: default;
+}
+
+.booking-day[data-state="closed"],
+.booking-day[data-state="out"],
+.booking-day[data-state="other"] {
+  color: color-mix(in oklab, var(--color-secondary) 26%, transparent);
+  cursor: default;
+}
+
+.booking-day[data-selected="true"] {
+  border-color: var(--color-primary-strong);
+  background-color: var(--color-primary-strong);
+  color: #fff;
+}
+
+/* Today, marked but not shouted: a 4px olive dot under the numeral. */
+.booking-day[data-today="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  translate: -50% 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background-color: var(--color-primary);
+}
+
+.booking-day[data-today="true"][data-selected="true"]::after {
+  background-color: #fff;
+}
+
+.booking-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-secondary) 55%, transparent);
+}
+
+.booking-legend > li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.booking-legend > li::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background-color: var(--color-cream);
+}
+
+.booking-legend > li[data-state="full"]::before {
+  border: 1px solid color-mix(in oklab, var(--color-secondary) 35%, transparent);
+  background-color: transparent;
+}
+
+.booking-legend > li[data-state="closed"]::before {
+  border: 1px dashed color-mix(in oklab, var(--color-secondary) 22%, transparent);
+  background-color: transparent;
+}
+
+.booking-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 8px;
+}
+
+.booking-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background-color: var(--color-cream);
+  cursor: pointer;
+  transition:
+    border-color 0.3s,
+    background-color 0.3s,
+    color 0.3s;
+}
+
+.booking-slot:hover:enabled {
+  border-color: var(--color-primary);
+}
+
+.booking-slot[data-selected="true"] {
+  border-color: var(--color-primary-strong);
+  background-color: var(--color-primary-strong);
+  color: #fff;
+}
+
+/* Taken times stay on the page, disabled. Removing them is what makes a busy
+   Saturday look like a closed one — the previous system kept them too. */
+.booking-slot:disabled {
+  border-color: color-mix(in oklab, var(--color-secondary) 7%, transparent);
+  background-color: transparent;
+  color: color-mix(in oklab, var(--color-secondary) 38%, transparent);
+  text-decoration: line-through;
+  cursor: default;
+}
+
+.booking-slot-left {
+  color: color-mix(in oklab, var(--color-secondary) 55%, transparent);
+}
+
+.booking-slot[data-selected="true"] .booking-slot-left {
+  color: color-mix(in oklab, #fff 82%, transparent);
+}
+
+.booking-slot:disabled .booking-slot-left {
+  color: color-mix(in oklab, var(--color-secondary) 38%, transparent);
+}
+
+/* ── Details ─────────────────────────────────────────────────────────────── */
+
+.booking-phone {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+@media only screen and (min-width: 520px) {
+  .booking-phone {
+    grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
+  }
+}
+
+.booking-phone-country {
+  min-width: 0;
+}
+
+/* An invalid field takes a heavier olive edge rather than a red one: the
+   palette is pinned to olive, cream and black, and the message under the field
+   carries the meaning in words. */
+.booking-field-invalid {
+  border-color: var(--color-primary-strong);
+}
+
+/* The honeypot. Moved off-screen rather than `display: none` or `opacity: 0`
+   — a bot that fills in forms reads the computed style — while a person never
+   reaches it: it is out of the tab order and hidden from assistive technology. */
+.booking-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ── Step actions ────────────────────────────────────────────────────────── */
+
+/* Continue and Confirm are the shared `Button`, whose solid variant carries
+   `hover:bg-secondary`. Written unlayered so a disabled button does not turn
+   black under the cursor while refusing to do anything. */
+.booking-actions button:disabled,
+.booking-actions button:disabled:hover {
+  border-color: transparent;
+  background-color: color-mix(in oklab, var(--color-secondary) 10%, var(--color-cream));
+  color: color-mix(in oklab, var(--color-secondary) 48%, transparent);
+  cursor: not-allowed;
+}

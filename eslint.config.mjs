@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Prisma 7 emits its client into the repo. It is build output, it is
+    // regenerated on every `npm run build`, and linting it reports thousands of
+    // problems in code nobody can fix.
+    "generated/**",
   ]),
 ]);
 

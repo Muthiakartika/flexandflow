@@ -9,8 +9,13 @@ looks like your change did nothing.
 ```
 app/
 ├── (main)/        the studio site, flexandflow.fit/…      → components/layout/
-└── (academy)/     Flex & Flow Academy, /academy/…         → components/academy/
+├── (academy)/     Flex & Flow Academy, /academy/…         → components/academy/
+└── (admin)/       the booking admin panel, /admin/…       → components/admin/
 ```
+
+Three groups now, on the same principle. The admin panel is an internal tool
+with its own denser stylesheet, and it is `noindex, nofollow` — an admin panel
+in Google's index is an incident, not an untidiness.
 
 The brackets are Next.js **route groups**: they organise files without appearing
 in the URL. `app/(main)/about-us/page.tsx` is served at `/about-us/`, not at
@@ -38,6 +43,10 @@ layouts, and it is what keeps the two stylesheets off the same page.
 | Footer intro paragraph, address, phone, e‑mail, opening hours, socials | [lib/site.ts](lib/site.ts) → `footerIntro`, `contact`, `workingHours` |
 | Where header and footer are mounted onto every page | [app/(main)/layout.tsx](app/(main)/layout.tsx) |
 | Colours, fonts, spacing tokens | [app/(main)/globals.css](app/(main)/globals.css) |
+| Where every "Book now" button points | [lib/site.ts](lib/site.ts) → `bookingUrl` |
+| "Book with Ginny" / "Book with Yuni" — straight into the wizard with that therapist chosen | [lib/site.ts](lib/site.ts) → `bookingUrlFor(slug)` |
+| The booking wizard itself (staff → service → date → details → summary) | [components/booking/](components/booking) |
+| Prices and durations customers can actually book | the database, edited at `/admin/services` — **not** `lib/data/services.ts` |
 
 Note: `components/layout/SlideMenu.tsx` is **not mounted anywhere**. It is a
 leftover from the WordPress clone. Editing it changes nothing on the live site —
@@ -136,3 +145,36 @@ archives (`/uluwatu-bali/`, `/injury-guide/`) and the therapist profiles
 `noindex, follow`, and this app matches that. Do not "fix" it by removing the
 `robots` line; those pages are not supposed to compete with the service pages.
 The four `/preview/…` routes are noindex for the same reason.
+
+---
+
+## Booking
+
+Booking used to be a WordPress page at `flexandflow.fit/appointment/`. It now
+runs inside this app.
+
+| | |
+|---|---|
+| Customer flow | `/booking/` — five steps: staff, service, date & time, details, summary |
+| After booking | `/booking/confirmation/<reference>/` — the "add to calendar" page |
+| Customer self-service | `/booking/manage/<token>/` — view or cancel |
+| Studio | `/admin/` — today's agenda, bookings, schedule, prices, notification health |
+
+Everything about how it works is in [BOOKING-PLAN.md](BOOKING-PLAN.md);
+[CRON.md](CRON.md) covers the two scheduled jobs.
+
+**Two things that are easy to get wrong:**
+
+**Prices live in two places, and only one of them is bookable.** The service
+pages, the home grid and `/services` derive their figures from
+`lib/data/services.ts` through `lib/pricing.ts`. The booking wizard charges what
+is in the `ServiceVariant` table. Changing one does not change the other. Run
+`npm run check:prices` — it compares them and fails on any disagreement. This
+repo has published a wrong price three times; that script exists so the fourth
+time is caught before a customer sees it.
+
+**`/appointment/` is a permanent redirect, not a dead URL.** It is what Google
+has indexed and what old links point at, so `next.config.ts` sends it to
+`/booking/` with a 301. Do not remove that redirect, and do not turn off the
+WordPress page until the redirect is live and verified.
+

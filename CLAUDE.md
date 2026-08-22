@@ -6,9 +6,10 @@ Next.js 16 + Tailwind v4 rebuild of **flexandflow.fit** (a WordPress site the ow
 controls), a small wellness & recovery studio in Uluwatu, Bali. Product truth lives in
 `PRODUCT.md` at the repo root.
 
-Work has run in two phases. Phase 1 (pixel-cloning the WordPress site) is **done**.
+Work has run in three phases. Phase 1 (pixel-cloning the WordPress site) is **done**.
 Phase 2 (a full UI redesign) is **in progress and unresolved** — read that section before
-changing anything.
+changing anything. Phase 3 (the booking system) is **built and unverified**: written in
+full, never yet run against a database. `BOOKING-PLAN.md` is its spec.
 
 ---
 
@@ -21,8 +22,10 @@ separate domains. They are now one app so they can share `flexandflow.fit`, join
 ```
 app/
 ├── (main)/       studio site at /            layout.tsx + globals.css
-└── (academy)/    academy at /academy/…       layout.tsx + academy.css
-    └── academy/  its routes, e.g. courses/[slug]/[type]
+├── (academy)/    academy at /academy/…       layout.tsx + academy.css
+│   └── academy/  its routes, e.g. courses/[slug]/[type]
+└── (admin)/      booking admin at /admin/…   layout.tsx + admin.css
+    └── admin/    agenda, bookings, schedule, services, settings
 ```
 
 There is deliberately **no `app/layout.tsx`**. Each route group owns its own `<html>`
@@ -41,8 +44,11 @@ Things that follow from this and will bite otherwise:
 - **Tailwind source detection** starts at the directory holding each CSS file, so both
   stylesheets declare what they scan with `@source`. Add a new top-level source folder
   and you must add it there, or its classes will silently not compile.
-- **`favicon.ico` only works in the root `app/` segment**, which neither group owns.
-  Both layouts declare `icons` in their metadata instead.
+- **`favicon.ico` only works in the root `app/` segment**, which no group owns.
+  Every layout declares `icons` in its metadata instead.
+- **The admin group is `noindex, nofollow`** and sits behind `proxy.ts`. In Next 16 the
+  `middleware.ts` convention was renamed to `proxy.ts`, exporting `proxy` — that is not
+  a style choice and the old filename does nothing.
 - Academy routes are typed as `PageProps<"/academy/…">`; the group name is not in the URL.
 - `next.config.ts` keeps 308s from the academy's old top-level paths (`/courses/…`,
   `/schedule`, `/materials/…`, `/register/…`) to their `/academy` homes — but only while
@@ -94,9 +100,9 @@ awaiting the owner's review. The system — measure, scale, surfaces, motion, th
 derived-price rule, the copy rule — is documented in **`DESIGN.md`**; read that before
 changing any of it. Shared class strings live in `components/ui/tokens.ts`.
 
-The only pages left on WordPress are the **price list** and the **appointment/booking**
-flow, which were never in scope. Link to them through `wordpressUrls`, never
-`next/link`.
+The only page left on WordPress is the **price list**. Link to it through
+`wordpressUrls`, never `next/link`. The **booking flow** was also on WordPress and is
+not any more — Phase 3 built it into this app; see below.
 
 Verified at 390 / 768 / 1280px across every route: no horizontal overflow, nothing
 shipping at `opacity: 0`, header/body/footer gutters aligned, build generating all 32
@@ -219,10 +225,100 @@ pregnancy massage's cheaper tier has no `duration` of its own), `serviceMinutes`
   still owns every accent; reverting is one line in `app/globals.css`.
 - **No social proof.** Both reference sites lead on star ratings and named reviews; this
   site has none. Owner needs to supply a real Google rating and quotes. Do not invent them.
-- **Forms post nowhere.** `ContactForm` and `NewsletterForm` acknowledge locally, per
-  the brief. Wiring a backend is unstarted.
+- **`ContactForm` and `NewsletterForm` still post nowhere** — they acknowledge locally,
+  per the brief. The booking form is the exception and is fully wired; see Phase 3.
 - Focus states and motion are done everywhere: `FOCUS` / `FOCUS_ON_OLIVE` in
   `components/ui/tokens.ts`, and one ticker as the only authored animation.
+
+---
+
+## Phase 3 — the booking system (built, never run)
+
+The booking flow used to be a WordPress page at `flexandflow.fit/appointment/` — a
+BookingPress install nobody here controlled. It now runs in this app. **`BOOKING-PLAN.md`
+is the spec and the reasoning; read it before changing any of this.**
+
+Five steps, in the order the old system used: **staff → service → date & time → basic
+details → summary**. Confirmations go out by email (SendGrid) and WhatsApp (the studio's
+own WAHA server), and the confirmation carries a `.ics` so the appointment lands in the
+customer's phone calendar.
+
+**Status: written in full, never executed.** There is no database yet, so nothing here
+has been run — not the seed, not a query, not a message. The owner is testing it
+themselves. Treat every part of it as unverified.
+
+### What was added
+
+| Area | Where |
+|---|---|
+| Data model | `prisma/schema.prisma`, migrations under `prisma/migrations/` |
+| Seed & catalogue | `prisma/seed.ts`, `lib/booking/catalogue.ts` |
+| Availability | `lib/booking/availability.ts` (pure), `lib/booking/slots.ts` (queries) |
+| Writes & state | `lib/booking/create.ts`, `lib/booking/transitions.ts`, `lib/booking/guard.ts` |
+| API | `app/api/booking/**`, `app/api/cron/**` |
+| Wizard | `components/booking/**`, `app/(main)/booking/page.tsx` |
+| After booking | `app/(main)/booking/confirmation/…`, `app/(main)/booking/manage/…` |
+| Notifications | `lib/notifications/**` |
+| Calendar | `lib/calendar/ics.ts`, `lib/calendar/links.ts` |
+| Admin | `app/(admin)/**`, `lib/admin/**`, `proxy.ts` |
+
+### Things that will bite
+
+1. **`Booking.endAt` includes the clean-down buffer; `BookingSummary.endAt` does not.**
+   The database column is what the no-overlap constraint compares, so it has to cover
+   the turnover. The customer-facing end is `startAt + durationMinutes`. Confusing the
+   two either double-books the room or tells someone their massage runs fifteen minutes
+   longer than it does.
+
+2. **Double-booking is prevented by Postgres, not by application code.** The
+   `booking_no_overlap` exclusion constraint in
+   `prisma/migrations/*_booking_no_overlap/migration.sql` is hand-written — Prisma cannot
+   express it — and it needs the `btree_gist` extension. Regenerating migrations without
+   carrying it forward silently removes the only real protection. `isSlotTakenError()` in
+   `lib/db.ts` turns the resulting `23P01` into a friendly message; that error is an
+   expected outcome, not a fault.
+
+3. **The studio is UTC+8 and the server is UTC.** Every human-facing time goes through
+   `lib/booking/time.ts`. A bare `new Date().getHours()` anywhere in booking code is
+   eight hours wrong and looks correct in local testing.
+
+4. **Prices now exist in two places.** The marketing pages derive theirs from
+   `lib/data/services.ts` through `lib/pricing.ts`; the wizard charges what is in the
+   `ServiceVariant` table. `npm run check:prices` compares them and fails on any
+   disagreement — this repo has published a wrong price three times, and that script is
+   the fourth-time guard. The seed also adds two 90-minute variants that the marketing
+   data has no row for (sports massage, lymphatic drainage), taken from the old booking
+   UI's screenshots rather than from the price list. **The owner has not verified them.**
+
+5. **Notifications never block a booking.** The booking commits, then jobs are queued in
+   `NotificationJob` and sent from `after()` and the cron retry. This is not
+   over-engineering: a WAHA session that has quietly logged out is the most likely
+   failure mode in the whole system, and it must not be able to fail a customer's
+   booking. The unique index on `(bookingId, channel, kind, target)` is what makes retry
+   idempotent.
+
+6. **Next 16 renamed `middleware.ts` to `proxy.ts`.** The admin guard is `proxy.ts` at
+   the repo root, exporting `proxy`. A file called `middleware.ts` would do nothing at
+   all.
+
+7. **Prisma 7 has no Rust query engine.** The datasource URL is in `prisma.config.ts`,
+   not `schema.prisma`; the client is generated into `generated/prisma/` (gitignored,
+   so `prisma generate` runs as part of `npm run build`); and the connection goes through
+   the Neon driver adapter in `lib/db.ts`.
+
+### Before it can go live
+
+- **SendGrid domain authentication for `flexandflow.fit`** (three CNAMEs). The from
+  address must not be the studio's Gmail — sending as `@gmail.com` through SendGrid fails
+  DMARC and lands in spam. Gmail belongs in `SENDGRID_REPLY_TO`. DNS is slow; do this first.
+- **WAHA details from the owner**: base URL (public, HTTPS), API key, session name, and
+  which number receives admin notifications.
+- **A Neon database**, then `prisma migrate deploy` and `prisma db seed`.
+- **The owner verifies every price and duration** against the real price list. See point 4.
+- **Cron.** Vercel's Hobby plan allows one job a day, which is not enough for the
+  ten-minute retry loop. `CRON.md` gives both options — Pro, or a `curl` cron on the box
+  already running WAHA.
+- `.env.example` lists every variable; `lib/env.ts` validates them and names the missing one.
 
 ---
 

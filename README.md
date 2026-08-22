@@ -28,17 +28,53 @@ Cloned (26 routes):
 | `/injury-guide/[slug]` | 2 posts |
 | `/therapist/[slug]` | Ginny, Yuni |
 
-**Not cloned — these stay on WordPress.** Every link to them is an absolute URL
-from `wordpressUrls` in [`lib/site.ts`](lib/site.ts); never route them through
-`next/link`:
+**Still on WordPress:** the price list only. Link to it with the absolute URL
+from `wordpressUrls` in [`lib/site.ts`](lib/site.ts); never route it through
+`next/link`.
 
-- Price List → `https://flexandflow.fit/price-list/`
-- Booking → `https://flexandflow.fit/appointment/`
+> The brief named `/pricelist/`, which 404s on the live site. The working path is
+> `/price-list/`, which is what the code uses. `next.config.ts` redirects the
+> Next.js equivalents outward so no link dead-ends.
 
-> The brief named `/pricelist/` and `/booking/`, but both 404 on the live site.
-> The working paths are `/price-list/` and `/appointment/`, which is what the
-> code uses. `next.config.ts` also redirects the Next.js equivalents outward so
-> no link dead-ends.
+Booking used to be on WordPress too, at `/appointment/`. It now runs in this app
+— see below.
+
+## Booking
+
+Five steps, in the order the previous system used: **staff → service → date &
+time → basic details → summary**. Confirmations go out by email (SendGrid) and
+WhatsApp (the studio's own WAHA server), each carrying a `.ics` so the
+appointment lands in the customer's phone calendar.
+
+| Route | What it is |
+| --- | --- |
+| `/booking` | the wizard |
+| `/booking/confirmation/[reference]` | after booking — add to calendar |
+| `/booking/manage/[token]` | the customer's own view; cancel |
+| `/admin` | the studio's panel — agenda, bookings, schedule, prices, message health |
+
+`/appointment/` — the URL Google has indexed — is redirected here permanently.
+
+**Written in full, not yet run.** There is no database attached, so nothing has
+been executed against one. Setup, in order:
+
+1. Copy `.env.example` to `.env.local` and fill it in. `lib/env.ts` validates
+   every key and names whichever one is missing.
+2. Create a Neon Postgres database, then:
+   ```bash
+   npm run db:deploy
+   npm run db:seed
+   ```
+3. Verify every seeded price and duration against the real price list —
+   `npm run check:prices` compares the booking catalogue against the marketing
+   data and fails on any disagreement.
+4. Authenticate `flexandflow.fit` in SendGrid before sending anything. The from
+   address must not be a Gmail one: sending as `@gmail.com` through SendGrid
+   fails DMARC and lands in spam.
+5. Set up the two scheduled jobs — see [`CRON.md`](CRON.md).
+
+The design and the reasoning behind every decision are in
+[`BOOKING-PLAN.md`](BOOKING-PLAN.md).
 
 ## Structure
 
@@ -57,11 +93,21 @@ components/
 sections/home/        Hero, ServiceTicker, Treatments, PrivateTherapy,
                       CompleteWellness, Practitioners, Gallery, Faqs
 sections/common/      BookClose (the closing band, shared by pages)
+  booking/            the wizard, step by step
+  booking-result/     confirmation and manage-booking views
+  admin/              the studio's panel
 lib/
   site.ts             site config, nav, contact details, WordPress URLs
   pricing.ts          price/duration normalisation — see DESIGN.md
   content.ts          slug resolution, neighbours, SEO mapping
   data/               ported page content (services, posts, therapists, home)
+  env.ts              validated environment; fails loudly, names the missing key
+  db.ts               the one Prisma client
+  booking/            time, types, validation, availability, writes, tokens
+  notifications/      SendGrid and WAHA, their templates, and the job queue
+  calendar/           .ics generation and add-to-calendar links
+  admin/              session, auth, queries, server actions
+prisma/               schema, migrations, seed
 types/                shared content types
 public/images/        original assets, keeping the WordPress yyyy/mm paths
 ```

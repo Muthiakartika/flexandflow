@@ -1,0 +1,317 @@
+// Booking system schema. See BOOKING-PLAN.md §2 for the reasoning behind the
+// shape of this — in particular why the booking catalogue lives here rather
+// than being read out of `lib/data/services.ts`, and why the tier belongs to
+// the therapist rather than being a separate choice in the wizard.
+//
+// Prisma 7: the datasource URL is not written here. It comes from
+// `prisma.config.ts` at the repo root, which reads `DATABASE_URL`.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Ginny is MASTER, Yuni is STANDARD. The tier decides which `ServiceVariant`
+/// price applies, which is why the wizard asks for the therapist first.
+enum TherapistTier {
+  MASTER
+  STANDARD
+}
+
+enum BookingStatus {
+  /// Held but not yet final. Reserved for the payment gateway (BOOKING-PLAN §9);
+  /// v1 never writes it. Still blocks its slot — see the exclusion constraint.
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum NotificationChannel {
+  EMAIL
+  WHATSAPP
+}
+
+enum NotificationKind {
+  CUSTOMER_CONFIRMATION
+  ADMIN_NEW_BOOKING
+  CUSTOMER_REMINDER
+  CUSTOMER_CANCELLED
+  ADMIN_CANCELLED
+  CUSTOMER_RESCHEDULED
+  ADMIN_RESCHEDULED
+}
+
+enum JobStatus {
+  PENDING
+  SENT
+  FAILED
+  /// Given up on. Either the retry budget ran out or the target is unreachable
+  /// in a way retrying cannot fix (a number with no WhatsApp account).
+  DEAD
+}
+
+model Therapist {
+  id String @id @default(cuid())
+
+  /// Matches the slug in `lib/data/therapists.ts` so the wizard can reuse the
+  /// portraits and bios that already ship with the site.
+  slug String @unique
+
+  name        String
+  /// What the staff step shows, e.g. "Master Therapist - Ginny".
+  displayName String
+  tier        TherapistTier
+
+  email     String?
+  /// E.164. Where this therapist's own booking notifications go.
+  phoneE164 String?
+  photo     String?
+
+  active    Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  services     ServiceOnTherapist[]
+  workingHours WorkingHour[]
+  timeOff      TimeOff[]
+  bookings     Booking[]
+
+  @@index([active, sortOrder])
+}
+
+model ServiceCategory {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  name      String
+  sortOrder Int       @default(0)
+  services  Service[]
+}
+
+model Service {
+  id      String  @id @default(cuid())
+  /// Matches `lib/data/services.ts` where the service exists there. Booking-only
+  /// services may carry a slug that has no marketing page.
+  slug    String  @unique
+  title   String
+  excerpt String?
+  image   String?
+
+  /// Clean-down time after the session. Stored on the booking's `endAt`, so the
+  /// no-overlap constraint enforces it for free.
+  bufferMinutes Int @default(15)
+
+  active    Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  categoryId String?
+  category   ServiceCategory? @relation(fields: [categoryId], references: [id])
+
+  variants   ServiceVariant[]
+  therapists ServiceOnTherapist[]
+
+  @@index([active, sortOrder])
+}
+
+/// One bookable (service × duration × tier) with its price.
+model ServiceVariant {
+  id        String  @id @default(cuid())
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  tier            TherapistTier
+  durationMinutes Int
+
+  /// Whole rupiah as an integer — 750000, never 750000.00. Float money rounds
+  /// wrong and prints wrong; there are no sub-rupiah prices to represent.
+  priceIdr Int
+
+  active Boolean @default(true)
+
+  bookings Booking[]
+
+  @@unique([serviceId, tier, durationMinutes])
+  @@index([tier, active])
+}
+
+model ServiceOnTherapist {
+  therapistId String
+  serviceId   String
+  therapist   Therapist @relation(fields: [therapistId], references: [id], onDelete: Cascade)
+  service     Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([therapistId, serviceId])
+  @@index([serviceId])
+}
+
+/// Weekly working hours. More than one row per weekday is allowed and is how
+/// the midday break appears: 09:00–12:00 and 14:00–17:00 leave a gap no slot
+/// can straddle, which reproduces the old booking flow's Morning/Afternoon split.
+model WorkingHour {
+  id          String    @id @default(cuid())
+  therapistId String
+  therapist   Therapist @relation(fields: [therapistId], references: [id], onDelete: Cascade)
+
+  /// 0 = Sunday … 6 = Saturday, in studio local time.
+  weekday Int
+  /// Minutes since local midnight. 09:00 = 540.
+  startMinute Int
+  /// Minutes since local midnight. 12:00 = 720.
+  endMinute Int
+
+  @@index([therapistId, weekday])
+}
+
+/// Leave, public holidays, ad-hoc blocks. A null `therapistId` closes the
+/// studio for everyone.
+model TimeOff {
+  id          String     @id @default(cuid())
+  therapistId String?
+  therapist   Therapist? @relation(fields: [therapistId], references: [id], onDelete: Cascade)
+
+  /// UTC, like every instant in this schema.
+  startAt DateTime
+  endAt   DateTime
+  reason  String?
+
+  createdAt DateTime @default(now())
+
+  @@index([therapistId, startAt])
+  @@index([startAt, endAt])
+}
+
+model Customer {
+  id String @id @default(cuid())
+
+  email     String?
+  /// E.164, normalised by `libphonenumber-js` before it ever reaches here.
+  /// Required: WhatsApp is how this studio actually reaches people.
+  phoneE164 String
+
+  firstName String
+  lastName  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings Booking[]
+
+  @@index([phoneE164])
+  @@index([email])
+}
+
+model Booking {
+  id String @id @default(cuid())
+
+  /// Short human-quotable code, e.g. "FF-8KQ2M". This is what goes in the
+  /// WhatsApp message and the email subject.
+  reference String @unique
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  therapistId String
+  therapist   Therapist @relation(fields: [therapistId], references: [id])
+
+  variantId String
+  variant   ServiceVariant @relation(fields: [variantId], references: [id])
+
+  /// UTC. `endAt` is start + duration + buffer, so the exclusion constraint
+  /// keeps the clean-down gap without any application code remembering to.
+  startAt DateTime
+  endAt   DateTime
+
+  status BookingStatus @default(CONFIRMED)
+  note   String?
+
+  /// Snapshotted at creation. The catalogue price may change later; what was
+  /// printed in the customer's confirmation must not change with it.
+  priceIdrAtBooking Int
+  durationMinutes   Int
+  bufferMinutes     Int @default(0)
+
+  /// Reserved for the payment gateway (BOOKING-PLAN §9). Unused in v1.
+  holdExpiresAt DateTime?
+
+  /// HMAC-signed opaque token. Lets the customer open the manage page and the
+  /// .ics without an account, and stops anyone harvesting other people's
+  /// appointments by guessing ids.
+  manageToken String @unique
+
+  /// Goes into the .ics SEQUENCE field. Bumped on every change so a reschedule
+  /// updates the event already in the customer's calendar instead of adding a
+  /// second one.
+  icsSequence Int @default(0)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  cancelledAt DateTime?
+  /// "customer" | "admin"
+  cancelledBy String?
+  cancelReason String?
+
+  notifications NotificationJob[]
+
+  @@index([therapistId, startAt])
+  @@index([startAt])
+  @@index([status, startAt])
+  @@index([customerId])
+}
+
+/// Outbound queue. The booking commits first and notifications follow, so a
+/// WAHA session that has quietly logged out can never fail a customer's booking.
+model NotificationJob {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  channel NotificationChannel
+  kind    NotificationKind
+  /// Email address or E.164 number.
+  target  String
+
+  status   JobStatus @default(PENDING)
+  attempts Int       @default(0)
+  lastError String?
+
+  /// When this may first be attempted. Reminders are queued at creation time
+  /// with a date in the future; retries push this forward on each failure.
+  scheduledAt DateTime  @default(now())
+  sentAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Makes retrying idempotent — a booking can never send the same message
+  /// twice on the same channel, however many times dispatch runs.
+  @@unique([bookingId, channel, kind, target])
+  @@index([status, scheduledAt])
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  lastLoginAt  DateTime?
+}
+
+model AuditLog {
+  id       String   @id @default(cuid())
+  actor    String
+  action   String
+  entity   String
+  entityId String
+  meta     Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}

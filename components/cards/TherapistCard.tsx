@@ -2,23 +2,19 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { CARD, FOCUS, LINK } from "@/components/ui/tokens";
-import { contact } from "@/lib/site";
+import { bookingUrlFor } from "@/lib/site";
 import type { Therapist } from "@/lib/data/therapists";
-
-/** Opens WhatsApp with the therapist's name already in the message. */
-function bookingHref(name: string) {
-  return `${contact.whatsapp}?text=${encodeURIComponent(
-    `Hi Flex & Flow, I'd like to book a session with ${name}.`,
-  )}`;
-}
 
 /**
  * Practitioner card, shared by the home page and the About page's team grid.
  *
  * Sessions are priced by who performs them, so the practitioner is a real
  * decision and not a footnote: the card carries the portrait, the specialisms
- * verbatim from the profile data, and a WhatsApp link that already names the
- * person.
+ * verbatim from the profile data, and a booking link that has already made the
+ * choice. That link used to open WhatsApp, because there was nowhere on this
+ * site to send anyone; it now goes into the wizard with this therapist
+ * selected, so the visitor lands on the treatment rather than on a question
+ * they answered by clicking.
  */
 export default function TherapistCard({ therapist }: { therapist: Therapist }) {
   return (
@@ -59,14 +55,12 @@ export default function TherapistCard({ therapist }: { therapist: Therapist }) {
       </ul>
 
       <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 pt-5">
-        <a
-          href={bookingHref(therapist.name)}
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          href={bookingUrlFor(therapist.slug)}
           className={`font-body text-[14px] leading-none font-bold transition-colors duration-300 hover:text-primary ${FOCUS}`}
         >
           Book with {therapist.name}
-        </a>
+        </Link>
         <Link href={`/therapist/${therapist.slug}`} className={LINK}>
           Full profile
         </Link>
