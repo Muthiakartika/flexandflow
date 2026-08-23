@@ -13,6 +13,7 @@ import {
 } from "@/components/admin/primitives";
 import { WahaBanner } from "@/components/admin/WahaBanner";
 import { requireAdmin } from "@/lib/admin/auth";
+import { dayExportHref } from "@/lib/admin/filters";
 import { loadAgenda } from "@/lib/admin/queries";
 import {
   formatDuration,
@@ -33,6 +34,36 @@ export const metadata: Metadata = {
 };
 
 /**
+ * One money figure in the strip under the stats.
+ *
+ * The label carries its own scope. These are not one set of numbers split
+ * three ways — two of them are today and one of them is everything after it.
+ */
+function Money({
+  label,
+  value,
+  hint,
+  tone = "text-ink",
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  tone?: string;
+}) {
+  return (
+    <div>
+      <p className="text-[11px] font-bold tracking-[0.06em] text-faint uppercase">
+        {label}
+      </p>
+      <p className={`mt-1 text-[20px] leading-none font-bold ${tone}`}>
+        {value}
+      </p>
+      {hint ? <p className="mt-1 text-[12px] text-faint">{hint}</p> : null}
+    </div>
+  );
+}
+
+/**
  * The page the studio opens at eight in the morning.
  *
  * Everything on it answers a question somebody is about to ask out loud: who
@@ -40,13 +71,22 @@ export const metadata: Metadata = {
  * I message them right now. The phone number is a `wa.me` link because the
  * answer to "they are late" is always a WhatsApp, and retyping a number off a
  * screen is how you message the wrong person.
+ *
+ * Every figure above the table is one studio day wide, and the page says so in
+ * as many words. It has to: on a day with nothing booked the whole top of the
+ * page reads zero while the bookings list shows a booking that is paid for,
+ * and without the labels that looks like money the panel has lost rather than
+ * money for next Tuesday.
  */
+
 export default async function AdminAgendaPage() {
   await requireAdmin();
 
   const agenda = await loadAgenda();
   const today = studioDayStart(agenda.date);
   const tomorrow = studioDayStart(agenda.tomorrow);
+  const { ahead } = agenda;
+  const aheadLabel = `${ahead.count} session${ahead.count === 1 ? "" : "s"}`;
 
   return (
     <>
@@ -59,6 +99,17 @@ export default async function AdminAgendaPage() {
       <PageHeading
         title="Today"
         lede={`${formatStudioDate(today)} · Bali time (WITA)`}
+        actions={
+          /* Today only, matching the table below it. Any other range is a
+             download off the bookings page, where the filters live. */
+          <a
+            href={dayExportHref(agenda.date)}
+            className="admin-btn admin-btn-quiet"
+            download
+          >
+            Download today (CSV)
+          </a>
+        }
       />
 
       <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -86,33 +137,61 @@ export default async function AdminAgendaPage() {
 
       {/* The same money, split by where it is. One number cannot answer both
           "how much did we take today?" and "how much has the desk still got to
-          ask for?", and it is the second one somebody needs at closing time. */}
+          ask for?", and it is the second one somebody needs at closing time.
+          The third is neither: it is what has already been collected for
+          sessions that have not happened yet, and it is here because leaving
+          it off is what made this page look like it disagreed with the
+          bookings list. */}
       <div className="admin-card mb-5 flex flex-wrap items-center gap-x-8 gap-y-3 px-4 py-3">
-        <div>
-          <p className="text-[11px] font-bold tracking-[0.06em] text-faint uppercase">
-            Already paid online
-          </p>
-          <p className="mt-1 text-[20px] leading-none font-bold text-ok">
-            {formatIdr(agenda.paidOnlineIdr)}
-          </p>
-        </div>
-        <div>
-          <p className="text-[11px] font-bold tracking-[0.06em] text-faint uppercase">
-            Due at the studio
-          </p>
-          <p className="mt-1 text-[20px] leading-none font-bold text-ink">
-            {formatIdr(agenda.dueAtStudioIdr)}
-          </p>
-        </div>
-        <p className="text-[12px] text-faint">
-          Cancellations and no-shows excluded. Anything refunded has already
-          been taken back off the online figure.
+        <Money
+          label="Paid online · today"
+          value={formatIdr(agenda.paidOnlineIdr)}
+          tone="text-ok"
+        />
+        <Money
+          label="Due at the studio · today"
+          value={formatIdr(agenda.dueAtStudioIdr)}
+        />
+        <Money
+          label="Paid online · after today"
+          value={formatIdr(ahead.paidOnlineIdr)}
+          tone="text-ok"
+          hint={
+            ahead.count === 0
+              ? "Nothing booked ahead"
+              : ahead.nextDate
+                ? `${aheadLabel} booked ahead, next ${formatStudioDateShort(
+                    studioDayStart(ahead.nextDate),
+                  )}`
+                : `${aheadLabel} booked ahead`
+          }
+        />
+        <p className="max-w-[34ch] text-[12px] text-faint">
+          The first two are today only. Cancellations and no-shows are
+          excluded, and anything refunded has already been taken back off.
         </p>
       </div>
 
       <Panel title="Today's sessions">
         {agenda.bookings.length === 0 ? (
-          <Empty>Nothing booked for today.</Empty>
+          /* Where the bookings actually are. A bare "nothing booked" on a page
+             of zeroes reads as a panel that has stopped seeing the diary. */
+          <Empty>
+            Nothing booked for today.
+            {ahead.nextDate ? (
+              <>
+                {" "}
+                Next session{" "}
+                <Link
+                  href={`/admin/bookings/?from=${ahead.nextDate}`}
+                  className="font-bold text-olive-strong underline underline-offset-2"
+                >
+                  {formatStudioDateShort(studioDayStart(ahead.nextDate))}
+                </Link>
+                , {aheadLabel} booked ahead.
+              </>
+            ) : null}
+          </Empty>
         ) : (
           <TableBox>
             <table className="admin-table">

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { BOOKING_STATUS_LABEL } from "@/lib/admin/labels";
 import type { BookingStatusValue } from "@/lib/booking/types";
 
 /**
@@ -81,18 +82,10 @@ const STATUS_STYLE: Record<BookingStatusValue, string> = {
   NO_SHOW: "bg-danger-soft text-danger",
 };
 
-const STATUS_LABEL: Record<BookingStatusValue, string> = {
-  PENDING: "Pending",
-  CONFIRMED: "Confirmed",
-  COMPLETED: "Completed",
-  CANCELLED: "Cancelled",
-  NO_SHOW: "No show",
-};
-
 export function StatusChip({ status }: { status: BookingStatusValue }) {
   return (
     <span className={`admin-chip ${STATUS_STYLE[status]}`}>
-      {STATUS_LABEL[status]}
+      {BOOKING_STATUS_LABEL[status]}
     </span>
   );
 }

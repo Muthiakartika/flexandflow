@@ -1299,3 +1299,43 @@ button.booking-step-body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* ==========================================================================
+   THE CARD FORM IN THE PAYMENT MODAL
+   --------------------------------------------------------------------------
+   Everything the card fields need beyond the shared tokens, which is almost
+   nothing: the fields themselves are `FIELD`, the button is `BTN_SOLID`, the
+   messages are `.payment-notice` and `.payment-hint`. What is left is the
+   3-D Secure frame, and it is here rather than in Tailwind because its width
+   changes with the viewport and arbitrary breakpoint variants have silently
+   failed in this project (CLAUDE.md, gotcha 2).
+
+   The frame's size is not a design choice. 3DS 2 fixes five challenge window
+   sizes so that a merchant can embed one, and 390x400 is the second of them —
+   the size meant for a challenge shown inside the merchant's own page. Below
+   480px the dialog itself is narrower than 390px, so the frame goes full
+   width, which is the same case the specification's full-screen size covers.
+   The height is set on the element in `CardForm`.
+   ========================================================================== */
+
+.card-3ds-shell {
+  display: flex;
+  justify-content: center;
+}
+
+.card-3ds-frame {
+  display: block;
+  width: 100%;
+  border: 1px solid color-mix(in oklab, var(--color-secondary) 14%, transparent);
+  border-radius: 10px;
+  /* The bank's page draws its own ground; cream showing through the gaps of
+     one that does not would read as part of this site rather than part of the
+     bank, which is exactly the confusion 3DS exists to avoid. */
+  background-color: #fff;
+}
+
+@media only screen and (min-width: 480px) {
+  .card-3ds-frame {
+    width: 390px;
+  }
+}

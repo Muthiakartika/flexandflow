@@ -175,6 +175,25 @@ function toListRow(
 
 // ── Today's agenda ────────────────────────────────────────────────────────
 
+/**
+ * Everything on the books after today, in three numbers.
+ *
+ * This exists because the agenda is a single day and does not say so loudly
+ * enough. On a quiet day every figure on the page reads zero while the
+ * bookings list plainly shows a paid booking, and the panel looks as though it
+ * has lost the money -- when the booking is simply next Tuesday's. Naming the
+ * money that has already arrived for later sessions closes that gap on the
+ * page itself, rather than leaving somebody to work it out.
+ */
+export type AgendaAhead = {
+  /** Live bookings starting after today, however far out. */
+  count: number;
+  /** The studio day the next one falls on, or null if there are none. */
+  nextDate: IsoDate | null;
+  /** Already collected online for them, net of refunds. Not today's takings. */
+  paidOnlineIdr: number;
+};
+
 export type Agenda = {
   date: IsoDate;
   tomorrow: IsoDate;
@@ -190,13 +209,14 @@ export type Agenda = {
    */
   paidOnlineIdr: number;
   dueAtStudioIdr: number;
+  ahead: AgendaAhead;
 };
 
 export async function loadAgenda(now: Date = new Date()): Promise<Agenda> {
   const date = studioDateKey(now);
   const tomorrow = addStudioDays(date, 1);
 
-  const [rows, tomorrowCount] = await Promise.all([
+  const [rows, tomorrowCount, aheadRows] = await Promise.all([
     prisma.booking.findMany({
       where: {
         startAt: { gte: studioDayStart(date), lt: studioDayEnd(date) },
@@ -210,6 +230,22 @@ export async function loadAgenda(now: Date = new Date()): Promise<Agenda> {
       where: {
         startAt: { gte: studioDayStart(tomorrow), lt: studioDayEnd(tomorrow) },
         status: { in: LIVE_STATUSES },
+      },
+    }),
+    /* Rows rather than an aggregate, because the refunds hang off the related
+       charges and no single `groupBy` reaches them. Unbounded on paper, small
+       in practice: this is only ever the future, and four therapists cannot
+       have much of one booked. */
+    prisma.booking.findMany({
+      where: {
+        startAt: { gte: studioDayEnd(date) },
+        status: { in: LIVE_STATUSES },
+      },
+      orderBy: { startAt: "asc" },
+      select: {
+        startAt: true,
+        amountPaidIdr: true,
+        payments: { select: paymentTallySelect },
       },
     }),
   ]);
@@ -235,6 +271,15 @@ export async function loadAgenda(now: Date = new Date()): Promise<Agenda> {
         total + Math.max(0, booking.priceIdr - booking.paidIdr),
       0,
     ),
+    ahead: {
+      count: aheadRows.length,
+      nextDate: aheadRows[0] ? studioDateKey(aheadRows[0].startAt) : null,
+      paidOnlineIdr: aheadRows.reduce(
+        (total, row) =>
+          total + Math.max(0, row.amountPaidIdr - refundedTotal(row.payments)),
+        0,
+      ),
+    },
   };
 }
 
@@ -295,11 +340,14 @@ function paymentWhere(filter: PaymentFilterValue | null) {
   }
 }
 
-export async function listBookings(
-  filters: BookingFilters,
-): Promise<BookingPage> {
-  const page = Math.max(1, filters.page);
-
+/**
+ * One reading of the filters, shared by the list and its CSV export.
+ *
+ * They have to agree exactly. A download covering a different range from the
+ * screen it came off would not look wrong -- it would look like a month with
+ * fewer bookings in it than the studio remembers taking.
+ */
+function bookingWhere(filters: Omit<BookingFilters, "page">) {
   const startAt =
     filters.from || filters.to
       ? {
@@ -310,12 +358,19 @@ export async function listBookings(
         }
       : undefined;
 
-  const where = {
+  return {
     ...(startAt ? { startAt } : {}),
     ...(filters.therapistId ? { therapistId: filters.therapistId } : {}),
     ...(filters.status ? { status: filters.status } : {}),
     ...paymentWhere(filters.payment),
   };
+}
+
+export async function listBookings(
+  filters: BookingFilters,
+): Promise<BookingPage> {
+  const page = Math.max(1, filters.page);
+  const where = bookingWhere(filters);
 
   const [total, rows] = await Promise.all([
     prisma.booking.count({ where }),
@@ -336,6 +391,53 @@ export async function listBookings(
     page,
     pageCount: Math.max(1, Math.ceil(total / BOOKINGS_PAGE_SIZE)),
   };
+}
+
+// ── Export ────────────────────────────────────────────────────────────────────
+
+/**
+ * A booking with the money written out in full, for the spreadsheet.
+ *
+ * The screen shows one word and one figure, because that is all anyone can
+ * read while a customer stands at the desk. A spreadsheet is read by somebody
+ * doing the books, who needs the parts kept apart: what was charged, what
+ * arrived, and what went back out again.
+ */
+export type BookingExportRow = BookingListRow & {
+  /** How it was meant to be paid, which is not where the money ended up. */
+  method: PaymentMethodValue;
+  /** What arrived, before refunds. */
+  paidGrossIdr: number;
+  refundedIdr: number;
+};
+
+/**
+ * A ceiling, not a page size. It stops a stray unfiltered export from trying
+ * to pull the studio's entire history through one request; at this studio's
+ * volume it is several years of bookings, and the route refuses and says so
+ * rather than truncating in silence.
+ */
+export const EXPORT_ROW_LIMIT = 5000;
+
+export async function listBookingsForExport(
+  filters: Omit<BookingFilters, "page">,
+  limit: number = EXPORT_ROW_LIMIT,
+): Promise<BookingExportRow[]> {
+  const rows = await prisma.booking.findMany({
+    where: bookingWhere(filters),
+    /* Oldest first, the opposite of the screen. A list is scanned for the
+       booking you have just taken; a ledger is read forwards. */
+    orderBy: { startAt: "asc" },
+    take: limit,
+    include: { ...bookingInclude, payments: { select: paymentTallySelect } },
+  });
+
+  return rows.map((row) => ({
+    ...toListRow(row),
+    method: row.paymentMethod,
+    paidGrossIdr: row.amountPaidIdr,
+    refundedIdr: refundedTotal(row.payments),
+  }));
 }
 
 // ── One booking ───────────────────────────────────────────────────────────

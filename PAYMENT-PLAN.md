@@ -69,8 +69,9 @@ soal harga.
 
 - **Invoice API** adalah hosted checkout: kita membuat invoice, mendapat
   `invoice_url`, pelanggan diarahkan ke sana dan memilih metodenya di halaman
-  Xendit. Kartu tidak pernah menyentuh server kita, jadi beban kepatuhan PCI
-  hampir nol. Ini juga paling sedikit kodenya.
+  Xendit. (Kartu kini dikumpulkan di modal kita lewat Xendit.js — lihat §4 —
+  tapi Invoice tetap dipakai untuk metode lain, dan nomor kartu tetap tidak
+  pernah menyentuh server ini.)
 - Satu integrasi memberi QRIS, seluruh virtual account bank besar, e-wallet
   (OVO, DANA, ShopeePay, LinkAja) dan kartu — persis campuran yang dibutuhkan
   studio dengan pelanggan turis sekaligus lokal.
@@ -140,43 +141,55 @@ tidak bisa dilewati siapa pun.
 |---|---|---|
 | **QRIS** | **Ya, sepenuhnya** | API mengembalikan string QR; kita render sendiri. Tidak ada redirect sama sekali |
 | **Virtual Account** | **Ya, sepenuhnya** | API mengembalikan nomor VA; tinggal ditampilkan beserta tombol salin |
-| **Kartu** | Sebagian | Kolom kartu bisa di modal lewat Xendit.js, tapi **3D Secure tidak bisa** — lihat di bawah |
+| **Kartu** | **Ya** | Kolom kartu lewat Xendit.js, dan **3DS pun di dalam modal** — lihat di bawah |
 | **E-wallet** (OVO/DANA/ShopeePay) | Tidak | Perlu berpindah ke aplikasi dompetnya untuk menyetujui |
 
-### 3D Secure: batas yang tidak bisa ditawar
+### 3D Secure: ternyata justru dirancang untuk ditanam
 
-Kolom nomor kartu memang bisa hidup di modal kita. **Xendit.js** melakukan
-tokenisasi di browser, jadi nomor kartu tidak pernah menyentuh server ini — itu
-juga yang menjaga beban kepatuhan PCI tetap ringan.
+Dokumen ini sebelumnya menyatakan 3DS tidak mungkin ditampilkan di dalam modal.
+**Itu keliru**, dan cara berpikirnya tertinggal di 3DS versi lama.
 
-Tapi setelah itu, kartu Indonesia praktis selalu melewati **3D Secure**:
-autentikasi ke halaman bank penerbit, dengan OTP yang dikirim bank ke ponsel
-pelanggan. Halaman itu **milik bank**, bukan milik Xendit dan jelas bukan milik
-kita. Tidak ada cara membuatnya tampil sebagai bagian dari halaman kita, dan
-tidak ada yang seharusnya menginginkan itu: kalau sebuah situs bisa memalsukan
-tampilan halaman OTP bank, seluruh gunanya hilang.
+**3DS 2 dirancang untuk di-*embed*.** Spesifikasinya bahkan menetapkan ukuran
+jendela tantangan — 250×400, 390×400, 500×600, 600×400, dan layar penuh —
+justru supaya merchant bisa menampilkannya di dalam halamannya sendiri. Itulah
+yang dilakukan DOKU, dan Xendit bisa melakukan hal yang sama.
 
-Yang bisa dilakukan: Xendit menampilkan 3DS di dalam **iframe atau jendela
-popup** yang ia kelola. Jadi dari sudut pandang pelanggan, alurnya tetap terasa
-menempel di halaman kita — hanya saja langkah OTP-nya dilakukan di kotak milik
-bank.
+Jadi seluruh alur kartu tetap di domain kita:
 
-### Rekomendasi: hibrida, bukan semuanya di modal
+```
+kolom kartu di modal kita
+  └─ Xendit.js menukar nomor kartu jadi token, di browser
+  └─ kalau bank meminta tantangan:
+        iframe 3DS tampil DI DALAM modal yang sama
+  └─ token ditagih di server kita, lalu booking dikonfirmasi
+```
 
-**QRIS dan Virtual Account dibuat penuh di modal kita. Kartu memakai komponen
-Xendit.**
+**Nomor kartunya tetap tidak pernah menyentuh server ini.** Ia berjalan langsung
+dari browser ke Xendit; yang sampai ke kita hanya token sekali pakai, yang tidak
+berguna bagi siapa pun tanpa secret key.
 
-Alasannya bukan kemalasan, tapi hitung-hitungan:
+Konsekuensinya, invoice Xendit tidak lagi dibuat untuk kartu. Baris `Payment`
+berstatus menunggu token, dan charge baru benar-benar ada setelah pelanggan
+mengetik kartunya — tidak ada lagi transaksi yang dibuat lalu tidak pernah
+dipakai.
 
-- QRIS dan VA adalah metode yang **6 kali lebih murah** (§1) dan justru yang
-  ingin kita dorong. Membuatnya mulus di modal itu tepat sasaran.
-- Keduanya **nol risiko PCI** — tidak ada data kartu yang lewat sama sekali.
-- Membuat form kartu sendiri memindahkan sebagian tanggung jawab PCI ke sisi
-  kita, menambah kode yang harus dirawat, dan **tetap** berakhir di halaman bank
-  untuk 3DS. Usaha paling besar, hasil paling kecil.
+### Yang harus klien tahu: beban PCI naik
 
-Dengan begitu sebagian besar pelanggan tidak pernah meninggalkan halaman, dan
-kartu — yang paling jarang dan paling mahal — tetap berfungsi.
+Ini satu-satunya harga sungguhan dari keputusan ini, dan tidak terlihat di kode.
+
+Dengan halaman checkout Xendit, studio berada di **SAQ A** — halaman pengumpul
+data kartu sepenuhnya milik Xendit. Dengan kolom kartu di halaman kita, studio
+pindah ke **SAQ A-EP**: nilainya tetap tidak pernah kita simpan atau catat, tapi
+halaman yang mengumpulkannya sekarang milik kita.
+
+Perbedaannya administratif, bukan teknis — tapi nyata. Sebutkan ke klien sebelum
+go-live.
+
+### Urutan metode tetap tidak berubah
+
+QRIS dan VA tetap di urutan atas — bukan karena kartu sulit, tapi karena kartu
+**6 kali lebih mahal** (§1). Yang berubah hanya ini: pelanggan yang tetap memilih
+kartu kini tidak perlu meninggalkan halaman.
 
 ### Cara modal tahu pembayarannya sudah masuk
 

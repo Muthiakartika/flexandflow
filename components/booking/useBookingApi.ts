@@ -237,6 +237,37 @@ export function startPayment(
 }
 
 /**
+ * Charges a card the customer typed into the modal.
+ *
+ * What is sent is a single-use token from Xendit.js and, when the bank asked
+ * for one, the id of a completed 3-D Secure challenge. **Never a card number**:
+ * that went from the browser straight to Xendit and this application has never
+ * seen it. See `CardForm`.
+ *
+ * No amount, for the same reason `startPayment` sends none — the server charges
+ * what the payment row says the booking costs.
+ *
+ * A refusal arrives as an ordinary `BookingApiError` with `code: "VALIDATION"`
+ * and a message already written for the customer ("That card does not have
+ * enough available balance"). Show it as it is; rewording it loses the only
+ * part a customer can act on.
+ */
+export function chargeCard(
+  token: string,
+  tokenId: string,
+  authenticationId?: string | null,
+): Promise<{ status: "PAID" }> {
+  return request<{ status: "PAID" }>(
+    `/api/booking/${encodeURIComponent(token)}/payment/card/`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tokenId, authenticationId: authenticationId ?? null }),
+    },
+  );
+}
+
+/**
  * Moves an existing booking to a new time.
  *
  * Deliberately not `POST /api/booking/` with the old details: this is the same

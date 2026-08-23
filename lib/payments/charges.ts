@@ -30,6 +30,7 @@ import "server-only";
 import { nanoid } from "nanoid";
 
 import { prisma } from "@/lib/db";
+import { readCardCharge } from "@/lib/payments/cards";
 import { env } from "@/lib/env";
 import type {
   PaymentChannelValue,
@@ -150,7 +151,8 @@ function virtualAccountName(customer: CreateChargeInput["customer"]): string {
 
 /** What one gateway call yields, before any of it reaches the database. */
 type OpenedCharge = {
-  providerId: string;
+  /** Null for a card: there is no charge at Xendit until a token is submitted. */
+  providerId: string | null;
   qrString: string | null;
   virtualAccount: VirtualAccount | null;
   checkoutUrl: string | null;
@@ -261,77 +263,37 @@ async function openVirtualAccount(
 }
 
 /**
- * Cards go to Xendit's own hosted page, and there is no card form anywhere in
- * this repo on purpose.
+ * A card opens nothing at Xendit yet — the row waits for a token.
  *
- * An Indonesian card almost always ends at 3-D Secure, which is a page served
- * by the issuing bank. Nobody can render that inside our modal, and nobody
- * should want to: a site that could convincingly draw a bank's OTP screen is
- * the exact thing 3-D Secure exists to prevent. Handing the customer an
- * `invoice_url` also keeps every card number off this server, so the PCI
- * surface stays at zero. PAYMENT-PLAN §4 has the long version.
+ * This used to create a hosted invoice and hand over its `invoice_url`, which
+ * meant the customer left the site at the last step. They no longer do: the
+ * card fields live in the payment modal, Xendit.js turns them into a token in
+ * the browser, and `lib/payments/cards.ts` charges that token. Nothing is
+ * created here because there is nothing to create until the customer has typed
+ * a card — an invoice opened now would be a charge nobody may ever use.
  *
- * The invoice is restricted to card because the cheap rails are opened
- * directly, above — an unrestricted invoice would quietly offer QRIS on a page
- * we do not control and lose the modal.
+ * 3-D Secure still belongs to the issuing bank, but embedding it is what 3DS 2
+ * was designed for; the specification fixes the challenge window sizes for
+ * exactly that. So the bank's screen appears inside the modal too, and the only
+ * thing that ever leaves our domain is the card number, which goes straight to
+ * Xendit.
  *
- * Confirmed against the sandbox: `payment_methods: ["CREDIT_CARD"]` is the way to
- * restrict an invoice to cards, and whether `invoice_duration` is seconds
- * (assumed here) or minutes in the current API.
+ * The trade recorded plainly: hosting the fields moves the studio from PCI
+ * SAQ A to SAQ A-EP. No card data is stored or logged, but the page collecting
+ * it is ours now.
  */
-async function openCardInvoice(
-  input: CreateChargeInput,
-  providerRef: string,
-  expiresAt: Date,
-): Promise<OpenedCharge> {
-  /* Never below a minute: a hold that has almost lapsed must not produce an
-     invoice that expires between opening it and reading it. */
-  const seconds = Math.max(
-    60,
-    Math.round((expiresAt.getTime() - Date.now()) / 1000),
-  );
-
-  const body = await xenditRequest<unknown>("/v2/invoices", {
-    method: "POST",
-    idempotencyKey: providerRef,
-    body: {
-      external_id: providerRef,
-      amount: input.amountIdr,
-      currency: "IDR",
-      description: input.description,
-      invoice_duration: seconds,
-      payment_methods: ["CREDIT_CARD"],
-      success_redirect_url: input.returnUrl,
-      failure_redirect_url: input.returnUrl,
-      /* The confirmation email is ours to send, after the callback confirms
-         payment. Xendit sending its own would arrive first and say less. */
-      should_send_email: false,
-      ...(input.customer.email ? { payer_email: input.customer.email } : {}),
-      customer: {
-        given_names: input.customer.firstName,
-        ...(input.customer.lastName ? { surname: input.customer.lastName } : {}),
-        ...(input.customer.email ? { email: input.customer.email } : {}),
-        mobile_number: input.customer.phoneE164,
-      },
-    },
-  });
-
-  const providerId = readString(body, "id");
-  const checkoutUrl = readString(body, "invoice_url");
-
-  if (!providerId) throw unexpected("invoice id");
-  if (!checkoutUrl) throw unexpected("invoice URL");
-
+async function openCard(expiresAt: Date): Promise<OpenedCharge> {
+  /* No `providerId` until the charge exists, which is why `refetchCharge`
+     treats a card with no id as simply unpaid rather than as an error. */
   return {
-    providerId,
+    providerId: null,
     qrString: null,
     virtualAccount: null,
-    checkoutUrl,
+    checkoutUrl: null,
     deepLinks: {},
-    expiresAt: readDate(body, "expiry_date"),
+    expiresAt,
   };
 }
-
 /**
  * E-wallets, which always leave the page: approving a payment happens inside
  * the wallet app, and no amount of modal makes that untrue.
@@ -420,7 +382,7 @@ function openCharge(
     case "VIRTUAL_ACCOUNT":
       return openVirtualAccount(input, providerRef, expiresAt);
     case "CARD":
-      return openCardInvoice(input, providerRef, expiresAt);
+      return openCard(expiresAt);
     case "EWALLET":
       return openEwallet(input, providerRef);
   }
@@ -546,26 +508,6 @@ function settledAmount(status: PaymentStatusValue, amount: number | null): numbe
   return Math.round(amount);
 }
 
-/** Invoice vocabulary. `null` for anything not on this list — see `notPaid`. */
-function mapInvoiceStatus(status: string | null): PaymentStatusValue | null {
-  switch (status) {
-    case "PENDING":
-      return "PENDING";
-    /* SETTLED is PAID plus the money having reached the merchant balance. The
-       customer is done either way, and the booking should not wait on Xendit's
-       settlement cycle. */
-    case "PAID":
-    case "SETTLED":
-      return "PAID";
-    case "EXPIRED":
-      return "EXPIRED";
-    case "FAILED":
-      return "FAILED";
-    default:
-      return null;
-  }
-}
-
 /** E-wallet charge vocabulary, which shares no words with the invoice one. */
 function mapEwalletStatus(status: string | null): PaymentStatusValue | null {
   switch (status) {
@@ -583,22 +525,6 @@ function mapEwalletStatus(status: string | null): PaymentStatusValue | null {
     default:
       return null;
   }
-}
-
-async function refetchInvoice(providerId: string): Promise<Refetched> {
-  const body = await xenditRequest<unknown>(
-    `/v2/invoices/${encodeURIComponent(providerId)}`,
-  );
-
-  const status = mapInvoiceStatus(readString(body, "status"));
-  if (!status) return notPaid(body);
-
-  return {
-    status,
-    amountPaidIdr: settledAmount(status, readNumber(body, "paid_amount")),
-    paidAt: readDate(body, "paid_at"),
-    raw: body,
-  };
 }
 
 async function refetchEwallet(providerId: string): Promise<Refetched> {
@@ -742,8 +668,10 @@ export async function refetchCharge(paymentId: string): Promise<{
         : notPaid(null);
 
     case "CARD":
+      /* No id means the customer has not submitted a card yet — a pending row,
+         not a missing charge. */
       return payment.providerId
-        ? refetchInvoice(payment.providerId)
+        ? readCardCharge(payment.providerId)
         : notPaid(null);
 
     case "EWALLET":

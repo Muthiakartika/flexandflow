@@ -1,5 +1,6 @@
 import { Empty, Panel, TableBox } from "@/components/admin/primitives";
 import { RefundForm } from "@/components/admin/RefundForm";
+import { PAYMENT_STATE_LABEL } from "@/lib/admin/labels";
 import type { BookingPaymentDetail, PaymentState } from "@/lib/admin/queries";
 import { formatIdr } from "@/lib/booking/format";
 import { formatStudioDateShort, formatStudioTime } from "@/lib/booking/time";
@@ -27,15 +28,6 @@ import {
 
 // ── Chips ─────────────────────────────────────────────────────────────────
 
-const STATE_LABEL: Record<PaymentState, string> = {
-  AT_STUDIO: "At studio",
-  UNPAID: "Unpaid",
-  PART_PAID: "Part paid",
-  PAID: "Paid",
-  PART_REFUNDED: "Part refunded",
-  REFUNDED: "Refunded",
-};
-
 const STATE_STYLE: Record<PaymentState, string> = {
   /* Not a warning: paying at the desk is the normal arrangement here, and
      colouring it amber would light up most of a normal day's agenda. */
@@ -51,7 +43,7 @@ const STATE_STYLE: Record<PaymentState, string> = {
 export function PaymentChip({ state }: { state: PaymentState }) {
   return (
     <span className={`admin-chip ${STATE_STYLE[state]}`}>
-      {STATE_LABEL[state]}
+      {PAYMENT_STATE_LABEL[state]}
     </span>
   );
 }

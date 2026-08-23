@@ -12,12 +12,16 @@ import {
 } from "@/components/admin/primitives";
 import { requireAdmin } from "@/lib/admin/auth";
 import {
+  bookingExportHref,
+  bookingFilterQuery,
+  readBookingFilters,
+  type SearchInput,
+} from "@/lib/admin/filters";
+import {
   BOOKINGS_PAGE_SIZE,
   listBookings,
   listTherapistOptions,
-  PAYMENT_FILTERS,
   type BookingFilters as Filters,
-  type PaymentFilterValue,
 } from "@/lib/admin/queries";
 import {
   formatIdr,
@@ -25,59 +29,15 @@ import {
   fullName,
   whatsappLink,
 } from "@/lib/booking/format";
-import { formatStudioDateShort, formatStudioTime, isIsoDate } from "@/lib/booking/time";
-import type { BookingStatusValue } from "@/lib/booking/types";
+import { formatStudioDateShort, formatStudioTime } from "@/lib/booking/time";
 
 export const metadata: Metadata = {
   title: "Bookings",
 };
 
-const STATUS_VALUES: BookingStatusValue[] = [
-  "PENDING",
-  "CONFIRMED",
-  "COMPLETED",
-  "CANCELLED",
-  "NO_SHOW",
-];
-
-type Search = Record<string, string | string[] | undefined>;
-
-function one(params: Search, key: string): string {
-  const value = params[key];
-  return typeof value === "string" ? value.trim() : "";
-}
-
-/**
- * Everything from the query string is treated as hostile until it parses.
- * Anything unrecognised becomes "no filter" rather than an error page — a
- * mistyped date in a shared link should show the unfiltered list, not a stack
- * trace.
- */
-function readFilters(params: Search): Filters {
-  const from = one(params, "from");
-  const to = one(params, "to");
-  const status = one(params, "status") as BookingStatusValue;
-  const payment = one(params, "payment") as PaymentFilterValue;
-  const page = Number.parseInt(one(params, "page"), 10);
-
-  return {
-    from: isIsoDate(from) ? from : null,
-    to: isIsoDate(to) ? to : null,
-    therapistId: one(params, "therapistId") || null,
-    status: STATUS_VALUES.includes(status) ? status : null,
-    payment: PAYMENT_FILTERS.includes(payment) ? payment : null,
-    page: Number.isFinite(page) && page > 0 ? page : 1,
-  };
-}
-
 /** The same filters, carried onto the next page link. */
 function pageHref(filters: Filters, page: number): string {
-  const query = new URLSearchParams();
-  if (filters.from) query.set("from", filters.from);
-  if (filters.to) query.set("to", filters.to);
-  if (filters.therapistId) query.set("therapistId", filters.therapistId);
-  if (filters.status) query.set("status", filters.status);
-  if (filters.payment) query.set("payment", filters.payment);
+  const query = bookingFilterQuery(filters);
   if (page > 1) query.set("page", String(page));
 
   const search = query.toString();
@@ -87,11 +47,11 @@ function pageHref(filters: Filters, page: number): string {
 export default async function AdminBookingsPage({
   searchParams,
 }: {
-  searchParams: Promise<Search>;
+  searchParams: Promise<SearchInput>;
 }) {
   await requireAdmin();
 
-  const filters = readFilters(await searchParams);
+  const filters = readBookingFilters(await searchParams);
   const [result, therapists] = await Promise.all([
     listBookings(filters),
     listTherapistOptions(),
@@ -105,6 +65,18 @@ export default async function AdminBookingsPage({
       <PageHeading
         title="Bookings"
         lede="Newest first. Dates are studio days in Bali time."
+        actions={
+          /* A plain link, not a button: the file is a GET of whatever the
+             filters currently say, so it can be right-clicked, bookmarked and
+             sent to the accountant like any other URL. */
+          <a
+            href={bookingExportHref(filters)}
+            className="admin-btn admin-btn-quiet"
+            download
+          >
+            Download CSV
+          </a>
+        }
       />
 
       <Panel>

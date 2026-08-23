@@ -113,6 +113,16 @@ const schema = z.object({
    * See PAYMENT-PLAN.md §5.
    */
   XENDIT_CALLBACK_TOKEN: secret().optional(),
+  /**
+   * The *public* key, and it is meant to be public: it reaches the browser, so
+   * `NEXT_PUBLIC_` is the honest prefix. It can only tokenise a card, never
+   * move money — that still needs the secret key, server-side.
+   *
+   * This is what keeps the card form on our own page. Xendit.js exchanges the
+   * card number for a token in the browser, so the number never touches this
+   * server and never appears in a log or a backup.
+   */
+  NEXT_PUBLIC_XENDIT_PUBLIC_KEY: secret().optional(),
   /** Minutes a Xendit charge stays payable. Kept under the booking hold. */
   XENDIT_INVOICE_MINUTES: z.coerce.number().int().min(1).default(13),
 
@@ -178,4 +188,16 @@ export function turnstileEnabled(): boolean {
 export function paymentsEnabled(): boolean {
   const { XENDIT_SECRET_KEY, XENDIT_CALLBACK_TOKEN } = env();
   return Boolean(XENDIT_SECRET_KEY && XENDIT_CALLBACK_TOKEN);
+}
+
+/**
+ * Whether cards can be collected on our own page.
+ *
+ * Separate from `paymentsEnabled()` because it fails differently: without the
+ * public key the browser cannot tokenise anything, so the card option is left
+ * off the list rather than offered and then broken at the last step. QRIS and
+ * bank transfer are unaffected and keep working.
+ */
+export function cardPaymentsEnabled(): boolean {
+  return paymentsEnabled() && Boolean(env().NEXT_PUBLIC_XENDIT_PUBLIC_KEY);
 }

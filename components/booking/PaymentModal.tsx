@@ -16,6 +16,7 @@ import {
   type PaymentStatusValue,
 } from "@/lib/payments/types";
 
+import CardForm, { CARD_PAYMENTS_AVAILABLE } from "./CardForm";
 import QrCode from "./QrCode";
 import { fetchPaymentStatus, startPayment, useEvent } from "./useBookingApi";
 
@@ -43,6 +44,13 @@ import { fetchPaymentStatus, startPayment, useEvent } from "./useBookingApi";
  * - **Closing while a payment is pending asks first**, because the booking is
  *   already made and is holding a slot nobody else can take. Dismissing that
  *   by accident is how somebody loses a Saturday morning appointment.
+ *
+ * The card channel is the one exception to the first paragraph, and only
+ * narrowly: `CardForm` collects the card here and gets a synchronous answer
+ * from our own server, which has already charged it. Even then the modal is
+ * reading a decision made on the server, not making one — and the gateway's
+ * callback still arrives afterwards and still settles the payment if this
+ * request never came back.
  */
 
 const POLL_INTERVAL_MS = 3000;
@@ -78,8 +86,23 @@ function formatCountdown(ms: number): string {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
+/**
+ * The rails this build can actually collect.
+ *
+ * Card is dropped when there is no publishable key in the browser: without one
+ * `CardForm` cannot tokenise anything, so offering the option would take a
+ * customer to a form that fails at the last step. Same rule, same reason, as
+ * the whole "pay now" choice disappearing when Xendit is unconfigured.
+ */
+const CHANNELS = PAYMENT_CHANNELS.filter(
+  (channel) => channel !== "CARD" || CARD_PAYMENTS_AVAILABLE,
+);
+
+/* `iframe` is in the list because the 3-D Secure challenge is one, and it is
+   focusable without carrying a `tabindex` — leaving it out would let the trap
+   wrap past the bank's own screen. */
 const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), ' +
+  'a[href], button:not([disabled]), input:not([disabled]), iframe, ' +
   'textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /* ── Small pieces ────────────────────────────────────────────────────────── */
@@ -174,6 +197,17 @@ export default function PaymentModal({
   const [error, setError] = useState<string | null>(null);
   const [visible, setVisible] = useState(true);
   const [confirmingClose, setConfirmingClose] = useState(false);
+  /**
+   * Raised by `CardForm` while a card is being tokenised, challenged by the
+   * bank, or charged.
+   *
+   * Nothing may dismiss the modal for as long as it is true — not Escape, not
+   * a click on the backdrop, not the close button. A 3-D Secure challenge
+   * interrupted halfway is a charge in limbo: the bank has been asked, our
+   * server has not been told the answer, and the customer is left looking at a
+   * booking page with no idea whether they have paid.
+   */
+  const [cardLocked, setCardLocked] = useState(false);
 
   const dialogRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -280,12 +314,18 @@ export default function PaymentModal({
   const close = useEvent(onClose);
 
   const requestClose = useCallback(() => {
+    /* A card in the middle of being authorised cannot be walked away from —
+       see `cardLocked`. Deliberately silent: the card panel already says to
+       keep the window open, and a second message racing the bank's own screen
+       would only add noise. */
+    if (cardLocked) return;
+
     /* Nothing more is going to happen on this charge, so there is nothing to
        warn about. While it is still payable, ask: the booking is already made
        and is holding a slot nobody else can take. */
     if (pending) setConfirmingClose(true);
     else close();
-  }, [pending, close]);
+  }, [cardLocked, pending, close]);
 
   /**
    * Escape and the focus trap, listened for on the document rather than on the
@@ -338,15 +378,29 @@ export default function PaymentModal({
   /* ── Actions ─────────────────────────────────────────────────────────── */
 
   /**
-   * Opens a fresh charge on another rail.
+   * Opens a fresh charge on a rail.
    *
-   * Used both to switch mid-flow and to start again after one expired. The
-   * amount is never sent: the server charges what the booking says it costs.
+   * Used to switch mid-flow, to start again after one expired, and — with
+   * `force` — to replace a card charge the bank refused, which cannot be paid a
+   * second time. Re-picking the rail already showing is otherwise a no-op:
+   * opening a duplicate charge for somebody who tapped the same button twice
+   * would leave two rows and one of them unpaid.
+   *
+   * The amount is never sent: the server charges what the booking says it costs.
    */
-  async function chooseChannel(channel: PaymentChannelValue) {
-    if (busy || channel === intent.channel) return;
+  async function openCharge(
+    channel: PaymentChannelValue,
+    options: { force?: boolean; quiet?: boolean } = {},
+  ): Promise<boolean> {
+    if (busy) return false;
+    if (!options.force && channel === intent.channel && !expired && !finished) {
+      return false;
+    }
 
-    setBusy(true);
+    /* `quiet` keeps the card form mounted while its replacement charge is
+       opened, so it can show its own line rather than have the whole body
+       blink to "Opening…" and back. */
+    if (!options.quiet) setBusy(true);
     setError(null);
 
     try {
@@ -355,16 +409,60 @@ export default function PaymentModal({
       /* The new charge carries its own deadline; the second-by-second tick
          above keeps `now` current, so there is nothing else to reset. */
       setStatus("PENDING");
+      return true;
     } catch (cause) {
       setError(
         cause instanceof Error
           ? cause.message
           : "We could not open that payment method. Please try another one.",
       );
+      return false;
     } finally {
-      setBusy(false);
+      if (!options.quiet) setBusy(false);
     }
   }
+
+  /**
+   * The card was settled by the request `CardForm` just made.
+   *
+   * Guarded by the same `settledRef` the poll uses, so whichever of the two
+   * learns it first is the only one that navigates.
+   */
+  const cardPaid = useEvent(() => {
+    setStatus("PAID");
+    if (settledRef.current) return;
+    settledRef.current = true;
+    paid(reference);
+  });
+
+  /**
+   * A refused card, replaced with a charge that can be paid.
+   *
+   * The old row is spent — Xendit's token is single-use and the server refuses
+   * a payment that is no longer `PENDING` — so a second attempt needs a second
+   * charge. It is opened only on an explicit press, and only after asking the
+   * server whether the first attempt in fact succeeded: a reply that never
+   * arrived is not the same as a payment that never happened, and opening a
+   * fresh charge over the top of one that worked is how somebody pays twice.
+   */
+  const renewCard = useEvent(async (): Promise<boolean> => {
+    try {
+      const view = await fetchPaymentStatus(token);
+      if (isSettled(view.status)) {
+        setStatus(view.status);
+        if (!settledRef.current) {
+          settledRef.current = true;
+          paid(view.bookingReference || reference);
+        }
+        return false;
+      }
+    } catch {
+      /* Unreachable server. Opening a charge below will fail in the same way
+         and say so properly, so there is nothing useful to add here. */
+    }
+
+    return openCharge("CARD", { force: true, quiet: true });
+  });
 
   async function checkAgain() {
     setChecking(true);
@@ -422,7 +520,7 @@ export default function PaymentModal({
               <button
                 type="button"
                 className={`payment-inline-link ${FOCUS}`}
-                onClick={() => void chooseChannel("VIRTUAL_ACCOUNT")}
+                onClick={() => void openCharge("VIRTUAL_ACCOUNT")}
                 disabled={busy}
               >
                 Pay by bank transfer instead
@@ -466,9 +564,13 @@ export default function PaymentModal({
       );
     }
 
-    /* E-wallet and card. The card path is the gateway's own page because 3-D
-       Secure belongs to the issuing bank — it cannot be drawn by us, and a
-       site that could fake a bank's OTP screen would defeat the point of one. */
+    /* E-wallet, and the card fallback.
+     *
+     * Cards are collected in this modal now — see `cardPanel` below. What is
+     * left here is the gateway's own hosted page, which is what a card charge
+     * still falls back to if this build has no publishable key. The bank's own
+     * 3-D Secure screen is framed either way: it belongs to the issuer, and a
+     * site that could redraw a bank's OTP page would defeat the point of one. */
     return (
       <div className="grid gap-4">
         {intent.channel === "EWALLET" ? (
@@ -512,12 +614,60 @@ export default function PaymentModal({
     );
   }
 
+  /**
+   * The card fields, in this modal, for as long as this charge can be paid.
+   *
+   * Keyed by the payment id so a replacement charge hands the form a clean
+   * slate — empty fields, no stale token, no leftover message — without the
+   * form having to reset itself.
+   */
+  function cardPanel() {
+    return (
+      <CardForm
+        key={intent.paymentId}
+        token={token}
+        amountIdr={intent.amountIdr}
+        onLockChange={setCardLocked}
+        onPaid={cardPaid}
+        onRenew={renewCard}
+      />
+    );
+  }
+
+  const cardInline = intent.channel === "CARD" && CARD_PAYMENTS_AVAILABLE;
+
   function body() {
     if (isSettled(status)) {
       return (
         <p className="font-body text-[15px] leading-[1.7]">
           Payment received. Opening your confirmation…
         </p>
+      );
+    }
+
+    /* Ahead of the failure branch on purpose: a declined card leaves the charge
+       `FAILED`, and the customer's next move is to try a different card in the
+       form they are already looking at. `CardForm` shows the bank's own reason
+       and offers a fresh charge; sending them back to the channel list to
+       re-pick "Card" would be a longer road to the same place. */
+    if (cardInline && !expired) {
+      return (
+        <div className="grid gap-4">
+          {cardPanel()}
+
+          {pending ? (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="font-body text-[14px] leading-[1.6]" aria-hidden="true">
+                <span className="payment-hint">Time left to pay </span>
+                <span className="payment-countdown tabular-nums">
+                  {formatCountdown(remaining)}
+                </span>
+              </p>
+
+              {checkButton}
+            </div>
+          ) : null}
+        </div>
       );
     }
 
@@ -596,6 +746,10 @@ export default function PaymentModal({
           <button
             type="button"
             onClick={requestClose}
+            /* Disabled rather than merely ignored while the bank has the
+               payment: a control that does nothing when pressed reads as a
+               broken page, and a disabled one reads as "not yet". */
+            disabled={cardLocked}
             className={`payment-close ${FOCUS}`}
           >
             <span aria-hidden="true">×</span>
@@ -611,14 +765,17 @@ export default function PaymentModal({
           </p>
 
           <div className="payment-channels" role="group" aria-label="Payment method">
-            {PAYMENT_CHANNELS.map((channel) => (
+            {CHANNELS.map((channel) => (
               <button
                 key={channel}
                 type="button"
                 className={`payment-channel ${FOCUS}`}
                 data-selected={channel === intent.channel}
-                disabled={busy}
-                onClick={() => void chooseChannel(channel)}
+                /* Locked out mid-authorisation for the same reason the close
+                   button is: switching rail there would abandon a charge the
+                   bank is still deciding on. */
+                disabled={busy || cardLocked}
+                onClick={() => void openCharge(channel)}
               >
                 <span className="font-body text-[15px] leading-none">
                   {PAYMENT_CHANNEL_LABEL[channel]}
@@ -661,7 +818,7 @@ export default function PaymentModal({
               </div>
             </div>
           ) : (
-            <Button type="button" onClick={requestClose}>
+            <Button type="button" onClick={requestClose} disabled={cardLocked}>
               Close
             </Button>
           )}
