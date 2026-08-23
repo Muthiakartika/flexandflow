@@ -7,7 +7,8 @@
  * reminder that sits in the queue until the next dispatch run is a reminder
  * that arrives late, and this endpoint runs once a day.
  *
- * `GET` for Vercel Cron, `POST` for a `curl` from the studio's own server.
+ * Either verb: `POST` is what the GitHub Actions workflow and a `curl` from the
+ * studio's own server both send, and `GET` is accepted so a browser can check it.
  */
 import { fail, ok, serverError } from "@/lib/api/respond";
 import { isAuthorisedCron } from "@/lib/booking/tokens";

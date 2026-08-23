@@ -8,7 +8,7 @@
  * in this system and it must never be able to fail a customer's booking.
  *
  * Sending happens later and somewhere else: `after()` runs `dispatchPending`
- * once the customer already has their response, and Vercel Cron runs it again
+ * once the customer already has their response, and the cron schedule runs it again
  * every ten minutes for whatever did not go through the first time.
  *
  * Idempotence is the database's job. `@@unique([bookingId, channel, kind,

@@ -1,0 +1,93 @@
+# Scheduled work for the booking system.
+#
+# This replaces Vercel Cron, which needs the Pro plan for anything more often
+# than once a day. Neither job computes anything here — they are authenticated
+# pings that ask the deployed app to do work it already knows how to do. See
+# CRON.md for what each one is for and what breaks without them.
+#
+# Two things about GitHub's scheduler that are worth knowing rather than
+# discovering:
+#
+#   * It is not punctual. GitHub documents that scheduled runs are delayed when
+#     the platform is busy, and can be skipped entirely. Five to fifteen minutes
+#     late is ordinary. Both jobs here tolerate that — retries are not
+#     time-critical, and the reminder fires with most of a day in hand.
+#   * On a **public** repository, schedules are disabled automatically after 60
+#     days with no commits. GitHub emails first; re-enable from the Actions tab.
+#
+# The dispatch interval is 30 minutes rather than 10 because on a **private**
+# repository every run is billed rounded up to a whole minute, and the Free plan
+# allows 2,000 minutes a month: */10 is ~4,320 runs and would run out. If this
+# repository is public, Actions minutes are not metered and `*/10 * * * *` is
+# both free and better — the queue's own backoff starts at one minute.
+
+name: Booking cron
+
+on:
+  schedule:
+    # Retry whatever failed to send. See the interval note above.
+    - cron: "*/30 * * * *"
+    # 02:00 UTC is 10:00 WITA — a civil hour to send tomorrow's reminder.
+    - cron: "0 2 * * *"
+  # Adds a "Run workflow" button, for when something has just been fixed and
+  # you want the queue drained now rather than within the half hour.
+  workflow_dispatch:
+
+# Where to ping. Set an Actions *variable* named SITE_URL to point this at a
+# preview deployment while testing; production is the fallback.
+env:
+  SITE_URL: ${{ vars.SITE_URL || 'https://flexandflow.fit' }}
+
+# One run at a time. A slow dispatch and its successor overlapping would not
+# double-send — the queue claims each job before sending — but it would burn
+# minutes proving that.
+concurrency:
+  group: booking-cron
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    name: Send pending messages
+    # Everything except the daily reminder slot: the two schedules share this
+    # workflow, and `github.event.schedule` is empty on a manual run.
+    if: github.event.schedule != '0 2 * * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: POST /api/cron/dispatch
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET is not set. Add it under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          # --fail-with-body so a 401 or 500 shows what the server said instead
+          # of failing with nothing but an exit code.
+          curl --fail-with-body --silent --show-error \
+               --max-time 120 \
+               --request POST \
+               --header "Authorization: Bearer $CRON_SECRET" \
+               "$SITE_URL/api/cron/dispatch/"
+          echo
+
+  reminders:
+    name: Queue tomorrow's reminders
+    if: github.event.schedule == '0 2 * * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: POST /api/cron/reminders
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET is not set. Add it under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error \
+               --max-time 120 \
+               --request POST \
+               --header "Authorization: Bearer $CRON_SECRET" \
+               "$SITE_URL/api/cron/reminders/"
+          echo

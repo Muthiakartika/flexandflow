@@ -63,7 +63,7 @@ export function readManageToken(token: string): string | null {
   return timingSafeEqual(a, b) ? bookingId : null;
 }
 
-/** Guards the cron endpoints. Vercel Cron sends this header. */
+/** Guards the cron endpoints. Whatever drives the schedule sends this header. */
 export function isAuthorisedCron(request: Request): boolean {
   const header = request.headers.get("authorization") ?? "";
   const expected = `Bearer ${env().CRON_SECRET}`;

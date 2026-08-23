@@ -7,7 +7,8 @@
  * was killed before it finished. Retries back off and eventually give up
  * (BOOKING-PLAN.md §6.1) — this endpoint just turns the crank.
  *
- * Both verbs on purpose: Vercel Cron issues a `GET`, and the studio's own VPS —
+ * Both verbs on purpose: a scheduler may issue either. GitHub Actions posts, and
+ * the studio's own VPS —
  * the likely scheduler, since Hobby only allows one cron a day — reaches it
  * with `curl -X POST`. The same guard covers both.
  */

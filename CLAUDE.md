@@ -315,9 +315,10 @@ themselves. Treat every part of it as unverified.
   which number receives admin notifications.
 - **A Neon database**, then `prisma migrate deploy` and `prisma db seed`.
 - **The owner verifies every price and duration** against the real price list. See point 4.
-- **Cron.** Vercel's Hobby plan allows one job a day, which is not enough for the
-  ten-minute retry loop. `CRON.md` gives both options — Pro, or a `curl` cron on the box
-  already running WAHA.
+- **Cron.** Runs on GitHub Actions (`.github/workflows/booking-cron.yml`), not Vercel —
+  Vercel's Hobby plan allows one job a day, which is not enough for a retry loop. Needs
+  `CRON_SECRET` as an Actions secret. `CRON.md` explains the interval, what breaks
+  without a scheduler, and the alternatives.
 - `.env.example` lists every variable; `lib/env.ts` validates them and names the missing one.
 
 ---

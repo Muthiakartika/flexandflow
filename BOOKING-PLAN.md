@@ -619,24 +619,29 @@ tidak bisa dipanen dengan menebak URL.
 
 ## 8. Cron (Vercel)
 
-```json
-// vercel.json
-{
-  "crons": [
-    { "path": "/api/cron/dispatch",  "schedule": "*/10 * * * *" },
-    { "path": "/api/cron/reminders", "schedule": "0 2 * * *" }
-  ]
-}
+```yaml
+# .github/workflows/booking-cron.yml
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # retry pesan yang gagal
+    - cron: "0 2 * * *"      # reminder H-1
+  workflow_dispatch:
 ```
 
 `0 2 * * *` UTC = **10:00 WITA**, jam yang wajar untuk mengirim reminder H-1.
 Kedua endpoint memeriksa header `Authorization: Bearer ${CRON_SECRET}`.
 
-> **Paket Vercel Hobby hanya mengizinkan cron sekali sehari**, dan waktunya pun
-> tidak presisi. Retry tiap 10 menit dan reminder terjadwal membutuhkan **paket
-> Pro** (~$20/bln). Alternatif tanpa upgrade: pakai cron dari VPS WAHA yang sudah
-> ada untuk memanggil kedua endpoint lewat `curl` — nol biaya tambahan, dan
-> servernya toh sudah menyala. Rekomendasi: pakai VPS itu.
+> **Bukan Vercel Cron.** Paket Hobby hanya mengizinkan satu job sehari dengan
+> waktu yang tidak presisi — tidak cukup untuk loop retry — dan tingkat
+> berikutnya berbayar untuk dua `curl` sehari. Dipindah ke GitHub Actions.
+>
+> Intervalnya 30 menit, bukan 10: di repo **privat** tiap run ditagih dibulatkan
+> ke menit penuh dan paket Free hanya memberi 2.000 menit/bulan, sedangkan
+> `*/10` ≈ 4.320 run. Kalau repo-nya publik, menit Actions tidak dihitung dan
+> `*/10` gratis sekaligus lebih baik.
+>
+> Alternatif terbaik kalau tidak mau Actions: cron di VPS yang sudah menjalankan
+> WAHA — presisi, gratis, tanpa kuota. Detail lengkapnya di `CRON.md`.
 
 ---
 
