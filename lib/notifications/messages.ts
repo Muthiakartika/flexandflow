@@ -1,16 +1,20 @@
 /**
  * What the WhatsApp messages actually say.
  *
- * Two registers, on purpose. The customer's messages are in Indonesian —
- * that is who books this studio, and a confirmation nobody reads is a phone
- * call later. The studio's own messages stay in English, like the admin panel
- * and the site. Service and therapist names are never translated: they are
- * what the price list and the wizard showed, and a customer matching a
- * WhatsApp against a booking page should see the same words.
+ * English throughout, customer and studio alike — the owner's call, and it
+ * matches the rest: the site, the wizard, the emails and the admin panel are
+ * all in English, and a confirmation that arrives in a different language from
+ * the page that produced it reads as though it came from somewhere else.
+ * Uluwatu's booking traffic is largely visitors, which is the same reason.
  *
- * Money is `formatRupiah` here and `formatIdr` in email. Both formatters
- * already exist in `lib/booking/format.ts` because the two audiences read
- * money differently — "Rp750.000" on a phone, "IDR 750,000" in an inbox.
+ * Service and therapist names are never translated: they are what the price
+ * list and the wizard showed, and a customer matching a WhatsApp against a
+ * booking page should see the same words.
+ *
+ * Money is `formatRupiah` here and `formatIdr` in email — "Rp750.000" on a
+ * phone, "IDR 750,000" in an inbox. Both formatters already exist in
+ * `lib/booking/format.ts`; the rupiah form stays because it is how the amount
+ * is written on a receipt in Bali, whatever language surrounds it.
  *
  * WhatsApp's own markup is `*bold*` and `_italic_`. Nothing else survives.
  * The reference and the time go in the first two lines so the whole message
@@ -44,66 +48,66 @@ function joinLines(lines: string[]): string {
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-// ── Customer (Indonesian) ─────────────────────────────────────────────────
+// ── Customer ──────────────────────────────────────────────────────────────
 
 export function customerConfirmationMessage(view: BookingView): string {
   return joinLines([
-    `*Booking terkonfirmasi* — ${view.reference}`,
+    `*Booking confirmed* — ${view.reference}`,
     `${view.dateLabel}, ${view.timeLabel} WITA`,
     ``,
-    `Layanan: ${view.serviceTitle} (${formatDuration(view.durationMinutes)})`,
-    `Terapis: ${view.therapistDisplayName}`,
-    `Harga: ${formatRupiah(view.priceIdr)}`,
-    `Lokasi: ${contact.address}`,
+    `Treatment: ${view.serviceTitle} (${formatDuration(view.durationMinutes)})`,
+    `Therapist: ${view.therapistDisplayName}`,
+    `Price: ${formatRupiah(view.priceIdr)}`,
+    `Where: ${contact.address}`,
     ``,
-    manageLine(view, `Tambah ke kalender atau ubah jadwal:`),
+    manageLine(view, `Add to your calendar, or change the time:`),
     ``,
-    `Simpan kode ${view.reference} ya. Balas pesan ini kalau ada yang perlu ditanyakan.`,
+    `Keep the code ${view.reference}. Reply here if you need anything.`,
   ]);
 }
 
 export function customerReminderMessage(view: BookingView): string {
   return joinLines([
-    `*Pengingat sesi besok* — ${view.reference}`,
+    `*Your session is tomorrow* — ${view.reference}`,
     `${view.dateLabel}, ${view.timeLabel} WITA`,
     ``,
-    `Layanan: ${view.serviceTitle} (${formatDuration(view.durationMinutes)})`,
-    `Terapis: ${view.therapistDisplayName}`,
-    `Lokasi: ${contact.address}`,
+    `Treatment: ${view.serviceTitle} (${formatDuration(view.durationMinutes)})`,
+    `Therapist: ${view.therapistDisplayName}`,
+    `Where: ${contact.address}`,
     ``,
-    manageLine(view, `Ubah atau batalkan:`),
+    manageLine(view, `Change or cancel:`),
   ]);
 }
 
 export function customerCancelledMessage(view: BookingView): string {
-  const reason = view.cancelReason ? `Alasan: ${view.cancelReason}` : ``;
+  const reason = view.cancelReason ? `Reason: ${view.cancelReason}` : ``;
 
   return joinLines([
-    `*Booking dibatalkan* — ${view.reference}`,
+    `*Booking cancelled* — ${view.reference}`,
     `${view.dateLabel}, ${view.timeLabel} WITA`,
     ``,
-    `Layanan: ${view.serviceTitle}`,
-    `Terapis: ${view.therapistDisplayName}`,
+    `Treatment: ${view.serviceTitle}`,
+    `Therapist: ${view.therapistDisplayName}`,
     reason,
     ``,
-    `Tidak ada yang perlu dilakukan lagi. Kalau pembatalan ini di luar dugaan, balas pesan ini.`,
+    `Nothing further to do. If this cancellation is a surprise, reply here.`,
   ]);
 }
 
 export function customerRescheduledMessage(view: BookingView): string {
   return joinLines([
-    `*Jadwal booking diubah* — ${view.reference}`,
-    `Jadwal baru: ${view.dateLabel}, ${view.timeLabel} WITA`,
+    `*Your booking has moved* — ${view.reference}`,
+    `New time: ${view.dateLabel}, ${view.timeLabel} WITA`,
     ``,
-    `Layanan: ${view.serviceTitle} (${formatDuration(view.durationMinutes)})`,
-    `Terapis: ${view.therapistDisplayName}`,
-    `Lokasi: ${contact.address}`,
+    `Treatment: ${view.serviceTitle} (${formatDuration(view.durationMinutes)})`,
+    `Therapist: ${view.therapistDisplayName}`,
+    `Where: ${contact.address}`,
     ``,
-    manageLine(view, `Perbarui kalender atau ubah lagi:`),
+    manageLine(view, `Update your calendar, or change it again:`),
   ]);
 }
 
-// ── Studio (English) ──────────────────────────────────────────────────────
+// ── Studio ────────────────────────────────────────────────────────────────
 
 /** The customer's number as something the studio can tap to reply. */
 function replyLine(view: BookingView): string {
