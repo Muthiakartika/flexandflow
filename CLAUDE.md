@@ -395,8 +395,9 @@ migrations *have* been applied. Treat every code path as unverified.
   required — that decides what the client has to prepare.
 - **Four things from the Xendit dashboard**, only two of which are environment
   variables: the API secret key, the Callback Verification Token, the callback URL
-  (`/api/payments/xendit`) registered against **every** payment event the studio
-  accepts, and the payment methods themselves switched on. A callback row left blank
+  (`/api/payments/xendit/` — **with** the trailing slash, or `trailingSlash: true`
+  answers 308 and a webhook sender that does not follow redirects on POST never
+  arrives) registered against **every** payment event the studio accepts, and the payment methods themselves switched on. A callback row left blank
   means those payments are collected and never confirmed — the money arrives and the
   booking stays unpaid. `PAYMENT-PLAN.md` §9 has the checklist.
 - **Two decisions from the owner that block the work being finished**: full payment or

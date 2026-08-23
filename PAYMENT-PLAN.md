@@ -473,8 +473,14 @@ tidak menandatanganinya (§5). Perlakukan seperti kata sandi.
 Isi dengan:
 
 ```
-https://flexandflow.fit/api/payments/xendit
+https://flexandflow.fit/api/payments/xendit/
 ```
+
+**Dengan garis miring di akhir.** `trailingSlash: true` berlaku untuk route
+handler juga: bentuk tanpa garis miring menjawab **308**, dan pengirim webhook
+yang tidak mengikuti redirect pada POST tidak akan pernah sampai. Diverifikasi
+langsung — tanpa slash `308`, dengan slash `401` (yaitu route-nya benar dan
+menolak token kosong).
 
 Dan isikan untuk **setiap jenis pembayaran yang diterima studio** — invoice,
 virtual account, QR code, dan e-wallet masing-masing punya barisnya sendiri di
@@ -483,9 +489,32 @@ berarti pembayaran jenis itu diterima dan tidak pernah dikonfirmasi**: uangnya
 masuk, bookingnya tetap berstatus belum dibayar, dan tidak ada yang tahu sampai
 ada pelanggan yang protes.
 
-Saat menguji di sandbox, arahkan ke URL preview Vercel dulu. Xendit tidak bisa
-memanggil `localhost`; kalau ingin menguji dari mesin sendiri, pakai terowongan
-seperti ngrok dan daftarkan URL terowongannya.
+#### Menguji di Vercel sebelum domain asli dipakai
+
+Xendit tidak bisa memanggil `localhost`, jadi harus ada deployment. Tiga hal
+yang menentukan berhasil atau tidak:
+
+**Pakai URL produksi proyek, bukan URL preview.** Vercel memberi URL baru pada
+setiap push — `flex-a1b2c3-akun.vercel.app` — sedangkan `<proyek>.vercel.app`
+selalu menunjuk deployment produksi terakhir. Daftarkan yang stabil, atau
+callback-nya mati begitu ada push berikutnya.
+
+**Matikan Deployment Protection untuk URL itu.** Kalau menyala, Vercel menjawab
+halaman login alih-alih route kita, dan Xendit menerima HTML dengan status
+non-200 — pembayaran tidak pernah terkonfirmasi dan penyebabnya tidak kelihatan
+dari sisi mana pun. Ini gagal secara diam-diam, jadi periksa sebelum menyalahkan
+kode.
+
+**Samakan `NEXT_PUBLIC_SITE_URL` dengan URL yang sama.** Itu yang dipakai untuk
+link kelola-booking, `.ics`, dan `success_redirect_url` yang dikirim ke Xendit.
+Kalau masih `localhost`, pelanggan akan menerima email berisi tautan ke mesin
+Anda sendiri.
+
+Urutannya: **deploy dulu, baru daftarkan URL-nya** — beberapa gateway memeriksa
+URL saat disimpan, dan URL yang belum ada bisa ditolak.
+
+Kalau memang ingin menguji dari mesin sendiri, pakai terowongan seperti ngrok
+dan daftarkan URL terowongannya.
 
 **4. Aktifkan metode pembayarannya.** QRIS, bank virtual account mana saja,
 e-wallet mana saja, dan kartu. Metode yang belum diaktifkan **tidak** gagal saat
