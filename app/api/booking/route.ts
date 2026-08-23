@@ -23,12 +23,8 @@ import { fail, ok, serverError } from "@/lib/api/respond";
 import { createBooking } from "@/lib/booking/create";
 import { guardBookingRequest, recordBookingOrigin } from "@/lib/booking/guard";
 import { createBookingSchema, fieldErrors } from "@/lib/booking/schema";
-import { expireBookingHold } from "@/lib/booking/transitions";
 import { toBookingView } from "@/lib/booking/view";
-import { env } from "@/lib/env";
 import { dispatchPending, queueBookingCreated } from "@/lib/notifications";
-import { createCharge } from "@/lib/payments/charges";
-import type { PaymentIntent } from "@/lib/payments/types";
 
 export const dynamic = "force-dynamic";
 
@@ -89,70 +85,33 @@ export async function POST(request: Request): Promise<Response> {
     const view = toBookingView(booking);
 
     if (result.payment.method === "ONLINE") {
-      let intent: PaymentIntent;
-
-      try {
-        intent = await createCharge({
-          bookingId: booking.id,
-          /* `createBooking` derived this from the catalogue and wrote it to
-             `amountDueIdr`. The request body never had a say in it. */
-          amountIdr: result.payment.amountIdr,
-          channel: result.payment.channel,
-          description: `Flex & Flow — ${view.serviceTitle}, ${view.dateLabel}`,
-          customer: {
-            firstName: booking.customer.firstName,
-            lastName: booking.customer.lastName,
-            email: booking.customer.email,
-            phoneE164: booking.customer.phoneE164,
-          },
-          bookingReference: view.reference,
-          /* Where the gateway sends someone who paid on its own hosted page.
-             It only *shows* the outcome: the page reads the database, and the
-             callback is what writes it — PAYMENT-PLAN.md §5 rule 1. */
-          returnUrl: `${env().NEXT_PUBLIC_SITE_URL}/booking/confirmation/${view.reference}/`,
-        });
-      } catch (error) {
-        console.error("[booking] could not open a charge", error);
-
-        /*
-         * The row is already committed, and it is holding a slot nobody can
-         * now pay for. Left alone it would block that time until the cron
-         * swept it fifteen minutes later, while the customer sits in front of
-         * a modal that never opened. So the hold is released here and the
-         * wizard is told to try again — the same booking, made cleanly, is a
-         * better outcome than a zombie.
-         *
-         * `expireBookingHold` rather than `cancelBooking`: this booking was
-         * never confirmed to anybody, so there is no calendar entry to revoke
-         * and nothing to tell the customer they have lost.
-         */
-        try {
-          await expireBookingHold({
-            bookingId: booking.id,
-            reason: "The charge could not be opened.",
-          });
-        } catch (cancelError) {
-          /* Now it really is a zombie, but a visible one: it shows in the
-             admin agenda as awaiting payment, and the hold sweep will still
-             cancel it when `holdExpiresAt` passes. */
-          console.error(
-            "[booking] could not release the hold after a failed charge",
-            cancelError,
-          );
-        }
-
-        return fail(
-          "SERVER",
-          "We could not start the payment. Please try again, or choose to " +
-            "pay at the studio.",
-        );
-      }
-
-      /* No `queueBookingCreated` on this path, and no `dispatchPending`. See
-         the note at the top of this file: nothing goes out until the callback
-         says the money arrived. */
+      /*
+       * No charge is opened here, on purpose.
+       *
+       * This used to raise one immediately on the first rail in
+       * `PAYMENT_CHANNELS`, so every customer who reached the modal had a QRIS
+       * code created for them before being asked what they wanted. Anyone who
+       * then picked a card left that row behind — unpaid, unpayable, and
+       * sitting in the studio's payment table next to the real one. The rail is
+       * the customer's to choose, and `POST /api/booking/[token]/payment` is
+       * where the charge is opened once they have.
+       *
+       * The slot is held either way: `AWAITING_PAYMENT` is inside
+       * `booking_no_overlap` and `holdExpiresAt` is already written, so nobody
+       * can take the time while the modal is being read.
+       *
+       * Nothing to fail here any more, which is why the hold release that used
+       * to guard `createCharge` has gone with it.
+       */
       return ok(
-        { booking: view, reference: view.reference, payment: intent },
+        {
+          booking: view,
+          reference: view.reference,
+          payment: {
+            amountIdr: result.payment.amountIdr,
+            holdExpiresAt: result.payment.holdExpiresAt.toISOString(),
+          },
+        },
         { status: 201 },
       );
     }

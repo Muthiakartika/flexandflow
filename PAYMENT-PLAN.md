@@ -384,6 +384,17 @@ Perbaikannya: route `POST /api/booking` hanya memanggilnya untuk
 `AT_STUDIO`. Untuk `ONLINE`, yang memanggil adalah webhook, setelah pembayaran
 berhasil.
 
+**Charge dibuka saat pelanggan memilih, bukan saat booking dibuat.** Sampai
+2026-08-23 `POST /api/booking` langsung membuka charge pada rail pertama di
+`PAYMENT_CHANNELS`, jadi setiap pelanggan yang sampai ke modal sudah
+dibuatkan QRIS sebelum ditanya mau bayar pakai apa — dan yang kemudian memilih
+kartu meninggalkan baris itu menganggur di tabel pembayaran studio. Sekarang
+booking hanya menahan slot (`AWAITING_PAYMENT` + `holdExpiresAt`, keduanya
+sudah cukup karena status itu ada di dalam `booking_no_overlap`), dan
+`POST /api/booking/[token]/payment` yang membuka charge begitu rail-nya
+dipilih. `createBookingSchema` tidak lagi menerima `paymentChannel` sama
+sekali; membawanya sejauh itu berarti membawa tebakan.
+
 **Kwitansi menyusul, bukan menggantikan.** Sejak 2026-08-23, begitu pembayaran
 masuk pelanggan menerima **dua** pesan, bukan satu: konfirmasi booking seperti
 biasa, plus `CUSTOMER_PAYMENT_RECEIVED` — WhatsApp dan email — yang menyebut

@@ -115,8 +115,9 @@ export const paymentChannelSchema = z.enum([
 export const createBookingSchema = z.object({
   staff: staffSchema,
   paymentMethod: paymentMethodSchema,
-  /** Required when paying online; ignored otherwise. */
-  paymentChannel: paymentChannelSchema.optional(),
+  /* No `paymentChannel`. Which rail the money travels on is not decided at
+     booking time any more — the modal asks, and `POST /api/booking/[token]/
+     payment` opens the charge on the answer. */
   variantId: z.string().min(1, "Choose a service"),
   startAt: instantSchema,
   customer: customerSchema,

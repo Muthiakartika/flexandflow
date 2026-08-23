@@ -20,6 +20,7 @@
  * confirming the move. See `RescheduleState`.
  */
 import type {
+  ApiError,
   Slot,
   StaffOption,
   StaffSelection,
@@ -27,7 +28,11 @@ import type {
 } from "@/lib/booking/types";
 import { ANY_STAFF } from "@/lib/booking/types";
 import type { IsoDate } from "@/lib/booking/time";
-import type { PaymentIntent, PaymentMethodValue } from "@/lib/payments/types";
+import type {
+  PaymentDue,
+  PaymentIntent,
+  PaymentMethodValue,
+} from "@/lib/payments/types";
 
 import type { BookingDetail } from "./useBookingApi";
 
@@ -164,7 +169,13 @@ export type OpenPayment = {
   /** The booking's manage token. Every payment call is keyed by it. */
   token: string;
   reference: string;
-  intent: PaymentIntent;
+  /** What is owed. Known before any rail is picked, unlike a charge. */
+  due: PaymentDue;
+  /**
+   * The charge, once the customer has chosen how to pay. Null until then —
+   * the modal opens on the chooser rather than on a QR code nobody asked for.
+   */
+  intent: PaymentIntent | null;
   /**
    * Whether the modal is showing. Dismissing it keeps the charge, so "Show
    * payment again" can put the same QR back rather than opening a second one.
@@ -213,7 +224,7 @@ export type BookingState = {
    * calendar would be a lie, because the time is still theirs; this is what
    * the datetime step needs to offer them that payment again instead.
    */
-  resume: { reference: string; manageToken: string } | null;
+  resume: NonNullable<ApiError["resume"]> | null;
   /** Bumped to force the slot list to refetch after a slot is lost. */
   slotsToken: number;
 };
@@ -270,7 +281,9 @@ export type BookingAction =
       /** The booking's manage token. */
       token: string;
       reference: string;
-      intent: PaymentIntent;
+      due: PaymentDue;
+      /** Set only when resuming a hold, where a charge is opened first. */
+      intent?: PaymentIntent | null;
     }
   | { type: "paymentDismissed"; notice: string }
   | { type: "paymentReopened" }
@@ -280,7 +293,7 @@ export type BookingAction =
       type: "slotLost";
       notice: string;
       /** Their own live hold on that slot, when that is what clashed. */
-      resume?: { reference: string; manageToken: string };
+      resume?: NonNullable<ApiError["resume"]>;
     }
   | {
       type: "startReschedule";
@@ -407,7 +420,8 @@ export function reducer(
         payment: {
           token: action.token,
           reference: action.reference,
-          intent: action.intent,
+          due: action.due,
+          intent: action.intent ?? null,
           open: true,
         },
       };

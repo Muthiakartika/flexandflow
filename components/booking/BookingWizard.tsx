@@ -1,13 +1,12 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { H2 } from "@/components/ui/tokens";
 import { studioMonthKey } from "@/lib/booking/time";
 import type { StaffOption, StaffSelection } from "@/lib/booking/types";
-import { PAYMENT_CHANNELS } from "@/lib/payments/types";
 
 import DateTimeStep from "./DateTimeStep";
 import PaymentModal from "./PaymentModal";
@@ -34,7 +33,6 @@ import {
   fetchSlots,
   fetchStaff,
   rescheduleBooking,
-  startPayment,
   useEvent,
   useResource,
 } from "./useBookingApi";
@@ -151,10 +149,6 @@ export default function BookingWizard({
        through the timezone helper — the browser may well be somewhere else. */
     (step) => initialState(step, studioMonthKey(new Date()), preselected),
   );
-
-  /* Local rather than reducer state: it is the button's own spinner, and it
-     lives exactly as long as the request does. */
-  const [resuming, setResuming] = useState(false);
 
   /* A token the manage endpoint has already refused is not one to wait on
      again: the Back button can return to the broken link, and the answer is not
@@ -437,9 +431,6 @@ export default function BookingWizard({
         note: state.details.note.trim() || null,
       },
       paymentMethod: online ? "ONLINE" : "AT_STUDIO",
-      /* The first rail in the studio's own order, which is the cheapest one
-         for them. The modal offers the rest; see `PAYMENT_CHANNELS`. */
-      ...(online ? { paymentChannel: PAYMENT_CHANNELS[0] } : {}),
       website: state.details.website,
     };
 
@@ -459,7 +450,7 @@ export default function BookingWizard({
           type: "paymentOpened",
           token: manageTokenOf(created.booking),
           reference: created.reference,
-          intent: created.payment,
+          due: created.payment,
         });
         return;
       }
@@ -507,42 +498,29 @@ export default function BookingWizard({
   };
 
   /*
-   * Pick up the payment on a hold the visitor already owns.
+   * Put the visitor back in front of a hold they already own.
    *
-   * `POST …/payment` is the same call the modal's "pay another way" makes, and
-   * it is the right one here for the checks it already carries: it refuses
-   * anything but a live `AWAITING_PAYMENT` hold, extends that hold up to the
-   * ceiling, and opens a fresh charge — so an expired one cannot be resumed
-   * into a slot somebody else now has.
+   * Nothing is requested here. The modal is the thing that opens charges, and
+   * every check that matters lives in `POST …/payment`, which it calls once a
+   * rail is picked: that route refuses anything but a live `AWAITING_PAYMENT`
+   * hold, so a lapsed one cannot be resumed into a slot somebody else now has.
+   * Opening a charge from this button instead would raise one on whichever
+   * rail happened to be first — the thing this flow was just rid of.
    */
-  const resumeHeld = useEvent(async () => {
+  const resumeHeld = useEvent(() => {
     const held = state.resume;
-    if (!held || resuming) return;
+    if (!held) return;
 
-    setResuming(true);
-
-    try {
-      const intent = await startPayment(held.manageToken, PAYMENT_CHANNELS[0]);
-      dispatch({
-        type: "paymentOpened",
-        token: held.manageToken,
-        reference: held.reference,
-        intent,
-      });
-    } catch (cause) {
-      /* The hold lapsed between the refusal and this click, most likely. That
-         genuinely does send them back to the calendar, so the offer goes with
-         the message. */
-      dispatch({
-        type: "slotLost",
-        notice:
-          cause instanceof Error
-            ? cause.message
-            : "That payment could no longer be continued. Please choose a time again.",
-      });
-    } finally {
-      setResuming(false);
-    }
+    dispatch({
+      type: "paymentOpened",
+      token: held.manageToken,
+      reference: held.reference,
+      /* Straight from the hold, which has carried both figures since it was
+         made. No charge is opened: resuming lands on the same chooser a new
+         booking does, so somebody coming back is not handed the rail they
+         happened to be looking at when they left. */
+      due: { amountIdr: held.amountIdr, holdExpiresAt: held.holdExpiresAt },
+    });
   });
 
   const submit = useEvent(() =>
@@ -645,10 +623,9 @@ export default function BookingWizard({
                   type="button"
                   variant="solid"
                   className="mt-3"
-                  disabled={resuming}
-                  onClick={() => void resumeHeld()}
+                  onClick={resumeHeld}
                 >
-                  {resuming ? "Opening payment…" : "Continue that payment"}
+                  Continue that payment
                 </Button>
               ) : null}
             </div>
@@ -793,6 +770,7 @@ export default function BookingWizard({
         <PaymentModal
           token={state.payment.token}
           reference={state.payment.reference}
+          due={state.payment.due}
           intent={state.payment.intent}
           /* The details the visitor typed two steps ago. Xendit needs a name
              and contact details with a card, and asking again for something

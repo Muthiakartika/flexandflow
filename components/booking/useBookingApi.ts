@@ -11,10 +11,11 @@ import type {
   StaffOption,
   StaffSelection,
 } from "@/lib/booking/types";
-import { isApiError } from "@/lib/booking/types";
+import { isApiError, type ApiError } from "@/lib/booking/types";
 import type { IsoDate } from "@/lib/booking/time";
 import type {
   PaymentChannelValue,
+  PaymentDue,
   PaymentIntent,
   PaymentMethodValue,
   PaymentStatusView,
@@ -34,13 +35,13 @@ export class BookingApiError extends Error {
   readonly code: string;
   readonly fields: Record<string, string>;
   /** Present only on a `SLOT_TAKEN` the caller caused themselves. */
-  readonly resume?: { reference: string; manageToken: string };
+  readonly resume?: NonNullable<ApiError["resume"]>;
 
   constructor(
     message: string,
     code: string,
     fields?: Record<string, string>,
-    resume?: { reference: string; manageToken: string },
+    resume?: NonNullable<ApiError["resume"]>,
   ) {
     super(message);
     this.name = "BookingApiError";
@@ -169,16 +170,18 @@ export type CreateBookingBody = CreateBookingInput & {
 };
 
 /**
- * The booking, its reference, and — only when paying online — the charge that
- * was opened alongside it.
+ * The booking, its reference, and — only when paying online — what it owes.
  *
  * `payment` being absent is not an error: it is what an `AT_STUDIO` booking
  * looks like, and that booking is already confirmed.
+ *
+ * It carries no charge. The rail is the customer's to pick in the modal, and
+ * the charge is opened by `startPayment` once they have — see `PaymentDue`.
  */
 export type CreatedBooking = {
   booking: BookingView;
   reference: string;
-  payment?: PaymentIntent;
+  payment?: PaymentDue;
 };
 
 export function createBooking(input: CreateBookingBody): Promise<CreatedBooking> {

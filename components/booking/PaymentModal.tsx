@@ -12,6 +12,7 @@ import {
   isFinished,
   isSettled,
   type PaymentChannelValue,
+  type PaymentDue,
   type PaymentIntent,
   type PaymentStatusValue,
 } from "@/lib/payments/types";
@@ -175,6 +176,7 @@ function WalletLinks({ links }: { links: Record<string, string> }) {
 export default function PaymentModal({
   token,
   reference,
+  due,
   intent: opened,
   cardHolder,
   onPaid,
@@ -184,8 +186,17 @@ export default function PaymentModal({
   token: string;
   /** Where to send the customer once the server says the money arrived. */
   reference: string;
-  /** The charge opened alongside the booking, on the default channel. */
-  intent: PaymentIntent;
+  /**
+   * What the booking owes and how long its slot is held. Known before any rail
+   * is chosen, which is what lets this modal open on the chooser.
+   */
+  due: PaymentDue;
+  /**
+   * The charge, once there is one. Null on arrival: opening the modal used to
+   * raise a QRIS code whether or not the customer wanted QRIS, and picking
+   * anything else left that row behind unpaid in the studio's payment table.
+   */
+  intent: PaymentIntent | null;
   /**
    * Who the booking is for. Passed straight through to the card form, which
    * prefills the name and sends the contact details Xendit requires with a
@@ -202,7 +213,7 @@ export default function PaymentModal({
   /** Dismissed without paying. The booking still exists and still holds. */
   onClose: () => void;
 }) {
-  const [intent, setIntent] = useState<PaymentIntent>(opened);
+  const [intent, setIntent] = useState<PaymentIntent | null>(opened);
   const [status, setStatus] = useState<PaymentStatusValue>("PENDING");
   const [now, setNow] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
@@ -226,7 +237,11 @@ export default function PaymentModal({
   const titleId = useId();
   const settledRef = useRef(false);
 
-  const expiresAt = Date.parse(intent.expiresAt);
+  /* Before a rail is picked there is no charge to expire, so the countdown is
+     the hold's — which is the real deadline anyway: the charge is deliberately
+     the shorter of the two (PAYMENT-PLAN.md, `XENDIT_INVOICE_MINUTES`). */
+  const hasCharge = intent !== null;
+  const expiresAt = Date.parse(intent?.expiresAt ?? due.holdExpiresAt);
   const remaining = expiresAt - now;
   const expired = status === "EXPIRED" || remaining <= 0;
   const finished = isFinished(status);
@@ -267,9 +282,11 @@ export default function PaymentModal({
   }, []);
 
   useEffect(() => {
-    /* Stopped once the answer can no longer change, once the charge is well
-       past its deadline, and whenever nobody is looking at the page. */
-    if (finished || !visible) return;
+    /* Stopped before a rail has been picked — there is no charge to ask about,
+       and the endpoint rightly answers 404 for a booking with no payment. Also
+       once the answer can no longer change, once the charge is well past its
+       deadline, and whenever nobody is looking at the page. */
+    if (!hasCharge || finished || !visible) return;
     if (Date.now() > expiresAt + EXPIRY_GRACE_MS) return;
 
     /* Scheduled rather than looped on an interval, and the first check is a
@@ -296,7 +313,7 @@ export default function PaymentModal({
       live = false;
       window.clearTimeout(timer);
     };
-  }, [finished, visible, expiresAt, poll]);
+  }, [hasCharge, finished, visible, expiresAt, poll]);
 
   /* One tick a second, for the countdown only — and it stops itself: the tick
      is what eventually makes `expired` true, which is what tears this down.
@@ -406,7 +423,7 @@ export default function PaymentModal({
     options: { force?: boolean; quiet?: boolean } = {},
   ): Promise<boolean> {
     if (busy) return false;
-    if (!options.force && channel === intent.channel && !expired && !finished) {
+    if (!options.force && channel === intent?.channel && !expired && !finished) {
       return false;
     }
 
@@ -497,7 +514,7 @@ export default function PaymentModal({
 
   /* ── Panels ──────────────────────────────────────────────────────────── */
 
-  const amount = formatIdr(intent.amountIdr);
+  const amount = formatIdr(intent?.amountIdr ?? due.amountIdr);
 
   /* Present on every state that is not settled. Polling covers the ordinary
      case, but a customer on hotel wi-fi who has just paid wants to be able to
@@ -508,13 +525,13 @@ export default function PaymentModal({
     </Button>
   );
 
-  function instrument() {
-    if (intent.channel === "QRIS" && intent.qrString) {
+  function instrument(charge: PaymentIntent) {
+    if (charge.channel === "QRIS" && charge.qrString) {
       return (
         <div className="payment-rails">
           <div className="payment-rail-qr grid justify-items-center gap-3">
             <QrCode
-              value={intent.qrString}
+              value={charge.qrString}
               label="QRIS code for this booking"
               className="payment-qr"
             />
@@ -527,7 +544,7 @@ export default function PaymentModal({
               to point at, so the wallet links come first there. The order is
               swapped in `globals.css`, not with a breakpoint variant. */}
           <div className="payment-rail-wallets grid gap-3">
-            <WalletLinks links={intent.deepLinks} />
+            <WalletLinks links={charge.deepLinks} />
             <p className="payment-hint font-body text-[13px] leading-[1.6]">
               Booking on the same phone you would scan with?{" "}
               <button
@@ -545,10 +562,10 @@ export default function PaymentModal({
       );
     }
 
-    if (intent.channel === "VIRTUAL_ACCOUNT" && intent.virtualAccounts.length > 0) {
+    if (charge.channel === "VIRTUAL_ACCOUNT" && charge.virtualAccounts.length > 0) {
       return (
         <div className="grid gap-3">
-          {intent.virtualAccounts.map((account) => (
+          {charge.virtualAccounts.map((account) => (
             <div key={`${account.bank}-${account.accountNumber}`} className="payment-account">
               <p className="page-label">{account.bank}</p>
               <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
@@ -565,7 +582,7 @@ export default function PaymentModal({
             <p className="page-label">Amount</p>
             <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
               <p className="payment-number">{amount}</p>
-              <CopyButton value={String(intent.amountIdr)} label="amount" />
+              <CopyButton value={String(charge.amountIdr)} label="amount" />
             </div>
           </div>
 
@@ -586,14 +603,14 @@ export default function PaymentModal({
      * site that could redraw a bank's OTP page would defeat the point of one. */
     return (
       <div className="grid gap-4">
-        {intent.channel === "EWALLET" ? (
-          <WalletLinks links={intent.deepLinks} />
+        {charge.channel === "EWALLET" ? (
+          <WalletLinks links={charge.deepLinks} />
         ) : null}
 
-        {intent.checkoutUrl ? (
+        {charge.checkoutUrl ? (
           <div className="grid gap-2">
             <a
-              href={intent.checkoutUrl}
+              href={charge.checkoutUrl}
               target="_blank"
               rel="noopener noreferrer"
               className={`payment-checkout ${FOCUS}`}
@@ -605,7 +622,7 @@ export default function PaymentModal({
               on its own once the payment goes through.
             </p>
           </div>
-        ) : Object.keys(intent.deepLinks).length > 0 ? (
+        ) : Object.keys(charge.deepLinks).length > 0 ? (
           /* A wallet link and nothing else, which is what GoPay returns: its
              only action is a deep link into the app. The links above are the
              whole instrument, so saying nothing more here is right — the
@@ -634,13 +651,13 @@ export default function PaymentModal({
    * slate — empty fields, no stale token, no leftover message — without the
    * form having to reset itself.
    */
-  function cardPanel() {
+  function cardPanel(charge: PaymentIntent) {
     return (
       <CardForm
-        key={intent.paymentId}
+        key={charge.paymentId}
         token={token}
         cardHolder={cardHolder}
-        amountIdr={intent.amountIdr}
+        amountIdr={charge.amountIdr}
         onLockChange={setCardLocked}
         onPaid={cardPaid}
         onRenew={renewCard}
@@ -648,7 +665,7 @@ export default function PaymentModal({
     );
   }
 
-  const cardInline = intent.channel === "CARD" && CARD_PAYMENTS_AVAILABLE;
+  const cardInline = intent?.channel === "CARD" && CARD_PAYMENTS_AVAILABLE;
 
   function body() {
     if (isSettled(status)) {
@@ -656,6 +673,29 @@ export default function PaymentModal({
         <p className="font-body text-[15px] leading-[1.7]">
           Payment received. Opening your confirmation…
         </p>
+      );
+    }
+
+    /*
+     * Nothing chosen yet, which is how this modal now opens.
+     *
+     * There is no charge, so there is nothing to show, nothing to poll and no
+     * countdown but the hold's — the buttons above are the whole screen. The
+     * previous version raised a QRIS code on arrival to have something to put
+     * here, and every customer who wanted a card ended up with two payment
+     * rows, one of them dead.
+     */
+    if (!intent) {
+      return (
+        <div className="grid gap-3">
+          <p className="font-body text-[15px] leading-[1.7]">
+            Choose how you would like to pay {amount}.
+          </p>
+          <p className="payment-hint font-body text-[13px] leading-[1.6]">
+            Your time is held while you decide. Nothing is charged until you
+            pay.
+          </p>
+        </div>
       );
     }
 
@@ -667,7 +707,7 @@ export default function PaymentModal({
     if (cardInline && !expired) {
       return (
         <div className="grid gap-4">
-          {cardPanel()}
+          {cardPanel(intent)}
 
           {pending ? (
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -712,7 +752,7 @@ export default function PaymentModal({
 
     return (
       <div className="grid gap-4">
-        {instrument()}
+        {instrument(intent)}
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Hidden from assistive technology in full: a value that changes
@@ -784,7 +824,7 @@ export default function PaymentModal({
                 key={channel}
                 type="button"
                 className={`payment-channel ${FOCUS}`}
-                data-selected={channel === intent.channel}
+                data-selected={channel === intent?.channel}
                 /* Locked out mid-authorisation for the same reason the close
                    button is: switching rail there would abandon a charge the
                    bank is still deciding on. */

@@ -35,7 +35,6 @@ import type { ApiError } from "@/lib/booking/types";
 import { loadBookingById, type LoadedBooking } from "@/lib/booking/view";
 import { isSlotTakenError, prisma } from "@/lib/db";
 import { paymentsEnabled } from "@/lib/env";
-import type { PaymentChannelValue } from "@/lib/payments/types";
 
 /**
  * What the caller has to know beyond "it saved".
@@ -49,11 +48,24 @@ export type CreatedPayment =
   | { method: "AT_STUDIO" }
   | {
       method: "ONLINE";
-      channel: PaymentChannelValue;
       /** From the catalogue, never from the request. */
       amountIdr: number;
       holdExpiresAt: Date;
     };
+
+/**
+ * Enough to put the customer back in front of their own unpaid hold.
+ *
+ * The amount and the deadline travel with it because the modal opens on the
+ * channel chooser now, before any charge exists — it has nothing else to
+ * print the figure or the countdown from.
+ */
+export type ResumableHold = {
+  reference: string;
+  manageToken: string;
+  amountIdr: number;
+  holdExpiresAt: string;
+};
 
 export type CreateBookingResult =
   | { ok: true; booking: LoadedBooking; payment: CreatedPayment }
@@ -68,7 +80,7 @@ export type CreateBookingResult =
        * theirs. It gives the wizard something to offer besides "pick another
        * time" — which would be wrong advice, since the time is not gone.
        */
-      resume?: { reference: string; manageToken: string };
+      resume?: ResumableHold;
     };
 
 /** 30^5 references make a collision rare; rare is not never. */
@@ -115,7 +127,7 @@ export const PAYMENT_HOLD_MAX_MINUTES = 45;
 async function findOwnHold(input: {
   phoneE164: string;
   startAt: Date;
-}): Promise<{ reference: string; manageToken: string } | null> {
+}): Promise<ResumableHold | null> {
   const held = await prisma.booking.findFirst({
     where: {
       status: BookingStatus.AWAITING_PAYMENT,
@@ -125,10 +137,25 @@ async function findOwnHold(input: {
     },
     /* Most recent first: someone who abandoned two is asking about the last. */
     orderBy: { createdAt: "desc" },
-    select: { reference: true, manageToken: true },
+    select: {
+      reference: true,
+      manageToken: true,
+      amountDueIdr: true,
+      holdExpiresAt: true,
+    },
   });
 
-  return held ?? null;
+  /* The `where` clause already refused a null or lapsed hold, so this only
+     satisfies the compiler — but returning a resumable payment with no
+     deadline would put the modal on a countdown from 1970. */
+  if (!held?.holdExpiresAt) return null;
+
+  return {
+    reference: held.reference,
+    manageToken: held.manageToken,
+    amountIdr: held.amountDueIdr,
+    holdExpiresAt: held.holdExpiresAt.toISOString(),
+  };
 }
 
 const RESUME_MESSAGE =
@@ -171,12 +198,18 @@ export async function createBooking(
     };
   }
 
-  /* Null on the pay-at-the-studio path, and from here on that is what "online"
-     means: a channel is the one thing the second path has that the first does
-     not, so the rest of this function branches on it rather than on the enum. */
-  let channel: PaymentChannelValue | null = null;
+  /*
+   * Whether this booking owes money, which is the only thing the rest of this
+   * function needs to know.
+   *
+   * It used to be the chosen rail, because the route opened a charge on it
+   * straight away. It no longer does — the customer picks the rail in the
+   * modal and `POST /api/booking/[token]/payment` opens the charge then — so
+   * carrying a channel this far would be carrying a guess.
+   */
+  const online = input.paymentMethod === "ONLINE";
 
-  if (input.paymentMethod === "ONLINE") {
+  if (online) {
     /*
      * Refused, not quietly downgraded to paying at the studio. A deployment
      * with no Xendit keys cannot open a charge or receive a callback, so a hold
@@ -195,17 +228,6 @@ export async function createBooking(
       };
     }
 
-    /* Optional in the schema because the field means nothing on the other
-       path; required here, because money has to travel on some rail. */
-    if (!input.paymentChannel) {
-      return {
-        ok: false,
-        code: "VALIDATION",
-        message: "Please choose how you would like to pay.",
-      };
-    }
-
-    channel = input.paymentChannel;
   }
 
   /* The single source of truth for this booking. `resolveSlot` re-checks the
@@ -267,7 +289,7 @@ export async function createBooking(
    * lock to take here, and adding one would only be a second, weaker copy of a
    * guarantee the database is making anyway.
    */
-  const holdExpiresAt = channel
+  const holdExpiresAt = online
     ? addMinutes(new Date(), PAYMENT_HOLD_MINUTES)
     : null;
 
@@ -346,10 +368,10 @@ export async function createBooking(
             /* Paying at the studio makes a booking final the moment it is
                made; paying online makes it a hold that the callback confirms
                and the cron cancels. `PENDING` stays unused. */
-            status: channel
+            status: online
               ? BookingStatus.AWAITING_PAYMENT
               : BookingStatus.CONFIRMED,
-            paymentMethod: channel
+            paymentMethod: online
               ? PaymentMethod.ONLINE
               : PaymentMethod.AT_STUDIO,
             /* The amount owed is the price this booking was just quoted, read
@@ -357,7 +379,7 @@ export async function createBooking(
                the duration and the therapist, and for the same reason. A body
                that could name its own `amountDueIdr` would be a body that could
                buy a 90-minute session for a thousand rupiah. */
-            amountDueIdr: channel ? slot.priceIdr : 0,
+            amountDueIdr: online ? slot.priceIdr : 0,
             holdExpiresAt,
             note: customer.note,
             priceIdrAtBooking: slot.priceIdr,
@@ -393,13 +415,8 @@ export async function createBooking(
         ok: true,
         booking,
         payment:
-          channel && holdExpiresAt
-            ? {
-                method: "ONLINE",
-                channel,
-                amountIdr: slot.priceIdr,
-                holdExpiresAt,
-              }
+          online && holdExpiresAt
+            ? { method: "ONLINE", amountIdr: slot.priceIdr, holdExpiresAt }
             : { method: "AT_STUDIO" },
       };
     } catch (error) {

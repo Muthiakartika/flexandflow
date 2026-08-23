@@ -62,7 +62,7 @@ export type FailOptions = {
   status?: number;
   headers?: HeadersInit;
   /** Only meaningful with `SLOT_TAKEN`; see `ApiError.resume`. */
-  resume?: { reference: string; manageToken: string };
+  resume?: NonNullable<ApiError["resume"]>;
 };
 
 export function fail(

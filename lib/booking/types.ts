@@ -216,7 +216,13 @@ export type ApiError = {
    * Telling them to pick another time would be false — the time is still
    * theirs — so the wizard is given what it needs to offer the payment again.
    */
-  resume?: { reference: string; manageToken: string };
+  resume?: {
+    reference: string;
+    manageToken: string;
+    /** What that hold owes and until when — the modal opens on a chooser. */
+    amountIdr: number;
+    holdExpiresAt: string;
+  };
 };
 
 export function isApiError(value: unknown): value is ApiError {

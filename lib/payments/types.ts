@@ -75,6 +75,20 @@ export type VirtualAccount = {
  * path uses it because 3-D Secure belongs to the issuing bank and cannot be
  * drawn by us, and any channel can fall back to it.
  */
+/**
+ * What a pay-now booking comes back with before any rail has been picked.
+ *
+ * Not a charge — no `Payment` row exists yet. Creating one at booking time
+ * meant every customer who opened the modal had a QRIS code raised for them
+ * whether or not they wanted QRIS, and picking anything else left that row
+ * behind, unpaid and unpayable, in the studio's payment table.
+ */
+export type PaymentDue = {
+  amountIdr: number;
+  /** UTC ISO. When the slot stops being held, charge or no charge. */
+  holdExpiresAt: string;
+};
+
 export type PaymentIntent = {
   paymentId: string;
   channel: PaymentChannelValue;
