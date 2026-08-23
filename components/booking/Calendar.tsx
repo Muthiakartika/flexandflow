@@ -65,6 +65,14 @@ function stateOf(day: DayAvailability | undefined): DayState {
   return "available";
 }
 
+/** State, label, and whether to draw the today dot. Order matches the grid's. */
+const LEGEND: [DayState, string, boolean][] = [
+  ["available", "Available", false],
+  ["full", "Fully booked", false],
+  ["closed", "Closed", false],
+  ["available", "Today", true],
+];
+
 const DESCRIPTION: Record<DayState, string> = {
   available: "available",
   full: "fully booked",
@@ -294,10 +302,23 @@ export default function Calendar({
               : ""}
       </p>
 
+      {/* Sample numerals, hidden from the accessibility tree: a screen reader
+          gets the state from each day's own `aria-label`, and would otherwise
+          hear four stray numbers with no month attached. */}
       <ul className="booking-legend">
-        <li data-state="available">Available</li>
-        <li data-state="full">Fully booked</li>
-        <li data-state="closed">Closed</li>
+        {LEGEND.map(([state, label, today]) => (
+          <li key={label}>
+            <span
+              aria-hidden
+              className="booking-day booking-legend-swatch"
+              data-state={state}
+              data-today={today ? "true" : "false"}
+            >
+              8
+            </span>
+            {label}
+          </li>
+        ))}
       </ul>
     </div>
   );
