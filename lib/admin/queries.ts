@@ -97,7 +97,14 @@ const paymentSelect = {
   lastError: true,
 } as const;
 
-type PaymentTally = { amountPaidIdr: number; refundedIdr: number };
+/* Mirrors `paymentTallySelect`. `paidAt` is here for `deletable`, which needs
+   to know whether money ever arrived — not the net figure, which a refund
+   moves back to zero without making the booking safe to erase. */
+type PaymentTally = {
+  amountPaidIdr: number;
+  refundedIdr: number;
+  paidAt: Date | null;
+};
 
 type PaidBookingRow = {
   paymentMethod: string;
@@ -170,7 +177,36 @@ export type BookingListRow = BookingSummary & {
   payment: PaymentState;
   /** Net of anything refunded, so a returned deposit stops counting as takings. */
   paidIdr: number;
+  /** Whether this row may be erased. See `deletable`. */
+  deletable: boolean;
 };
+
+/**
+ * Whether a booking can be deleted outright, rather than cancelled.
+ *
+ * Deletion exists to clear test rows and abandoned holds out of a list nobody
+ * can read, and it is the one action in this panel with nothing behind it —
+ * `Payment` and `NotificationJob` cascade, so the charge history and the record
+ * of what was sent go too. Two rules keep that from mattering:
+ *
+ * - **Nothing that ever settled.** A booking money passed through is an entry
+ *   in the studio's books, and no amount of tidying is worth erasing one. A
+ *   refund does not make it deletable either: `paidAt` records that the money
+ *   arrived, which stays true after it goes back.
+ * - **Nothing live.** Confirmed, completed and no-show are the diary and the
+ *   takings. Cancel it first if it should not be happening — that tells the
+ *   customer, which deleting silently would not.
+ *
+ * What is left is exactly the rubbish: cancelled bookings and unpaid holds,
+ * neither of which was ever confirmed to anybody with money attached.
+ *
+ * `AuditLog` survives regardless. It keys on `entityId` as a plain string with
+ * no foreign key, so what an admin did to a booking outlives the booking.
+ */
+function deletable(row: PaidBookingRow & { status: string }): boolean {
+  if (row.payments.some((payment) => payment.paidAt !== null)) return false;
+  return row.status === "CANCELLED" || row.status === "AWAITING_PAYMENT";
+}
 
 function toListRow(
   row: Parameters<typeof toBookingSummary>[0] & PaidBookingRow,
@@ -179,6 +215,7 @@ function toListRow(
     ...toBookingSummary(row),
     payment: paymentStateOf(row),
     paidIdr: Math.max(0, row.amountPaidIdr - refundedTotal(row.payments)),
+    deletable: deletable(row),
   };
 }
 

@@ -28,7 +28,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { redirect } from "next/navigation";
 
-import { PaymentStatus } from "@/generated/prisma/enums";
+import { BookingStatus, PaymentStatus } from "@/generated/prisma/enums";
 import { IDLE, type ActionState } from "@/lib/admin/action-state";
 import { currentAdmin, verifyCredentials } from "@/lib/admin/auth";
 import { createSessionToken, setSessionCookie } from "@/lib/admin/session";
@@ -321,6 +321,83 @@ export async function rescheduleBookingAction(
   revalidateBooking(bookingId);
 
   return done("Moved. The customer's calendar entry will update in place.");
+}
+
+/**
+ * Erases a booking. Not a cancellation — there is nothing left afterwards.
+ *
+ * For clearing test rows and abandoned holds out of a list that has to stay
+ * readable. `Payment` and `NotificationJob` cascade with it, which is why the
+ * rule below is re-derived here from the database rather than taken from the
+ * list: the button is only rendered on deletable rows, but a stale page is a
+ * page whose buttons describe a booking that has since been paid for.
+ *
+ * The customer is told nothing, and that is correct for what this is allowed
+ * to touch — a cancelled booking has already had its message, and an unpaid
+ * hold was never announced to anybody. Anything that would need saying cannot
+ * be deleted; see `deletable` in `lib/admin/queries.ts`.
+ */
+export async function deleteBookingAction(
+  _previous: ActionState,
+  form: FormData,
+): Promise<ActionState> {
+  const admin = await currentAdmin();
+  if (!admin) return NO_SESSION;
+
+  const bookingId = text(form, "bookingId");
+  if (!bookingId) return failed("No booking was named.");
+
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    select: {
+      reference: true,
+      status: true,
+      payments: { select: { paidAt: true } },
+    },
+  });
+
+  if (!booking) return failed("That booking no longer exists.");
+
+  if (booking.payments.some((payment) => payment.paidAt !== null)) {
+    return failed(
+      "That booking has been paid for. It is part of the studio's records " +
+        "and cannot be deleted — record a refund instead if money is owed back.",
+    );
+  }
+
+  if (
+    booking.status !== BookingStatus.CANCELLED &&
+    booking.status !== BookingStatus.AWAITING_PAYMENT
+  ) {
+    return failed(
+      "Only cancelled bookings and unpaid holds can be deleted. Cancel this " +
+        "one first — that also tells the customer.",
+    );
+  }
+
+  /*
+   * Written before the row goes, not after. The audit trail keys on `entityId`
+   * as a plain string rather than a foreign key, so it outlives the booking —
+   * which is the point: this is the only record that the booking ever existed.
+   */
+  await audit({
+    actor: admin.email,
+    action: "booking.delete",
+    entity: "Booking",
+    entityId: bookingId,
+    meta: { reference: booking.reference, status: booking.status },
+  });
+
+  try {
+    await prisma.booking.delete({ where: { id: bookingId } });
+  } catch (error) {
+    return failed(reason(error));
+  }
+
+  revalidatePath("/admin/bookings");
+  revalidatePath("/admin");
+
+  return done(`Booking ${booking.reference} deleted.`);
 }
 
 // ── Payments ──────────────────────────────────────────────────────────────

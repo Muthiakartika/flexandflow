@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { BookingFilters } from "@/components/admin/BookingFilters";
+import { DeleteBookingButton } from "@/components/admin/DeleteBookingButton";
 import { PaymentChip } from "@/components/admin/PaymentPanel";
 import { PendingLink } from "@/components/admin/PendingLink";
 import {
@@ -111,9 +112,7 @@ export default async function AdminBookingsPage({
                   <th scope="col">Price</th>
                   <th scope="col">Payment</th>
                   <th scope="col">Status</th>
-                  <th scope="col">
-                    <span className="sr-only">Open</span>
-                  </th>
+                  <th scope="col">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -167,12 +166,25 @@ export default async function AdminBookingsPage({
                         <StatusChip status={booking.status} />
                       </td>
                       <td>
-                        <Link
-                          href={`/admin/bookings/${booking.id}/`}
-                          className="text-[13px] font-bold text-olive-strong underline underline-offset-2"
-                        >
-                          Open
-                        </Link>
+                        <div className="grid justify-items-start gap-1">
+                          <Link
+                            href={`/admin/bookings/${booking.id}/`}
+                            className="text-[13px] font-bold text-olive-strong underline underline-offset-2"
+                          >
+                            Open
+                          </Link>
+
+                          {/* Only on rows that may go — cancelled bookings and
+                              unpaid holds. Anything the studio has to account
+                              for has no button at all rather than one that
+                              refuses; see `deletable` in `lib/admin/queries`. */}
+                          {booking.deletable ? (
+                            <DeleteBookingButton
+                              bookingId={booking.id}
+                              reference={booking.reference}
+                            />
+                          ) : null}
+                        </div>
                       </td>
                     </tr>
                   );
