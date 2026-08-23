@@ -421,6 +421,12 @@ export function reducer(
         ...state,
         notice: action.notice,
         payment: { ...state.payment, open: false },
+        /* The hold this booking took is now blocking its own slot, so the list
+           behind the modal is out of date the moment it opens — it was fetched
+           before the booking existed. Bumping the token refetches it, and the
+           time they are holding shows as taken rather than as one free slot
+           they could pointlessly try to book again. */
+        slotsToken: state.slotsToken + 1,
       };
 
     case "paymentReopened":

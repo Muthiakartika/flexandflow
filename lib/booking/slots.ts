@@ -44,9 +44,26 @@ import {
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 
-/** A booking only holds its slot while it is live. Cancelling frees it again. */
+/**
+ * A booking only holds its slot while it is live. Cancelling frees it again.
+ *
+ * This list must stay identical to the `WHERE` clause of the `booking_no_overlap`
+ * constraint, in `prisma/migrations/*_hold_blocks_slot/`. They are two halves of
+ * one rule: this half decides what is offered, that half decides what may be
+ * written, and the moment this one is the more permissive of the two the wizard
+ * starts offering times that Postgres will refuse at the last step — after the
+ * customer has filled in every field.
+ *
+ * `AWAITING_PAYMENT` is included with no regard for whether the hold has
+ * lapsed, again because the constraint does not look either. An expired hold
+ * really does still block the insert until the cron cancels it, so showing that
+ * time as free would be showing something untrue. That makes the sweep interval
+ * in `.github/workflows/booking-cron.yml` the thing that decides how long an
+ * abandoned payment keeps a slot dark; see CRON.md.
+ */
 const BLOCKING_STATUSES: BookingStatus[] = [
   BookingStatus.PENDING,
+  BookingStatus.AWAITING_PAYMENT,
   BookingStatus.CONFIRMED,
 ];
 
