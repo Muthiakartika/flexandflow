@@ -442,8 +442,8 @@ pengaturan di dalam dashboard, dan sistem tidak bekerja tanpanya.
 | # | Yang diambil | Di mana | Masuk ke |
 |---|---|---|---|
 | 1 | **API secret key** | Settings → Developers → **API Keys** | `XENDIT_SECRET_KEY` |
-| 2 | **Callback Verification Token** | Settings → Developers → **Callbacks** | `XENDIT_CALLBACK_TOKEN` |
-| 3 | **URL callback** | layar Callbacks yang sama | *bukan variabel* — diisi di dashboard |
+| 2 | **Webhook verification token** | Settings → **Webhooks** | `XENDIT_CALLBACK_TOKEN` |
+| 3 | **URL webhook** | layar Webhooks yang sama | *bukan variabel* — diisi di dashboard |
 | 4 | **Metode pembayaran diaktifkan** | Settings → Payment methods | *bukan variabel* |
 
 > Nama menu di dashboard bisa bergeser dari waktu ke waktu. Yang penting adalah
@@ -454,10 +454,19 @@ read-only. Kunci uji berawalan `xnd_development_`, kunci produksi
 `xnd_production_`. **Pakai kunci uji sampai seluruh alur lolos di sandbox** —
 kunci produksi memindahkan uang sungguhan sejak permintaan pertama.
 
-**2. Callback Verification Token.** Satu nilai untuk seluruh akun; tidak
-kedaluwarsa dan tidak per-event. Ini satu-satunya bukti sebuah callback benar
-datang dari Xendit, karena Xendit tidak menandatangani callback-nya (§5).
-Perlakukan seperti kata sandi.
+**2. Webhook verification token.** Xendit mengganti nama "Callbacks" menjadi
+"Webhooks", jadi dokumen lama — termasuk dokumentasi Xendit sendiri — menyebutnya
+*Callback Verification Token*. Benda yang sama, dan header-nya tetap
+`x-callback-token`.
+
+Letaknya di layar yang sama dengan URL webhook, biasanya tersembunyi di balik
+tombol **Show**. **Nilainya berbeda antara mode Test dan Live** — pastikan
+mode-nya sama dengan kunci API yang dipakai, atau setiap webhook akan ditolak
+401. Sebagian akun baru belum menampilkannya sampai ada satu URL webhook yang
+disimpan; kalau tidak ketemu, isi URL-nya dulu lalu lihat lagi.
+
+Ini satu-satunya bukti sebuah webhook benar datang dari Xendit, karena Xendit
+tidak menandatanganinya (§5). Perlakukan seperti kata sandi.
 
 **3. URL callback — ini yang paling mudah terlewat.**
 
