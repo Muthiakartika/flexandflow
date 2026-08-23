@@ -23,9 +23,30 @@ const TURNSTILE_VERIFY_URL =
  * from one address inside ten minutes is a script.
  */
 const PHONE_WINDOW_MINUTES = 60;
-const MAX_BOOKINGS_PER_PHONE = 4;
 const IP_WINDOW_MINUTES = 10;
-const MAX_BOOKINGS_PER_IP = 6;
+
+/**
+ * Overridable, because a staging deployment is not a studio.
+ *
+ * Testing the payment flow means booking the same slot from the same phone over
+ * and over, which trips these within minutes and then looks like a gateway
+ * fault rather than a limit working. Production leaves them alone; staging
+ * raises them in the environment rather than by editing this file, which is how
+ * a relaxed limit ends up shipped by accident.
+ */
+const MAX_BOOKINGS_PER_PHONE = positiveInt(
+  process.env.BOOKING_MAX_PER_PHONE_HOUR,
+  4,
+);
+const MAX_BOOKINGS_PER_IP = positiveInt(
+  process.env.BOOKING_MAX_PER_IP_10MIN,
+  6,
+);
+
+function positiveInt(raw: string | undefined, fallback: number): number {
+  const value = Number(raw);
+  return Number.isInteger(value) && value > 0 ? value : fallback;
+}
 
 const MINUTE = 60_000;
 
@@ -111,6 +132,13 @@ async function withinRateLimits(
     where: {
       createdAt: { gte: phoneSince },
       customer: { is: { phoneE164 } },
+      /* A hold the cron cancelled is not an attempt at anything — it is
+         somebody whose QRIS code lapsed, or who changed their mind at the
+         payment screen. Counting those made the limit punish the one customer
+         it should be most patient with: fumble the payment twice and a third,
+         genuine try would be refused. Cancellations by a person still count;
+         only the system's own sweep is forgiven. */
+      NOT: { status: "CANCELLED", cancelledBy: "system" },
     },
   });
 
