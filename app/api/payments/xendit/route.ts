@@ -133,7 +133,29 @@ export async function POST(request: Request): Promise<Response> {
     });
 
     if (!payment) {
-      return fail("NOT_FOUND", "No payment matches that reference.");
+      /*
+       * A reference we have no row for. 200, not 404, and the distinction
+       * matters twice over.
+       *
+       * Xendit retries until it gets a 200, and no number of retries will
+       * conjure a payment that does not exist — a 404 here buys a callback
+       * that repeats forever and never succeeds. It is also what the
+       * dashboard's "Test and save" button sends: a dummy payload matching
+       * nothing, which would otherwise report the endpoint as broken and
+       * refuse to save the URL.
+       *
+       * A database that is merely unreachable does not reach this branch; it
+       * throws, and the catch below answers 500, which is the case where a
+       * retry is exactly what we want. So the only thing acknowledged here is
+       * a genuinely unknown reference — logged, because in production it means
+       * either a charge opened outside this system or a row that has gone
+       * missing, and both are worth someone noticing.
+       */
+      console.warn(
+        "[payments] callback for an unknown reference, acknowledged",
+        references,
+      );
+      return ok({ received: true, applied: false, status: null });
     }
 
     const result = await settlePayment(payment.id);
