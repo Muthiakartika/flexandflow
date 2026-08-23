@@ -17,6 +17,14 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "@/generated/prisma/client";
 import { env } from "@/lib/env";
 
+/**
+ * Postgres raises this when the `booking_no_overlap` exclusion constraint
+ * rejects an insert — two people confirmed the same slot at the same moment.
+ * It is the one database error the booking route treats as an expected
+ * outcome rather than a fault. See `prisma/migrations/*_booking_no_overlap`.
+ */
+export const PG_EXCLUSION_VIOLATION = "23P01";
+
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
@@ -24,13 +32,41 @@ const globalForPrisma = globalThis as unknown as {
 function create(): PrismaClient {
   const adapter = new PrismaNeon({ connectionString: env().DATABASE_URL });
 
-  return new PrismaClient({
+  const client = new PrismaClient({
     adapter,
+    /* Emitted rather than printed, so the one expected failure can be filtered
+       out below. Without that, `log: ["error"]` prints every rejected insert. */
     log:
       process.env.NODE_ENV === "development"
-        ? ["warn", "error"]
-        : ["error"],
+        ? [{ emit: "event", level: "error" }, { emit: "stdout", level: "warn" }]
+        : [{ emit: "event", level: "error" }],
   });
+
+  /*
+   * Two people confirming the same slot is not a fault, and must not read like
+   * one.
+   *
+   * `booking_no_overlap` rejecting an insert is the constraint doing the single
+   * job it exists for, and the booking route already catches it and tells the
+   * customer their slot has just gone. But Prisma logs the rejection itself,
+   * before any of our code sees it — so a routine race printed `prisma:error`
+   * into the deployment log beside genuine faults. Logs that cry wolf get
+   * ignored, and the next real error goes with them.
+   *
+   * Only this one code is dropped. Everything else Prisma reports still prints.
+   */
+  client.$on("error", (event) => {
+    const message = String(event.message ?? "");
+    if (
+      message.includes(PG_EXCLUSION_VIOLATION) ||
+      message.includes("booking_no_overlap")
+    ) {
+      return;
+    }
+    console.error("[prisma]", message);
+  });
+
+  return client;
 }
 
 function instance(): PrismaClient {
@@ -61,14 +97,6 @@ export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
     return Reflect.has(instance(), property);
   },
 });
-
-/**
- * Postgres raises this when the `booking_no_overlap` exclusion constraint
- * rejects an insert — two people confirmed the same slot at the same moment.
- * It is the one database error the booking route treats as an expected
- * outcome rather than a fault. See `prisma/migrations/*_booking_no_overlap`.
- */
-export const PG_EXCLUSION_VIOLATION = "23P01";
 
 export function isSlotTakenError(error: unknown): boolean {
   if (typeof error !== "object" || error === null) return false;
