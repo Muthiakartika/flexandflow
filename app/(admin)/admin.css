@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 /* Tailwind v4's source detection starts at the directory holding this file,
    which contains only the admin routes. Everything the panel's markup lives in
@@ -47,6 +48,29 @@
   --font-body: var(--font-andika), system-ui, sans-serif;
 
   --radius-panel: 10px;
+
+  /* shadcn/ui's semantic tokens, answered in the panel's palette. The
+     components under `components/ui/` name these and nothing else, which is
+     how the same dropdown file renders here and on the studio site without a
+     branch in it; `(main)/globals.css` answers the same names in that site's
+     colours. Nothing above is redefined — `--color-muted` already means a text
+     colour in this panel and shadcn's `muted` means a background, so the text
+     one is spelled `--color-muted-foreground` and they never collide. */
+  --color-background: var(--color-cream);
+  --color-foreground: var(--color-ink);
+  --color-popover: var(--color-surface);
+  --color-popover-foreground: var(--color-ink);
+  --color-border: var(--color-line);
+  --color-input: var(--color-line);
+  /* So a dropdown takes the same olive ring as everything else the keyboard
+     can reach. shadcn draws its own focus ring and would otherwise ignore the
+     `:focus-visible` rule in the base layer, which utilities outrank. */
+  --color-ring: var(--color-olive);
+  /* The row under the cursor. */
+  --color-accent: var(--color-cream);
+  --color-accent-foreground: var(--color-ink);
+  --color-muted-foreground: var(--color-faint);
+  --color-destructive: var(--color-danger);
 }
 
 @layer base {

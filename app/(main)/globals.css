@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 /* Detection starts from this file's directory, which since the merge holds
    only the main site's routes. Its components, sections and data live above
@@ -45,6 +46,34 @@
   --radius-part: 2.5em;
   --radius-card: 24px;
   --radius-tier: 18px;
+}
+
+/**
+ * shadcn/ui's semantic tokens, answered in this site's palette.
+ *
+ * The components under `components/ui/` are written against these names and
+ * nothing else, which is what lets one file render under two root layouts —
+ * here and in the admin panel — with no branch in it. `admin.css` answers the
+ * same names in the panel's palette.
+ *
+ * Nothing above is redefined. In particular `--color-muted` already means a
+ * text colour on this site and shadcn's `muted` means a background, so the
+ * text one is spelled `--color-muted-foreground` and the pair never meet.
+ */
+@theme {
+  /* The hairline `FIELD` already draws round every input, so the dropdown
+     that sits beside them matches without being told twice. */
+  --color-border: color-mix(in oklab, var(--color-secondary) 20%, transparent);
+  --color-input: color-mix(in oklab, var(--color-secondary) 20%, transparent);
+  --color-ring: var(--color-primary);
+  --color-popover: #ffffff;
+  --color-popover-foreground: var(--color-body-text);
+  /* The row under the cursor. Cream, because that is what a raised surface
+     rests on everywhere else here. */
+  --color-accent: var(--color-cream);
+  --color-accent-foreground: var(--color-body-text);
+  --color-muted-foreground: var(--color-subtle);
+  --color-destructive: #9b1c14;
 }
 
 @theme inline {

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 
+import { AdminSelect } from "@/components/admin/AdminSelect";
 import { FieldError } from "@/components/admin/primitives";
 import { FormMessage, SubmitButton } from "@/components/admin/SubmitButton";
 import { IDLE, type ActionState } from "@/lib/admin/action-state";
@@ -161,22 +162,19 @@ export function BookingActions({
             <label className="admin-label" htmlFor="move-therapist">
               Therapist
             </label>
-            <select
+            <AdminSelect
               id="move-therapist"
               name="therapistId"
               defaultValue={therapistId}
-              className="admin-input"
-            >
-              {therapists
+              options={therapists
                 .filter(
                   (therapist) => therapist.active || therapist.id === therapistId,
                 )
-                .map((therapist) => (
-                  <option key={therapist.id} value={therapist.id}>
-                    {therapist.displayName}
-                  </option>
-                ))}
-            </select>
+                .map((therapist) => ({
+                  value: therapist.id,
+                  label: therapist.displayName,
+                }))}
+            />
           </div>
 
           <div className="mt-3">

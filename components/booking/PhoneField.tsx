@@ -9,7 +9,8 @@ import {
   type CountryCode,
 } from "libphonenumber-js";
 
-import { FIELD } from "@/components/ui/tokens";
+import { FormSelect } from "@/components/ui/FormSelect";
+import { FIELD, SELECT_CONTENT, SELECT_TRIGGER } from "@/components/ui/tokens";
 
 /**
  * Country code plus national number, emitting E.164.
@@ -76,19 +77,25 @@ export default function PhoneField({
       <label htmlFor={`${id}-country`} className="sr-only">
         Country code
       </label>
-      <select
+      {/* Closing the menu stands in for `onBlur`: the trigger is a button
+          Radix keeps focus on while the list is open, so a real blur would
+          arrive only when the visitor left the field entirely — long after the
+          moment the form wants to re-check itself. */}
+      <FormSelect
         id={`${id}-country`}
         value={selected}
-        onChange={(event) => emit(event.target.value as CountryCode, national)}
-        onBlur={onBlur}
-        className={`${FIELD} booking-phone-country`}
-      >
-        {countries.map((option) => (
-          <option key={option.code} value={option.code}>
-            {option.name} +{option.dial}
-          </option>
-        ))}
-      </select>
+        onValueChange={(next) => emit(next as CountryCode, national)}
+        onOpenChange={(open) => {
+          if (!open) onBlur();
+        }}
+        ariaLabel="Country code"
+        options={countries.map((option) => ({
+          value: option.code,
+          label: `${option.name} +${option.dial}`,
+        }))}
+        triggerClassName={`${SELECT_TRIGGER} booking-phone-country`}
+        contentClassName={SELECT_CONTENT}
+      />
 
       <input
         id={id}

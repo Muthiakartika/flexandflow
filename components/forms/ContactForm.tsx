@@ -3,7 +3,8 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
-import { FIELD } from "@/components/ui/tokens";
+import { FormSelect } from "@/components/ui/FormSelect";
+import { FIELD, SELECT_CONTENT, SELECT_TRIGGER } from "@/components/ui/tokens";
 
 /** Service options, in the same order as the WordPress select. */
 const serviceOptions = [
@@ -73,18 +74,17 @@ export default function ContactForm() {
           <label htmlFor="service" className={label}>
             Service
           </label>
-          <select
+          <FormSelect
             id="service"
             name="How"
             defaultValue="Select Services"
-            className={FIELD}
-          >
-            {serviceOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+            options={serviceOptions.map((option) => ({
+              value: option,
+              label: option,
+            }))}
+            triggerClassName={SELECT_TRIGGER}
+            contentClassName={SELECT_CONTENT}
+          />
         </div>
 
         <div>

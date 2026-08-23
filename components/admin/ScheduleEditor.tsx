@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 
+import { AdminSelect } from "@/components/admin/AdminSelect";
 import { FieldError } from "@/components/admin/primitives";
 import { FormMessage, SubmitButton } from "@/components/admin/SubmitButton";
 import { IDLE, type ActionState } from "@/lib/admin/action-state";
@@ -125,18 +126,17 @@ export function ScheduleEditor({
             <label className="admin-label" htmlFor="hours-therapist">
               Therapist
             </label>
-            <select
+            {/* Seeded with the first therapist because a native `<select>`
+                selected one for us and the action still requires one. */}
+            <AdminSelect
               id="hours-therapist"
               name="therapistId"
-              required
-              className="admin-input"
-            >
-              {therapists.map((therapist) => (
-                <option key={therapist.id} value={therapist.id}>
-                  {therapist.name}
-                </option>
-              ))}
-            </select>
+              defaultValue={therapists[0]?.id ?? ""}
+              options={therapists.map((therapist) => ({
+                value: therapist.id,
+                label: therapist.name,
+              }))}
+            />
             <FieldError message={addState.fields?.therapistId} />
           </div>
 
@@ -144,18 +144,15 @@ export function ScheduleEditor({
             <label className="admin-label" htmlFor="hours-weekday">
               Day
             </label>
-            <select
+            <AdminSelect
               id="hours-weekday"
               name="weekday"
               defaultValue="1"
-              className="admin-input"
-            >
-              {WEEKDAYS.map((label, weekday) => (
-                <option key={label} value={weekday}>
-                  {label}
-                </option>
-              ))}
-            </select>
+              options={WEEKDAYS.map((label, weekday) => ({
+                value: String(weekday),
+                label,
+              }))}
+            />
             <FieldError message={addState.fields?.weekday} />
           </div>
 

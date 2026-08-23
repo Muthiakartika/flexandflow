@@ -55,3 +55,26 @@ export const FIELD =
   "font-body text-[15px] text-body-text placeholder:text-body-text/45 " +
   "transition-colors duration-300 focus:border-primary " +
   "focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary";
+
+/**
+ * `FIELD`'s measurements, for the dropdown that stands next to it.
+ *
+ * Utilities rather than a class in `globals.css`, because shadcn's trigger
+ * arrives already carrying its own size, corner and background: a
+ * `@layer components` rule would lose every one of those properties to it,
+ * and `cn()` merging two utility strings is the only version that wins. The
+ * colours are not repeated — they come from the `--color-input` / `--color-ring`
+ * / `--color-popover` tokens `globals.css` defines for exactly this.
+ */
+export const SELECT_TRIGGER =
+  "w-full data-[size=default]:h-auto rounded-[10px] px-4 py-3 " +
+  "font-body text-[15px] shadow-none transition-colors duration-300 " +
+  /* This site has no dark mode — the palette is cream, olive and black in one
+     direction only. shadcn's trigger ships `dark:bg-input/30`, so a visitor
+     whose OS is set to dark got a grey field sitting in a row of white ones.
+     Repeating the colour under `dark:` is what removes it: `tailwind-merge`
+     drops the loser of a conflicting pair, and only a `dark:` class can beat a
+     `dark:` class. */
+  "bg-white dark:bg-white dark:hover:bg-white";
+
+export const SELECT_CONTENT = "rounded-[10px]";

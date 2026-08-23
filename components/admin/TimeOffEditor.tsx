@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 
+import { AdminSelect } from "@/components/admin/AdminSelect";
 import { FieldError } from "@/components/admin/primitives";
 import { FormMessage, SubmitButton } from "@/components/admin/SubmitButton";
 import { IDLE, type ActionState } from "@/lib/admin/action-state";
@@ -57,19 +58,18 @@ export function TimeOffEditor({
             <label className="admin-label" htmlFor="off-therapist">
               Therapist
             </label>
-            <select
+            <AdminSelect
               id="off-therapist"
               name="therapistId"
               defaultValue=""
-              className="admin-input"
-            >
-              <option value="">Whole studio closed</option>
-              {therapists.map((therapist) => (
-                <option key={therapist.id} value={therapist.id}>
-                  {therapist.name}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: "", label: "Whole studio closed" },
+                ...therapists.map((therapist) => ({
+                  value: therapist.id,
+                  label: therapist.name,
+                })),
+              ]}
+            />
           </div>
 
           <div>
