@@ -25,7 +25,9 @@
 *.pem
 
 # debug
-.devserver.log
+# Transient server output. `.devserver.log` was listed by name and `.prod.log`
+# was not, so it got committed — the pattern covers whichever one comes next.
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
