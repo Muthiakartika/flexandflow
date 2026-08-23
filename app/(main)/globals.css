@@ -767,22 +767,20 @@ button.booking-step-body {
 }
 
 /*
- * A day that can be booked is a filled target; everything else is flat text,
- * so the difference is legible before the cursor goes anywhere near it.
- *
- * Each of these three rules also paints the matching entry in the key below
- * the grid, which is why the selectors are doubled. The key used to draw its
- * own little squares and got all three wrong — a booked day is a struck
- * numeral and a closed one a faded numeral, neither of which is a square. One
- * declaration for both is what stops them disagreeing again.
+ * The two muted day colours, named once because the key under the grid uses
+ * them too. They were written out twice before and the key's squares ended up
+ * showing colours the calendar never used.
  */
-.booking-day[data-state="available"],
-.booking-legend > li[data-state="available"] {
-  background-color: var(--color-cream);
-  color: var(--color-body-text);
+.booking-calendar {
+  --day-full: color-mix(in oklab, var(--color-secondary) 42%, transparent);
+  --day-closed: color-mix(in oklab, var(--color-secondary) 26%, transparent);
 }
 
+/* A day that can be booked is a filled target; everything else is flat text,
+   so the difference is legible before the cursor goes anywhere near it. */
 .booking-day[data-state="available"] {
+  background-color: var(--color-cream);
+  color: var(--color-body-text);
   cursor: pointer;
 }
 
@@ -792,26 +790,16 @@ button.booking-step-body {
 
 /* Open, but nothing left. Struck through rather than faded out: the studio is
    trading that day, and it should read as "gone", not as "closed". */
-.booking-day[data-state="full"],
-.booking-legend > li[data-state="full"] {
-  color: color-mix(in oklab, var(--color-secondary) 42%, transparent);
-  text-decoration: line-through;
-}
-
 .booking-day[data-state="full"] {
+  color: var(--day-full);
+  text-decoration: line-through;
   cursor: default;
 }
 
 .booking-day[data-state="closed"],
 .booking-day[data-state="out"],
-.booking-day[data-state="other"],
-.booking-legend > li[data-state="closed"] {
-  color: color-mix(in oklab, var(--color-secondary) 26%, transparent);
-}
-
-.booking-day[data-state="closed"],
-.booking-day[data-state="out"],
 .booking-day[data-state="other"] {
+  color: var(--day-closed);
   cursor: default;
 }
 
@@ -852,24 +840,38 @@ button.booking-step-body {
   color: color-mix(in oklab, var(--color-secondary) 55%, transparent);
 }
 
-/* Padded so the `available` fill reads as the same cream target the grid
-   uses, rather than as a highlighter pen through the words. */
 .booking-legend > li {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 8px;
-  border-radius: 6px;
 }
 
 /*
- * The dot that marks today, repeated beside the word. Inline here rather than
- * absolutely positioned under a numeral, but the same size and the same olive.
+ * A small square in the colour the grid actually paints that state, taken from
+ * the variables above rather than restated. The first version of this key
+ * invented a solid border for "fully booked" and a dashed one for "closed",
+ * neither of which the calendar has ever drawn.
  */
-.booking-legend > li[data-today="true"]::after {
+.booking-legend > li::before {
   content: "";
-  width: 4px;
-  height: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+  background-color: var(--color-cream);
+}
+
+.booking-legend > li[data-state="full"]::before {
+  background-color: var(--day-full);
+}
+
+.booking-legend > li[data-state="closed"]::before {
+  background-color: var(--day-closed);
+}
+
+/* Round and olive, because that is the dot itself rather than a square
+   standing in for it. */
+.booking-legend > li[data-today="true"]::before {
   border-radius: 999px;
   background-color: var(--color-primary);
 }
