@@ -36,7 +36,20 @@ Two settings, both under **Settings → Secrets and variables → Actions**:
 | | Kind | Value |
 |---|---|---|
 | `CRON_SECRET` | Secret | Exactly what the Vercel environment has. A mismatch shows up as `401`. |
-| `SITE_URL` | Variable (optional) | Point at a preview deployment while testing. Defaults to `https://flexandflow.fit`. |
+| `SITE_URL` | **Variable** | The full origin of the deployment, no trailing slash — e.g. `https://flexandflowbooking.vercel.app`. Required; the run fails and says so if it is missing. |
+
+**`SITE_URL` belongs in the Variables tab, not Secrets.** They are two separate
+stores and the workflow reads the variable first, so one saved in the wrong tab
+is simply not there. It falls back to `secrets.SITE_URL` if that is where it
+ended up, but a variable is the right home: Actions masks secret values in
+logs, so a URL kept as a secret prints as `***` exactly when you are trying to
+work out which host was called.
+
+There is deliberately no default. It used to fall back to `https://flexandflow.fit`,
+which still serves the studio's **WordPress** site — so a missing or misplaced
+`SITE_URL` did not fail, it quietly posted the cron to WordPress and came back
+with `curl: (22) … 404` and a page of HTML. That looked like a broken secret
+and was nothing of the kind.
 
 The workflow adds a **Run workflow** button on the Actions tab, which drains the
 queue immediately — the thing to press after fixing a logged-out WAHA session
