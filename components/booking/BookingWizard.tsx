@@ -6,13 +6,11 @@ import { useCallback, useEffect, useReducer, useRef } from "react";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { H2 } from "@/components/ui/tokens";
 import { studioMonthKey } from "@/lib/booking/time";
-import type {
-  CreateBookingInput,
-  StaffOption,
-  StaffSelection,
-} from "@/lib/booking/types";
+import type { StaffOption, StaffSelection } from "@/lib/booking/types";
+import { PAYMENT_CHANNELS } from "@/lib/payments/types";
 
 import DateTimeStep from "./DateTimeStep";
+import PaymentModal from "./PaymentModal";
 import DetailsStep, { validateDetails } from "./DetailsStep";
 import {
   RescheduleBanner,
@@ -28,6 +26,8 @@ import SummaryStep from "./SummaryStep";
 import {
   BookingApiError,
   createBooking,
+  manageTokenOf,
+  type CreateBookingBody,
   fetchAvailability,
   fetchBooking,
   fetchServices,
@@ -61,6 +61,12 @@ const SLOT_LOST_NOTICE =
   "That time was taken while you were confirming it. Here are the times still " +
   "open on that day.";
 
+/* Closing the payment modal does not undo anything: the booking is saved and
+   the slot is held. Said plainly, with a way back to the same charge. */
+const PAYMENT_DISMISSED_NOTICE =
+  "Your booking is saved and your time is held, but it has not been paid for " +
+  "yet. You can pick up where you left off below.";
+
 /**
  * The five-step wizard — and, from a manage link, the two-step one.
  *
@@ -80,6 +86,15 @@ const SLOT_LOST_NOTICE =
  *    slot list loading and Confirm being pressed — so it sends the visitor
  *    back to the day with the list refetched rather than showing a dead end.
  *
+ * **Paying now.** When the gateway is configured, the summary step asks how
+ * they would like to pay. `AT_STUDIO` behaves exactly as it always has —
+ * booked, confirmed, off to the confirmation page. `ONLINE` saves the booking
+ * in the same request and gets a charge back with it, and then the wizard
+ * *stops*: it does not navigate, and its Back and Confirm buttons are removed,
+ * because the booking now exists and there is nothing left here to change. The
+ * modal takes over, and what it is waiting for is the server's word that the
+ * money arrived — not the browser's. See `PaymentModal`.
+ *
  * **Reschedule mode.** `/booking/?reschedule=<manageToken>` is where the manage
  * page's "Choose a new time" leads. The booking behind that token is fetched
  * once on arrival and the flow shrinks to the two steps that are still open
@@ -93,10 +108,18 @@ const SLOT_LOST_NOTICE =
 export default function BookingWizard({
   cancelCutoffHours,
   preselectedStaff = null,
+  paymentsEnabled = false,
 }: {
   cancelCutoffHours: number;
   /** Resolved on the server from `?staff=<slug>`; null on an ordinary visit. */
   preselectedStaff?: StaffOption | null;
+  /**
+   * Whether paying online can be offered. Decided on the server, because a
+   * client component reading `process.env` reads what the build baked in — and
+   * **defaulting to false**, so a page that never passes it cannot put a
+   * visitor in front of a payment that would fail.
+   */
+  paymentsEnabled?: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -392,7 +415,12 @@ export default function BookingWizard({
       return;
     }
 
-    const payload: CreateBookingInput = {
+    /* Only offer to pay online when the page said the gateway is configured.
+       A stale draft could still be carrying `ONLINE` from a visit made while
+       it was, and posting that would open a charge nobody can complete. */
+    const online = paymentsEnabled && state.paymentMethod === "ONLINE";
+
+    const payload: CreateBookingBody = {
       staff: state.staff,
       variantId: state.variant.id,
       startAt: state.slot.startAt,
@@ -403,15 +431,35 @@ export default function BookingWizard({
         phoneE164: state.details.phoneE164,
         note: state.details.note.trim() || null,
       },
+      paymentMethod: online ? "ONLINE" : "AT_STUDIO",
+      /* The first rail in the studio's own order, which is the cheapest one
+         for them. The modal offers the rest; see `PAYMENT_CHANNELS`. */
+      ...(online ? { paymentChannel: PAYMENT_CHANNELS[0] } : {}),
       website: state.details.website,
     };
 
     dispatch({ type: "submitStart" });
 
     try {
-      const booking = await createBooking(payload);
+      const created = await createBooking(payload);
+      /* The booking exists either way, so the half-filled form must not: a
+         restored draft here is how somebody books the same session twice. */
       clearDraft();
-      router.push(`/booking/confirmation/${booking.reference}/`);
+
+      if (created.payment) {
+        /* Pay-now. Nothing is confirmed until the gateway's callback says so,
+           so the wizard stays where it is and the modal takes over — see
+           `PaymentModal`, which reads that decision rather than making it. */
+        dispatch({
+          type: "paymentOpened",
+          token: manageTokenOf(created.booking),
+          reference: created.reference,
+          intent: created.payment,
+        });
+        return;
+      }
+
+      router.push(`/booking/confirmation/${created.reference}/`);
     } catch (cause) {
       if (cause instanceof BookingApiError && cause.code === "SLOT_TAKEN") {
         dispatch({
@@ -476,13 +524,19 @@ export default function BookingWizard({
 
   const heading = stepLabel(state.step, moving !== null);
 
+  const payingOnline = paymentsEnabled && state.paymentMethod === "ONLINE";
+
   const confirmLabel = moving
     ? state.submitting
       ? "Moving…"
       : "Confirm new time"
     : state.submitting
-      ? "Confirming…"
-      : "Confirm booking";
+      ? payingOnline
+        ? "Opening payment…"
+        : "Confirming…"
+      : payingOnline
+        ? "Continue to payment"
+        : "Confirm booking";
 
   return (
     <div className="flex flex-col gap-[clamp(1.5rem,3vw,2.25rem)]">
@@ -511,12 +565,27 @@ export default function BookingWizard({
 
         <div className="mt-5">
           {state.notice ? (
-            <p
+            <div
               role="status"
-              className="mb-5 rounded-[10px] border border-primary/35 bg-white px-4 py-3 font-body text-[14px] leading-[1.6]"
+              className="mb-5 rounded-[10px] border border-primary/35 bg-white px-4 py-3"
             >
-              {state.notice}
-            </p>
+              <p className="font-body text-[14px] leading-[1.6]">
+                {state.notice}
+              </p>
+
+              {/* The charge is still open, so this puts the same one back
+                  rather than starting a second one for the same booking. */}
+              {state.payment && !state.payment.open ? (
+                <Button
+                  type="button"
+                  variant="solid"
+                  className="mt-3"
+                  onClick={() => dispatch({ type: "paymentReopened" })}
+                >
+                  Show payment again
+                </Button>
+              ) : null}
+            </div>
           ) : null}
 
           {state.step === "staff" ? (
@@ -596,10 +665,22 @@ export default function BookingWizard({
               slot={state.slot}
               details={state.details}
               cancelCutoffHours={cancelCutoffHours}
+              paymentsEnabled={paymentsEnabled}
+              paymentMethod={state.paymentMethod}
+              onPaymentMethod={(method) =>
+                dispatch({ type: "choosePaymentMethod", method })
+              }
+              disabled={state.submitting}
             />
           ) : null}
         </div>
 
+        {/* Once a booking has been saved and is waiting to be paid for, the
+            wizard's own controls go away entirely — not disabled, removed.
+            Stepping back would be editing a booking that already exists, and
+            Confirm would make a second one. Paying is the only thing left to
+            do, and it lives in the modal or in the notice above. */}
+        {state.payment ? null : (
         <div className="booking-actions mt-7 flex flex-wrap items-center justify-between gap-3 border-t border-secondary/10 pt-5">
           {previousStep ? (
             <Button
@@ -639,7 +720,25 @@ export default function BookingWizard({
             </Button>
           )}
         </div>
+        )}
       </div>
+
+      {state.payment?.open ? (
+        <PaymentModal
+          token={state.payment.token}
+          reference={state.payment.reference}
+          intent={state.payment.intent}
+          onPaid={(reference) =>
+            router.push(`/booking/confirmation/${reference}/`)
+          }
+          onClose={() =>
+            dispatch({
+              type: "paymentDismissed",
+              notice: PAYMENT_DISMISSED_NOTICE,
+            })
+          }
+        />
+      ) : null}
     </div>
   );
 }

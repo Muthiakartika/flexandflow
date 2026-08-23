@@ -51,7 +51,7 @@ appointment lands in the customer's phone calendar.
 | `/booking` | the wizard |
 | `/booking/confirmation/[reference]` | after booking — add to calendar |
 | `/booking/manage/[token]` | the customer's own view; cancel |
-| `/admin` | the studio's panel — agenda, bookings, schedule, prices, message health |
+| `/admin` | the studio's panel — agenda, bookings, schedule, prices, payments, message health |
 
 `/appointment/` — the URL Google has indexed — is redirected here permanently.
 
@@ -75,6 +75,24 @@ been executed against one. Setup, in order:
 
 The design and the reasoning behind every decision are in
 [`BOOKING-PLAN.md`](BOOKING-PLAN.md).
+
+### Paying
+
+The summary step offers **pay at the studio** or **pay now**. Paying now collects QRIS or
+a virtual account number in a modal over the wizard; cards go to Xendit's own page,
+because 3-D Secure belongs to the issuing bank.
+
+The cheap rails are listed first on purpose — a virtual account keeps roughly six times
+more of a Rp750,000 booking than a card does.
+
+**Not yet usable.** It needs a verified Xendit account, which the studio does not have,
+so none of it has ever run. Set `XENDIT_SECRET_KEY` and `XENDIT_CALLBACK_TOKEN` together
+or not at all: with either missing the wizard offers only "pay at the studio", which is
+the correct state while the account is being verified.
+
+[`PAYMENT-PLAN.md`](PAYMENT-PLAN.md) has the reasoning, including why PayPal was refused
+(IDR is not a PayPal transaction currency) and why most Indonesian refunds are a bank
+transfer somebody makes by hand.
 
 ## Structure
 
@@ -104,6 +122,7 @@ lib/
   env.ts              validated environment; fails loudly, names the missing key
   db.ts               the one Prisma client
   booking/            time, types, validation, availability, writes, tokens
+  payments/           Xendit client, charges, settlement
   notifications/      SendGrid and WAHA, their templates, and the job queue
   calendar/           .ics generation and add-to-calendar links
   admin/              session, auth, queries, server actions

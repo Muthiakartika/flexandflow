@@ -72,6 +72,28 @@ const schema = z.object({
   /** HMAC key for manage-booking links and .ics URLs. */
   BOOKING_TOKEN_SECRET: z.string().min(24, "Use at least 24 random characters"),
 
+  // ── Payments (Xendit) ──────────────────────────────────────────────────
+  /**
+   * Optional as a pair. With neither set the wizard offers only "pay at the
+   * studio", exactly as it did before online payment existed — which is what
+   * should happen while the studio's Xendit account is still being verified,
+   * rather than showing a payment option that cannot work.
+   */
+  XENDIT_SECRET_KEY: z.string().optional(),
+  /**
+   * The Callback Verification Token from the Xendit dashboard.
+   *
+   * Xendit does not sign its callbacks; it sends this token in the
+   * `x-callback-token` header, and matching it is the *only* evidence a
+   * request came from Xendit. That makes it a bearer secret rather than a
+   * signature: compare it in constant time, never log the header, and re-fetch
+   * the charge over the API before believing anything in the body.
+   * See PAYMENT-PLAN.md §5.
+   */
+  XENDIT_CALLBACK_TOKEN: z.string().optional(),
+  /** Minutes a Xendit charge stays payable. Kept under the booking hold. */
+  XENDIT_INVOICE_MINUTES: z.coerce.number().int().min(1).default(13),
+
   // ── Admin & cron ───────────────────────────────────────────────────────
   ADMIN_SESSION_SECRET: z.string().min(24, "Use at least 24 random characters"),
   CRON_SECRET: z.string().min(16),
@@ -119,4 +141,17 @@ export function env(): Env {
 /** True when a Turnstile secret is configured; the widget is skipped otherwise. */
 export function turnstileEnabled(): boolean {
   return Boolean(env().TURNSTILE_SECRET_KEY);
+}
+
+/**
+ * Whether online payment can be offered at all.
+ *
+ * Both halves or neither: a secret key with no callback token would take money
+ * it could never confirm. When this is false the wizard shows only "pay at the
+ * studio" and the callback route 404s, so a half-configured deployment fails
+ * closed instead of stranding a customer mid-payment.
+ */
+export function paymentsEnabled(): boolean {
+  const { XENDIT_SECRET_KEY, XENDIT_CALLBACK_TOKEN } = env();
+  return Boolean(XENDIT_SECRET_KEY && XENDIT_CALLBACK_TOKEN);
 }

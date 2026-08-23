@@ -88,8 +88,16 @@ function pastCutoff(startAt: Date, now: Date): boolean {
 
 type AuditMeta = Record<string, string | number | boolean | null>;
 
+/**
+ * `"system"` is not an `Actor`, deliberately.
+ *
+ * Nobody may pass it in: an expired hold has no author, and every exported
+ * transition that takes a `by` still takes a person. It exists only so the
+ * audit trail can say honestly that the hold sweeper, not a member of staff,
+ * cancelled that booking at 3am.
+ */
 type AuditEntry = {
-  actor: Actor;
+  actor: Actor | "system";
   action: string;
   bookingId: string;
   meta?: AuditMeta;
@@ -377,4 +385,257 @@ export async function setBookingStatus(input: {
   });
 
   return reload(booking.id);
+}
+
+// ── Payment holds ─────────────────────────────────────────────────────────
+
+/*
+ * The two ends of the online payment path: money arrived, or it never did.
+ *
+ * Both are called from a place that has no user in front of it — a gateway
+ * callback and a cron sweep — and both can be called more than once for the
+ * same event. Xendit retries a callback until it gets a 200 and will happily
+ * deliver the same status twice (PAYMENT-PLAN.md §5 rule 4), so "already done"
+ * has to be a success that writes nothing rather than an error or a second
+ * audit row.
+ *
+ * That is why neither of these reads a booking and then writes it. Each one
+ * updates conditionally on the status it expects to still find, the way
+ * `claim()` does in the notification queue: whichever caller's UPDATE still
+ * matches gets to act, and the loser matches nothing and does nothing. Two
+ * callbacks landing together cannot both confirm the same booking.
+ *
+ * Neither bumps `icsSequence`, and that is not an oversight. A held booking has
+ * never sent anyone a calendar invitation — the confirmation with its `.ics`
+ * is queued only once this returns `ok` — so there is no event in anyone's
+ * calendar for a higher sequence to supersede.
+ */
+
+/** One sweep's worth. The cron runs often; an unbounded run is a timeout. */
+const SWEEP_LIMIT = 200;
+
+/**
+ * The payment-facing columns, which `LoadedBooking` does not carry.
+ *
+ * `lib/booking/view.ts` builds what a customer is shown, and no customer
+ * surface has any use for a hold expiry — so these are read separately rather
+ * than widening the view every page in the site renders from.
+ */
+async function holdState(bookingId: string) {
+  return prisma.booking.findUnique({
+    where: { id: bookingId },
+    select: {
+      id: true,
+      status: true,
+      amountPaidIdr: true,
+      holdExpiresAt: true,
+    },
+  });
+}
+
+/**
+ * Money arrived. Confirms the booking and releases its hold.
+ *
+ * Idempotent: calling it again with the same amount finds nothing to change
+ * and returns the booking as it stands.
+ *
+ * `by` distinguishes the two ways this happens — `"customer"` when the gateway
+ * reports their own payment cleared, `"admin"` when a member of staff records
+ * cash taken at the desk. Both are real payments; the audit trail should not
+ * have to guess which.
+ */
+export async function markBookingPaid(input: {
+  bookingId: string;
+  amountPaidIdr: number;
+  by: Actor;
+  now?: Date;
+}): Promise<TransitionResult> {
+  const state = await holdState(input.bookingId);
+
+  if (!state) return NOT_FOUND;
+
+  /*
+   * Money against a booking that is already cancelled — the hold lapsed
+   * seconds before the callback landed, or the studio cancelled by hand while
+   * the customer was paying. Refused rather than quietly confirmed: the slot
+   * may belong to somebody else by now, and re-confirming would double-book a
+   * therapist to hide a refund. The caller is expected to record that the
+   * studio owes this money back. PAYMENT-PLAN.md §11 risk 3.
+   */
+  if (state.status === BookingStatus.CANCELLED) return ALREADY_CANCELLED;
+
+  /*
+   * A session that has already been given, being paid for afterwards, stays
+   * where it is. Moving a COMPLETED booking back to CONFIRMED would put a
+   * finished appointment back on tomorrow's agenda; the amount is still
+   * recorded, which is the part that matters to the books.
+   */
+  const nextStatus =
+    state.status === BookingStatus.COMPLETED ||
+    state.status === BookingStatus.NO_SHOW
+      ? state.status
+      : BookingStatus.CONFIRMED;
+
+  /* Nothing left to do. No audit row, and no `updatedAt` bump that would make
+     a duplicate callback look in the admin panel like something moved. */
+  if (
+    state.status === nextStatus &&
+    state.amountPaidIdr === input.amountPaidIdr &&
+    state.holdExpiresAt === null
+  ) {
+    return reload(state.id);
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const updated = await tx.booking.updateMany({
+      where: { id: state.id, status: state.status },
+      data: {
+        status: nextStatus,
+        amountPaidIdr: input.amountPaidIdr,
+        /* The hold has done its work. Clearing it keeps the sweeper away from
+           a booking that is now paid for, whatever the clock says. */
+        holdExpiresAt: null,
+      },
+    });
+
+    /* Somebody else moved this row between the read above and here. Their
+       write is the one that stands; this one writes nothing at all. */
+    if (updated.count === 0) return;
+
+    await tx.auditLog.create({
+      data: auditData({
+        actor: input.by,
+        action: "booking.paid",
+        bookingId: state.id,
+        meta: {
+          amountPaidIdr: input.amountPaidIdr,
+          previousStatus: state.status,
+          previousAmountPaidIdr: state.amountPaidIdr,
+        },
+      }),
+    });
+  });
+
+  return reload(state.id);
+}
+
+/**
+ * Cancel a lapsed hold, and report whether this call is the one that did it.
+ *
+ * The boolean is what `sweepExpiredHolds` counts. It cannot be recovered from
+ * a `TransitionResult`, which says what the booking is now and not who put it
+ * there — and "already cancelled" has to read as success here, or a second
+ * sweep over the same row would look like a failure.
+ */
+async function releaseHold(
+  bookingId: string,
+  reason: string,
+  now: Date,
+): Promise<{ changed: boolean; result: TransitionResult }> {
+  const state = await holdState(bookingId);
+
+  if (!state) return { changed: false, result: NOT_FOUND };
+
+  /*
+   * Only a booking still waiting for money is freed, and the half that matters
+   * is what this refuses. A customer who lets a QRIS code lapse and then pays
+   * by bank transfer has a CONFIRMED booking and an abandoned first charge
+   * that reports EXPIRED minutes later. Acting on that callback would cancel
+   * an appointment somebody has paid for.
+   */
+  if (state.status !== BookingStatus.AWAITING_PAYMENT) {
+    return { changed: false, result: await reload(bookingId) };
+  }
+
+  const changed = await prisma.$transaction(async (tx) => {
+    const updated = await tx.booking.updateMany({
+      where: { id: bookingId, status: BookingStatus.AWAITING_PAYMENT },
+      data: {
+        status: BookingStatus.CANCELLED,
+        cancelledAt: now,
+        /* Not `"customer"` and not `"admin"`. Nobody cancelled this; the clock
+           ran out, and the admin panel should say so. */
+        cancelledBy: "system",
+        cancelReason: reason,
+        /* `holdExpiresAt` is deliberately left standing: it is the record of
+           when the money was due, and the sweeper filters on status anyway. */
+      },
+    });
+
+    /* A callback confirmed this between the read above and here. Whoever won
+       the UPDATE owns the outcome; this call writes nothing and reports that
+       it changed nothing. */
+    if (updated.count === 0) return false;
+
+    await tx.auditLog.create({
+      data: auditData({
+        actor: "system",
+        action: "booking.hold_expired",
+        bookingId,
+        meta: { reason, expiredAt: now.toISOString() },
+      }),
+    });
+
+    return true;
+  });
+
+  return { changed, result: await reload(bookingId) };
+}
+
+/**
+ * The hold lapsed or the charge failed. Frees the slot.
+ *
+ * Idempotent, and safe to call on a booking that was never held: anything not
+ * sitting in `AWAITING_PAYMENT` is returned untouched.
+ *
+ * No notification is queued, here or by the caller. Nothing was ever sent to
+ * the customer about a booking they did not pay for, so there is nothing to
+ * take back — they are still looking at the payment modal, which will tell
+ * them the charge expired and offer to try again.
+ */
+export async function expireBookingHold(input: {
+  bookingId: string;
+  reason: string;
+  now?: Date;
+}): Promise<TransitionResult> {
+  const now = input.now ?? new Date();
+  const reason = input.reason.trim() || "The payment hold expired.";
+  const { result } = await releaseHold(input.bookingId, reason, now);
+  return result;
+}
+
+/**
+ * Every `AWAITING_PAYMENT` booking past its hold. For the cron.
+ *
+ * This is what actually frees a slot when somebody opens the payment modal and
+ * walks away — the gateway's own expiry callback usually arrives first, but it
+ * is a message from another company's server and cannot be relied on. The
+ * booking's own clock is the backstop, which is why `holdExpiresAt` is set
+ * longer than the charge's expiry (PAYMENT-PLAN.md §11 risk 3).
+ */
+export async function sweepExpiredHolds(
+  now: Date = new Date(),
+): Promise<{ expired: number }> {
+  const lapsed = await prisma.booking.findMany({
+    where: {
+      status: BookingStatus.AWAITING_PAYMENT,
+      holdExpiresAt: { lte: now },
+    },
+    select: { id: true },
+    orderBy: { holdExpiresAt: "asc" },
+    take: SWEEP_LIMIT,
+  });
+
+  let expired = 0;
+
+  for (const booking of lapsed) {
+    const { changed } = await releaseHold(
+      booking.id,
+      "Payment was not completed before the hold ran out.",
+      now,
+    );
+    if (changed) expired += 1;
+  }
+
+  return { expired };
 }

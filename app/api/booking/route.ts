@@ -8,6 +8,14 @@
  * of them are down the booking still exists and the queue will retry it.
  *
  * Nothing that happens after the commit may fail this request.
+ *
+ * Since PAYMENT-PLAN.md §3 there are two paths out of here, and the difference
+ * between them is the single most dangerous line in the payment feature.
+ * Paying at the studio is unchanged: confirm, then tell everybody. Paying
+ * online must tell *nobody* — the booking is only a hold, no money has moved,
+ * and a confirmation email at this point would promise an appointment the
+ * customer may never pay for. On that path the messages are queued by the
+ * payment callback, once the money is actually in.
  */
 import { after } from "next/server";
 
@@ -15,8 +23,12 @@ import { fail, ok, serverError } from "@/lib/api/respond";
 import { createBooking } from "@/lib/booking/create";
 import { guardBookingRequest, recordBookingOrigin } from "@/lib/booking/guard";
 import { createBookingSchema, fieldErrors } from "@/lib/booking/schema";
+import { expireBookingHold } from "@/lib/booking/transitions";
 import { toBookingView } from "@/lib/booking/view";
+import { env } from "@/lib/env";
 import { dispatchPending, queueBookingCreated } from "@/lib/notifications";
+import { createCharge } from "@/lib/payments/charges";
+import type { PaymentIntent } from "@/lib/payments/types";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +82,77 @@ export async function POST(request: Request): Promise<Response> {
        booking over. */
     await recordBookingOrigin({ bookingId: booking.id, ip: guard.ip });
 
+    const view = toBookingView(booking);
+
+    if (result.payment.method === "ONLINE") {
+      let intent: PaymentIntent;
+
+      try {
+        intent = await createCharge({
+          bookingId: booking.id,
+          /* `createBooking` derived this from the catalogue and wrote it to
+             `amountDueIdr`. The request body never had a say in it. */
+          amountIdr: result.payment.amountIdr,
+          channel: result.payment.channel,
+          description: `Flex & Flow — ${view.serviceTitle}, ${view.dateLabel}`,
+          customer: {
+            firstName: booking.customer.firstName,
+            lastName: booking.customer.lastName,
+            email: booking.customer.email,
+            phoneE164: booking.customer.phoneE164,
+          },
+          bookingReference: view.reference,
+          /* Where the gateway sends someone who paid on its own hosted page.
+             It only *shows* the outcome: the page reads the database, and the
+             callback is what writes it — PAYMENT-PLAN.md §5 rule 1. */
+          returnUrl: `${env().NEXT_PUBLIC_SITE_URL}/booking/confirmation/${view.reference}/`,
+        });
+      } catch (error) {
+        console.error("[booking] could not open a charge", error);
+
+        /*
+         * The row is already committed, and it is holding a slot nobody can
+         * now pay for. Left alone it would block that time until the cron
+         * swept it fifteen minutes later, while the customer sits in front of
+         * a modal that never opened. So the hold is released here and the
+         * wizard is told to try again — the same booking, made cleanly, is a
+         * better outcome than a zombie.
+         *
+         * `expireBookingHold` rather than `cancelBooking`: this booking was
+         * never confirmed to anybody, so there is no calendar entry to revoke
+         * and nothing to tell the customer they have lost.
+         */
+        try {
+          await expireBookingHold({
+            bookingId: booking.id,
+            reason: "The charge could not be opened.",
+          });
+        } catch (cancelError) {
+          /* Now it really is a zombie, but a visible one: it shows in the
+             admin agenda as awaiting payment, and the hold sweep will still
+             cancel it when `holdExpiresAt` passes. */
+          console.error(
+            "[booking] could not release the hold after a failed charge",
+            cancelError,
+          );
+        }
+
+        return fail(
+          "SERVER",
+          "We could not start the payment. Please try again, or choose to " +
+            "pay at the studio.",
+        );
+      }
+
+      /* No `queueBookingCreated` on this path, and no `dispatchPending`. See
+         the note at the top of this file: nothing goes out until the callback
+         says the money arrived. */
+      return ok(
+        { booking: view, reference: view.reference, payment: intent },
+        { status: 201 },
+      );
+    }
+
     /*
      * Queued before the response, sent after it. Writing the job rows now means
      * that even if this function is killed the moment it returns, the cron
@@ -90,8 +173,6 @@ export async function POST(request: Request): Promise<Response> {
         console.error("[booking] deferred dispatch failed", error);
       }
     });
-
-    const view = toBookingView(booking);
 
     return ok({ booking: view, reference: view.reference }, { status: 201 });
   } catch (error) {

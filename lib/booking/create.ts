@@ -11,6 +11,14 @@
  * Notifications are not queued here. The booking commits first and the route
  * queues afterwards — see BOOKING-PLAN.md §6.1 and the note at the top of
  * `lib/booking/transitions.ts`.
+ *
+ * Two paths lead through this function (PAYMENT-PLAN.md §3). Paying at the
+ * studio is the one that shipped first and nothing about it changed: the
+ * booking is `CONFIRMED` the moment it is written and the route tells everyone
+ * immediately. Paying online writes an `AWAITING_PAYMENT` hold instead, owes
+ * money, and — the part that is easy to get wrong — must not cause a single
+ * message to go out, because nobody has paid yet. The result says which path
+ * was taken so the route cannot guess.
  */
 import "server-only";
 
@@ -18,7 +26,7 @@ import { randomUUID } from "node:crypto";
 
 import { addMinutes } from "date-fns";
 
-import { BookingStatus } from "@/generated/prisma/enums";
+import { BookingStatus, PaymentMethod } from "@/generated/prisma/enums";
 import { createReference } from "@/lib/booking/reference";
 import type { CreateBookingPayload } from "@/lib/booking/schema";
 import { resolveSlot } from "@/lib/booking/slots";
@@ -26,13 +34,56 @@ import { createManageToken } from "@/lib/booking/tokens";
 import type { ApiError } from "@/lib/booking/types";
 import { loadBookingById, type LoadedBooking } from "@/lib/booking/view";
 import { isSlotTakenError, prisma } from "@/lib/db";
+import { paymentsEnabled } from "@/lib/env";
+import type { PaymentChannelValue } from "@/lib/payments/types";
+
+/**
+ * What the caller has to know beyond "it saved".
+ *
+ * A discriminated union rather than a nullable field: the route has to send
+ * confirmations on one path and open a charge on the other, and there is no
+ * arrangement of optional properties that makes doing both impossible. This
+ * one does.
+ */
+export type CreatedPayment =
+  | { method: "AT_STUDIO" }
+  | {
+      method: "ONLINE";
+      channel: PaymentChannelValue;
+      /** From the catalogue, never from the request. */
+      amountIdr: number;
+      holdExpiresAt: Date;
+    };
 
 export type CreateBookingResult =
-  | { ok: true; booking: LoadedBooking }
+  | { ok: true; booking: LoadedBooking; payment: CreatedPayment }
   | { ok: false; code: ApiError["code"]; message: string };
 
 /** 30^5 references make a collision rare; rare is not never. */
 const REFERENCE_ATTEMPTS = 5;
+
+/**
+ * How long a slot is held while somebody pays.
+ *
+ * Long enough to open a banking app and transfer, short enough that a customer
+ * who wandered off does not cost the studio the seven o'clock on a Saturday.
+ * The gateway's own expiry (`XENDIT_INVOICE_MINUTES`, 13 by default) is set
+ * *under* this deliberately: a charge that outlived its hold could be paid a
+ * second after the slot was released to somebody else — PAYMENT-PLAN.md §11
+ * risk 3.
+ */
+export const PAYMENT_HOLD_MINUTES = 15;
+
+/**
+ * The furthest a hold may ever be pushed out from when the booking was made.
+ *
+ * Opening a replacement charge extends the hold (see the payment route), or a
+ * customer whose 13-minute QRIS code lapsed would have had barely two minutes
+ * to switch to a bank transfer. Extending without a ceiling is the other
+ * failure: someone could keep opening charges and sit on a Saturday morning
+ * indefinitely without ever paying for it.
+ */
+export const PAYMENT_HOLD_MAX_MINUTES = 45;
 
 const SLOT_TAKEN_MESSAGE =
   "Sorry — someone booked that time while you were filling in your details. " +
@@ -70,6 +121,43 @@ export async function createBooking(
     };
   }
 
+  /* Null on the pay-at-the-studio path, and from here on that is what "online"
+     means: a channel is the one thing the second path has that the first does
+     not, so the rest of this function branches on it rather than on the enum. */
+  let channel: PaymentChannelValue | null = null;
+
+  if (input.paymentMethod === "ONLINE") {
+    /*
+     * Refused, not quietly downgraded to paying at the studio. A deployment
+     * with no Xendit keys cannot open a charge or receive a callback, so a hold
+     * made here would sit doing nothing until the cron swept it away; and
+     * silently confirming instead would hand someone who expected to pay online
+     * a booking they still believe is unpaid. Neither is a thing to decide
+     * behind the customer's back.
+     */
+    if (!paymentsEnabled()) {
+      return {
+        ok: false,
+        code: "VALIDATION",
+        message:
+          "Online payment is not available at the moment. Please choose to " +
+          "pay at the studio.",
+      };
+    }
+
+    /* Optional in the schema because the field means nothing on the other
+       path; required here, because money has to travel on some rail. */
+    if (!input.paymentChannel) {
+      return {
+        ok: false,
+        code: "VALIDATION",
+        message: "Please choose how you would like to pay.",
+      };
+    }
+
+    channel = input.paymentChannel;
+  }
+
   /* The single source of truth for this booking. `resolveSlot` re-checks the
      therapist's working hours, their time off, the lead time and the booking
      window, and hands back the catalogue's own price and duration. */
@@ -97,6 +185,18 @@ export async function createBooking(
   );
 
   const customer = input.customer;
+
+  /*
+   * The hold, and the only thing standing between an unpaid booking and the
+   * slot being sold twice. It needs nothing else: `AWAITING_PAYMENT` is inside
+   * the `booking_no_overlap` exclusion constraint, so the row Postgres is about
+   * to write is *already* blocking that time for everybody else. There is no
+   * lock to take here, and adding one would only be a second, weaker copy of a
+   * guarantee the database is making anyway.
+   */
+  const holdExpiresAt = channel
+    ? addMinutes(new Date(), PAYMENT_HOLD_MINUTES)
+    : null;
 
   for (let attempt = 0; attempt < REFERENCE_ATTEMPTS; attempt += 1) {
     try {
@@ -170,9 +270,22 @@ export async function createBooking(
             variantId: slot.variantId,
             startAt: slot.startAt,
             endAt,
-            /* v1 has no payment step, so a booking is final the moment it is
-               made. `PENDING` is reserved for the gateway — BOOKING-PLAN §9. */
-            status: BookingStatus.CONFIRMED,
+            /* Paying at the studio makes a booking final the moment it is
+               made; paying online makes it a hold that the callback confirms
+               and the cron cancels. `PENDING` stays unused. */
+            status: channel
+              ? BookingStatus.AWAITING_PAYMENT
+              : BookingStatus.CONFIRMED,
+            paymentMethod: channel
+              ? PaymentMethod.ONLINE
+              : PaymentMethod.AT_STUDIO,
+            /* The amount owed is the price this booking was just quoted, read
+               back from the catalogue a line above — the same rule that governs
+               the duration and the therapist, and for the same reason. A body
+               that could name its own `amountDueIdr` would be a body that could
+               buy a 90-minute session for a thousand rupiah. */
+            amountDueIdr: channel ? slot.priceIdr : 0,
+            holdExpiresAt,
             note: customer.note,
             priceIdrAtBooking: slot.priceIdr,
             durationMinutes: slot.durationMinutes,
@@ -203,7 +316,19 @@ export async function createBooking(
         };
       }
 
-      return { ok: true, booking };
+      return {
+        ok: true,
+        booking,
+        payment:
+          channel && holdExpiresAt
+            ? {
+                method: "ONLINE",
+                channel,
+                amountIdr: slot.priceIdr,
+                holdExpiresAt,
+              }
+            : { method: "AT_STUDIO" },
+      };
     } catch (error) {
       /*
        * Two people pressed Confirm on the same slot in the same moment and

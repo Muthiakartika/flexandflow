@@ -6,10 +6,12 @@ Next.js 16 + Tailwind v4 rebuild of **flexandflow.fit** (a WordPress site the ow
 controls), a small wellness & recovery studio in Uluwatu, Bali. Product truth lives in
 `PRODUCT.md` at the repo root.
 
-Work has run in three phases. Phase 1 (pixel-cloning the WordPress site) is **done**.
+Work has run in four phases. Phase 1 (pixel-cloning the WordPress site) is **done**.
 Phase 2 (a full UI redesign) is **in progress and unresolved** — read that section before
-changing anything. Phase 3 (the booking system) is **built and unverified**: written in
-full, never yet run against a database. `BOOKING-PLAN.md` is its spec.
+changing anything. Phase 3 (the booking system) is **built and verified against a live
+Neon database, SendGrid and WAHA**; `BOOKING-PLAN.md` is its spec. Phase 4 (online
+payment through Xendit) is **built and unverifiable**: the studio has no Xendit account
+yet, so not one line of it has ever run. `PAYMENT-PLAN.md` is its spec.
 
 ---
 
@@ -232,7 +234,7 @@ pregnancy massage's cheaper tier has no `duration` of its own), `serviceMinutes`
 
 ---
 
-## Phase 3 — the booking system (built, never run)
+## Phase 3 — the booking system (built and verified)
 
 The booking flow used to be a WordPress page at `flexandflow.fit/appointment/` — a
 BookingPress install nobody here controlled. It now runs in this app. **`BOOKING-PLAN.md`
@@ -243,9 +245,16 @@ details → summary**. Confirmations go out by email (SendGrid) and WhatsApp (th
 own WAHA server), and the confirmation carries a `.ics` so the appointment lands in the
 customer's phone calendar.
 
-**Status: written in full, never executed.** There is no database yet, so nothing here
-has been run — not the seed, not a query, not a message. The owner is testing it
-themselves. Treat every part of it as unverified.
+**Status: verified end to end against real services.** Migrations applied to a Neon
+database, seed run, a booking made through the wizard in a browser, and 36 notifications
+delivered through SendGrid and the studio's WAHA server with none failing. The
+`booking_no_overlap` constraint was tested directly in SQL: an overlapping insert is
+refused with `23P01`, a non-overlapping one is accepted. Reschedule, the 12-hour
+cancellation cutoff, the `.ics` (including `METHOD:CANCEL`), token forgery returning 404,
+and the admin panel were all exercised.
+
+The one thing that could not be checked from here is whether the emails land in an inbox
+or in spam — that needs someone to look at the mailbox.
 
 ### What was added
 
@@ -320,6 +329,79 @@ themselves. Treat every part of it as unverified.
   `CRON_SECRET` as an Actions secret. `CRON.md` explains the interval, what breaks
   without a scheduler, and the alternatives.
 - `.env.example` lists every variable; `lib/env.ts` validates them and names the missing one.
+
+---
+
+## Phase 4 — online payment (built, never run)
+
+Xendit, chosen over PayPal because **IDR is not a PayPal transaction currency** — the
+published Rp prices would have had to be charged in USD at a rate that drifts. Local
+gateways process international Visa/Mastercard in IDR anyway, so PayPal bought nothing.
+**`PAYMENT-PLAN.md` is the spec and the reasoning; read it before changing any of this.**
+
+The customer chooses **pay at the studio** or **pay now** on the summary step. Paying
+now opens a charge and collects it in a modal over the wizard rather than on a hosted
+page — QRIS and virtual account are rendered by our own UI; cards go to Xendit's, because
+3-D Secure belongs to the issuing bank and cannot be drawn by us.
+
+**Status: written in full, never executed.** The studio has no Xendit account yet, so
+there are no credentials and nothing here has ever made a request. The database
+migrations *have* been applied. Treat every code path as unverified.
+
+### Things that will bite
+
+1. **Xendit does not sign its callbacks.** It sends the dashboard's Callback Verification
+   Token in the `x-callback-token` header, and matching it is the only evidence a request
+   came from Xendit. That is a bearer secret, not a signature — compare it in constant
+   time, never log request headers, and **re-fetch the charge over the API before
+   believing anything in the body**. Copying Midtrans's SHA512 thinking here leaves a
+   hole. See `PAYMENT-PLAN.md` §5.
+
+2. **The confirmation must not be sent until the money arrives.** `POST /api/booking`
+   queues notifications for `AT_STUDIO` only. On the online path the payment callback
+   queues them, after settlement. Moving that call back to the route would email people
+   confirmations for bookings they never paid for.
+
+3. **`AWAITING_PAYMENT` holds its slot.** It sits alongside `PENDING` and `CONFIRMED` in
+   the `booking_no_overlap` constraint, which is why nobody can take a time out from
+   under someone at the payment screen. The migration that added the enum value and the
+   one that uses it are **deliberately separate**: Postgres refuses to use a value added
+   by `ALTER TYPE … ADD VALUE` inside the same transaction, and Prisma runs each
+   migration in one.
+
+4. **The charge expires before the hold does.** `XENDIT_INVOICE_MINUTES` (13) is under
+   the 15-minute hold on purpose. Reverse them and somebody can pay for a slot that has
+   already been released — money in, no booking, manual refund.
+
+5. **Payments fail closed.** `paymentsEnabled()` is true only when both
+   `XENDIT_SECRET_KEY` and `XENDIT_CALLBACK_TOKEN` are set. With either missing the
+   wizard offers only "pay at the studio" and the callback route 404s, so a
+   half-configured deployment cannot take money it is unable to confirm.
+
+6. **Most Indonesian rails have no refund API.** QRIS and virtual account refunds are a
+   bank transfer somebody makes by hand. The admin panel records refunds; it does not
+   move money, and its copy says so. Anyone who assumes otherwise will believe a customer
+   has been repaid when they have not.
+
+7. **The cheap rails are listed first on purpose.** `PAYMENT_CHANNELS` in
+   `lib/payments/types.ts` is ordered QRIS → virtual account → e-wallet → card, and that
+   is a cost decision, not an aesthetic one: a virtual account keeps roughly six times
+   more of a Rp750,000 booking than a card does. Do not re-sort it.
+
+### Before it can go live
+
+- **A Xendit account**, verified. Needs company documents, NPWP and a business bank
+  account; it takes weeks. Ask Xendit whether a sole trader can onboard or a PT is
+  required — that decides what the client has to prepare.
+- **The callback URL** registered in the Xendit dashboard, pointing at
+  `/api/payments/xendit`, and the Callback Verification Token copied into the
+  environment.
+- **Two decisions from the owner that block the work being finished**: full payment or
+  deposit, and the refund policy. Neither is a technical question and both must appear on
+  the summary step before anyone presses pay.
+- Every `TODO(xendit):` in `lib/payments/` confirmed against the current API docs. They
+  mark the places where the exact endpoint or field name was written from expectation
+  rather than from a tested call.
 
 ---
 

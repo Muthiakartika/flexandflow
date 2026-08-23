@@ -13,6 +13,12 @@ import type {
 } from "@/lib/booking/types";
 import { isApiError } from "@/lib/booking/types";
 import type { IsoDate } from "@/lib/booking/time";
+import type {
+  PaymentChannelValue,
+  PaymentIntent,
+  PaymentMethodValue,
+  PaymentStatusView,
+} from "@/lib/payments/types";
 
 /**
  * Everything the wizard asks the server, in one typed place.
@@ -139,12 +145,91 @@ export function fetchBooking(
   ).then((body) => body.booking);
 }
 
-export function createBooking(input: CreateBookingInput): Promise<BookingView> {
-  return request<{ booking: BookingView; reference: string }>("/api/booking/", {
+/**
+ * What the wizard sends, which is `CreateBookingInput` plus how they intend to
+ * pay.
+ *
+ * Written here rather than folded into `CreateBookingInput` because payment is
+ * the wizard's own addition to the request: `paymentMethod` defaults to
+ * `AT_STUDIO` on the server, so a caller that knows nothing about payment
+ * still books exactly as it did before any of this existed.
+ */
+export type CreateBookingBody = CreateBookingInput & {
+  paymentMethod: PaymentMethodValue;
+  /** Which rail to open. Sent only when paying online. */
+  paymentChannel?: PaymentChannelValue;
+};
+
+/**
+ * The booking, its reference, and — only when paying online — the charge that
+ * was opened alongside it.
+ *
+ * `payment` being absent is not an error: it is what an `AT_STUDIO` booking
+ * looks like, and that booking is already confirmed.
+ */
+export type CreatedBooking = {
+  booking: BookingView;
+  reference: string;
+  payment?: PaymentIntent;
+};
+
+export function createBooking(input: CreateBookingBody): Promise<CreatedBooking> {
+  return request<CreatedBooking>("/api/booking/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
-  }).then((body) => body.booking);
+  });
+}
+
+/**
+ * The manage token out of a booking's own manage URL.
+ *
+ * The payment endpoints are keyed by that token, exactly as cancel and
+ * reschedule are, and the create response carries it only inside the link.
+ * Reading it back here beats adding a second field that means the same thing
+ * and could drift from it.
+ */
+export function manageTokenOf(booking: BookingView): string {
+  const segments = booking.manageUrl.split("/").filter(Boolean);
+  return segments[segments.length - 1] ?? "";
+}
+
+/**
+ * What the payment modal polls.
+ *
+ * Read from our own database — never proxied from the gateway — because the
+ * gateway's callback is what writes a payment down, and this only reads what
+ * was written. See `PaymentModal`.
+ */
+export function fetchPaymentStatus(
+  token: string,
+  signal?: AbortSignal,
+): Promise<PaymentStatusView> {
+  return request<PaymentStatusView>(
+    `/api/booking/${encodeURIComponent(token)}/payment/`,
+    { signal },
+  );
+}
+
+/**
+ * Opens a fresh charge on another rail — after one expired, or because the
+ * customer changed their mind about how to pay.
+ *
+ * No amount is sent. The server charges what the booking says it costs; a
+ * figure arriving from a browser is a figure somebody can edit.
+ */
+export function startPayment(
+  token: string,
+  channel: PaymentChannelValue,
+): Promise<PaymentIntent> {
+  return request<PaymentIntent>(
+    `/api/booking/${encodeURIComponent(token)}/payment/`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ channel }),
+    },
+  );
 }
 
 /**

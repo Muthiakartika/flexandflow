@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BookingActions } from "@/components/admin/BookingActions";
+import { PaymentPanel } from "@/components/admin/PaymentPanel";
 import {
   Empty,
   JobChip,
@@ -70,7 +71,7 @@ export default async function AdminBookingDetailPage({
 
   if (!detail) notFound();
 
-  const { view, jobs, audit } = detail;
+  const { view, jobs, audit, payment } = detail;
   const start = new Date(view.startAt);
   const end = new Date(view.endAt);
 
@@ -162,6 +163,11 @@ export default async function AdminBookingDetailPage({
           </dl>
         </Panel>
       </div>
+
+      {/* Directly under the booking itself: "have they paid?" is asked in the
+          same breath as "when are they coming?", and an admin who has to
+          scroll past the action forms to find out will stop looking. */}
+      <PaymentPanel payment={payment} />
 
       <BookingActions
         bookingId={view.id}

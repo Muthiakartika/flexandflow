@@ -18,6 +18,9 @@ import {
 } from "@/lib/booking/types";
 import { contact } from "@/lib/site";
 
+import type { PaymentMethodValue } from "@/lib/payments/types";
+
+import PaymentMethodChoice from "./PaymentMethodChoice";
 import type { DetailsDraft } from "./state";
 
 /**
@@ -26,6 +29,10 @@ import type { DetailsDraft } from "./state";
  * The price shown is the variant's own `priceIdr`, unmodified. There is no
  * total to compute — one session, one price — and the moment this screen starts
  * doing arithmetic it becomes a second source of truth for money.
+ *
+ * It is also where the one remaining question is asked: pay at the studio, as
+ * everybody has until now, or pay before leaving this page. The second option
+ * only exists when the gateway is configured — see `PaymentMethodChoice`.
  */
 export default function SummaryStep({
   staff,
@@ -34,6 +41,10 @@ export default function SummaryStep({
   slot,
   details,
   cancelCutoffHours,
+  paymentsEnabled = false,
+  paymentMethod,
+  onPaymentMethod,
+  disabled = false,
 }: {
   staff: StaffSelection;
   staffOption: StaffOption | null;
@@ -42,6 +53,17 @@ export default function SummaryStep({
   details: DetailsDraft;
   /** How many hours before the session a guest can still cancel themselves. */
   cancelCutoffHours: number;
+  /**
+   * Whether paying online can be offered at all. Defaults to **false**: a
+   * wizard that was never told cannot put a visitor in front of a payment
+   * method that would fail, and this is decided on the server — a client
+   * component reading `process.env` reads whatever the build baked in.
+   */
+  paymentsEnabled?: boolean;
+  paymentMethod: PaymentMethodValue;
+  onPaymentMethod: (method: PaymentMethodValue) => void;
+  /** True while the booking is being saved. */
+  disabled?: boolean;
 }) {
   const start = new Date(slot.startAt);
 
@@ -96,10 +118,31 @@ export default function SummaryStep({
         </dl>
       </div>
 
+      {paymentsEnabled ? (
+        <div className={`${CARD} p-5 sm:p-6`}>
+          <PaymentMethodChoice
+            value={paymentMethod}
+            onChange={onPaymentMethod}
+            paymentsEnabled={paymentsEnabled}
+            disabled={disabled}
+          />
+        </div>
+      ) : null}
+
+      {/* Refund terms belong here, above the button, and there are none to
+          state yet: the studio has not decided what a cancellation gets back
+          once money has actually changed hands (PAYMENT-PLAN.md §10.2). Ask
+          the owner and write their answer here — do not invent one. */}
       <p className="font-body text-[14px] leading-[1.7] text-body-text/75">
-        Payment is at the studio. You can cancel or move your session yourself
-        up to {cancelCutoffHours} hours before it starts, using the link in your
-        confirmation — after that, message us on{" "}
+        {/* Guarded on `paymentsEnabled` too: a draft saved while the gateway
+            was configured can still be carrying `ONLINE`, and the wizard falls
+            back to paying at the studio in exactly the same way. */}
+        {paymentsEnabled && paymentMethod === "ONLINE"
+          ? "You'll pay here, without leaving this page. Your time is held while you pay, and the booking is confirmed once the payment lands. "
+          : "Payment is at the studio. "}
+        You can cancel or move your session yourself up to {cancelCutoffHours}{" "}
+        hours before it starts, using the link in your confirmation — after
+        that, message us on{" "}
         <a
           href={contact.whatsapp}
           target="_blank"

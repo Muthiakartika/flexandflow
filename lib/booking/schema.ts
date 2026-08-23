@@ -93,8 +93,30 @@ export const customerSchema = z.object({
   note: optionalText(1000),
 });
 
+/**
+ * How the customer said they would pay.
+ *
+ * Defaults to `AT_STUDIO`, which is both the studio's own default and the
+ * safe one: a request that omits the field books exactly as it did before
+ * online payment existed, rather than opening a charge nobody asked for.
+ */
+export const paymentMethodSchema = z
+  .enum(["AT_STUDIO", "ONLINE"])
+  .default("AT_STUDIO");
+
+/** Which rail to open when paying online. */
+export const paymentChannelSchema = z.enum([
+  "QRIS",
+  "VIRTUAL_ACCOUNT",
+  "EWALLET",
+  "CARD",
+]);
+
 export const createBookingSchema = z.object({
   staff: staffSchema,
+  paymentMethod: paymentMethodSchema,
+  /** Required when paying online; ignored otherwise. */
+  paymentChannel: paymentChannelSchema.optional(),
   variantId: z.string().min(1, "Choose a service"),
   startAt: instantSchema,
   customer: customerSchema,
@@ -107,6 +129,23 @@ export const createBookingSchema = z.object({
 });
 
 export type CreateBookingPayload = z.infer<typeof createBookingSchema>;
+
+/** Opening a second charge after the first expired, from the modal. */
+export const startPaymentSchema = z.object({
+  channel: paymentChannelSchema,
+});
+
+/** Recording a refund in the admin panel. */
+export const refundSchema = z.object({
+  paymentId: z.string().min(1),
+  amountIdr: z.coerce.number().int().min(1),
+  /**
+   * Required, not optional. Most Indonesian rails have no refund API, so this
+   * row is often the only record that a bank transfer was made by hand — see
+   * PAYMENT-PLAN.md §8. A refund with no note is unauditable.
+   */
+  note: z.string().trim().min(1, "Say how the money was returned").max(500),
+});
 
 export const slotsQuerySchema = z.object({
   staff: staffSchema,

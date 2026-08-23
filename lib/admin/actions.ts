@@ -27,6 +27,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { PaymentStatus } from "@/generated/prisma/enums";
 import { IDLE, type ActionState } from "@/lib/admin/action-state";
 import { currentAdmin, verifyCredentials } from "@/lib/admin/auth";
 import { createSessionToken, setSessionCookie } from "@/lib/admin/session";
@@ -34,6 +35,7 @@ import {
   adminBookingStatusSchema,
   adminLoginSchema,
   fieldErrors,
+  refundSchema,
   timeOffSchema,
   variantUpdateSchema,
   workingHourSchema,
@@ -265,6 +267,123 @@ export async function rescheduleBookingAction(
   revalidateBooking(bookingId);
 
   return done("Moved. The customer's calendar entry will update in place.");
+}
+
+// ── Payments ──────────────────────────────────────────────────────────────
+
+/**
+ * Records a refund. It does not make one.
+ *
+ * Worth being blunt about, because the button looks like every other button in
+ * this panel and is the only one that changes nothing outside the database.
+ * Most Indonesian rails — QRIS and virtual account, which is to say almost
+ * every payment this studio will take — have no refund API at all: the money
+ * goes back as a bank transfer somebody makes by hand, and this row is the
+ * evidence that they made it. See PAYMENT-PLAN.md §8.
+ *
+ * TODO(xendit): cards *can* be refunded over the API. When that is wired, this
+ * action gains a CARD branch that calls it and records the provider's refund id
+ * alongside the note; until then the Xendit dashboard is where a card refund is
+ * issued, and this form still records it afterwards.
+ *
+ * `Booking.amountPaidIdr` is deliberately left alone. It answers "what arrived",
+ * which a refund does not change; what came back is `Payment.refundedIdr`, and
+ * every screen that shows a net figure subtracts one from the other. Editing
+ * the booking here would erase the fact that money was ever taken.
+ */
+export async function recordRefundAction(
+  _previous: ActionState,
+  form: FormData,
+): Promise<ActionState> {
+  const admin = await currentAdmin();
+  if (!admin) return NO_SESSION;
+
+  const parsed = refundSchema.safeParse({
+    paymentId: text(form, "paymentId"),
+    /* Typed by a person under pressure: "300.000", "Rp 300,000". The schema
+       wants whole rupiah, so the separators come off first — the same
+       treatment `updateVariantAction` gives a price. */
+    amountIdr: text(form, "amountIdr").replace(/[^\d]/g, ""),
+    note: text(form, "note"),
+  });
+
+  if (!parsed.success) {
+    return failed("Check the fields below.", fieldErrors(parsed.error));
+  }
+
+  const payment = await prisma.payment.findUnique({
+    where: { id: parsed.data.paymentId },
+  });
+
+  if (!payment) return failed("That charge no longer exists.");
+
+  const refundable = payment.amountPaidIdr - payment.refundedIdr;
+
+  if (refundable <= 0) {
+    return failed(
+      payment.amountPaidIdr === 0
+        ? "Nothing was ever collected on this charge, so there is nothing to refund."
+        : "This charge has already been refunded in full.",
+    );
+  }
+
+  /* The ceiling is what arrived minus what has already gone back, not the
+     amount the charge was raised for. A charge that expired half-paid, or one
+     already partly refunded, must not be able to send more money out than the
+     studio ever received. */
+  if (parsed.data.amountIdr > refundable) {
+    return failed("Check the fields below.", {
+      amountIdr: `At most ${refundable.toLocaleString("en-US")} can still be refunded on this charge.`,
+    });
+  }
+
+  const refundedIdr = payment.refundedIdr + parsed.data.amountIdr;
+  const status =
+    refundedIdr >= payment.amountPaidIdr
+      ? PaymentStatus.REFUNDED
+      : PaymentStatus.PARTIALLY_REFUNDED;
+
+  try {
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        refundedIdr,
+        refundedAt: new Date(),
+        /* Appended, not replaced. A second partial refund has its own reason,
+           and overwriting would leave the panel explaining only the last one. */
+        refundNote: payment.refundNote
+          ? `${payment.refundNote}\n${parsed.data.note}`
+          : parsed.data.note,
+        status,
+      },
+    });
+  } catch (error) {
+    return failed(reason(error));
+  }
+
+  await audit({
+    actor: admin.email,
+    action: "payment.refund",
+    /* Against the booking, not the payment: the history panel on the booking
+       page reads `entity: "Booking"`, and a refund is precisely the thing
+       somebody will be looking for there weeks later. */
+    entity: "Booking",
+    entityId: payment.bookingId,
+    meta: {
+      paymentId: payment.id,
+      channel: payment.channel,
+      amountIdr: parsed.data.amountIdr,
+      refundedTotalIdr: refundedIdr,
+      status,
+      note: parsed.data.note,
+    },
+  });
+
+  revalidateBooking(payment.bookingId);
+
+  return done(
+    "Recorded. This changed the record only — if the transfer has not been made, the customer has not been repaid.",
+  );
 }
 
 // ── Schedule ──────────────────────────────────────────────────────────────

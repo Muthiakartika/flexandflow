@@ -23,9 +23,12 @@ enum TherapistTier {
 }
 
 enum BookingStatus {
-  /// Held but not yet final. Reserved for the payment gateway (BOOKING-PLAN §9);
-  /// v1 never writes it. Still blocks its slot — see the exclusion constraint.
+  /// Held but not yet final. Still blocks its slot — see the exclusion constraint.
   PENDING
+  /// Held while the customer pays. Blocks its slot exactly like PENDING, so
+  /// nobody can take the time out from under someone at the payment screen.
+  /// Swept back to CANCELLED by the cron when `holdExpiresAt` passes.
+  AWAITING_PAYMENT
   CONFIRMED
   COMPLETED
   CANCELLED
@@ -54,6 +57,33 @@ enum JobStatus {
   /// Given up on. Either the retry budget ran out or the target is unreachable
   /// in a way retrying cannot fix (a number with no WhatsApp account).
   DEAD
+}
+
+/// How the customer said they would pay, chosen on the summary step.
+enum PaymentMethod {
+  /// Cash or card at the studio. The behaviour that shipped first, and still
+  /// the default — nothing about it changed when online payment arrived.
+  AT_STUDIO
+  ONLINE
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  EXPIRED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+/// Which Xendit product opened this charge. Kept because each one has its own
+/// callback shape and its own fee, and the cost report in PAYMENT-PLAN §1 is
+/// only answerable if the channel is recorded.
+enum PaymentChannel {
+  QRIS
+  VIRTUAL_ACCOUNT
+  CARD
+  EWALLET
 }
 
 model Therapist {
@@ -157,11 +187,11 @@ model WorkingHour {
   therapist   Therapist @relation(fields: [therapistId], references: [id], onDelete: Cascade)
 
   /// 0 = Sunday … 6 = Saturday, in studio local time.
-  weekday Int
+  weekday     Int
   /// Minutes since local midnight. 09:00 = 540.
   startMinute Int
   /// Minutes since local midnight. 12:00 = 720.
-  endMinute Int
+  endMinute   Int
 
   @@index([therapistId, weekday])
 }
@@ -234,8 +264,24 @@ model Booking {
   durationMinutes   Int
   bufferMinutes     Int @default(0)
 
-  /// Reserved for the payment gateway (BOOKING-PLAN §9). Unused in v1.
+  /// When an AWAITING_PAYMENT hold lapses. The cron sweeps past this and
+  /// cancels, which is what frees the slot when somebody walks away from the
+  /// payment screen. Null on a booking that was never held.
   holdExpiresAt DateTime?
+
+  /// How the customer said they would pay. AT_STUDIO is the default and the
+  /// path that shipped first; nothing about it changed when ONLINE arrived.
+  paymentMethod PaymentMethod @default(AT_STUDIO)
+
+  /// What must be paid online. Equal to the price for full prepayment, or the
+  /// deposit when that is what the studio asks for. Zero for AT_STUDIO.
+  ///
+  /// Held apart from `amountPaidIdr` from the start so a deposit needs no
+  /// second migration: the balance settled at the studio is the difference.
+  amountDueIdr  Int @default(0)
+  amountPaidIdr Int @default(0)
+
+  payments Payment[]
 
   /// HMAC-signed opaque token. Lets the customer open the manage page and the
   /// .ics without an account, and stops anyone harvesting other people's
@@ -247,11 +293,11 @@ model Booking {
   /// second one.
   icsSequence Int @default(0)
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  cancelledAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  cancelledAt  DateTime?
   /// "customer" | "admin"
-  cancelledBy String?
+  cancelledBy  String?
   cancelReason String?
 
   notifications NotificationJob[]
@@ -274,8 +320,8 @@ model NotificationJob {
   /// Email address or E.164 number.
   target  String
 
-  status   JobStatus @default(PENDING)
-  attempts Int       @default(0)
+  status    JobStatus @default(PENDING)
+  attempts  Int       @default(0)
   lastError String?
 
   /// When this may first be attempted. Reminders are queued at creation time
@@ -292,18 +338,80 @@ model NotificationJob {
   @@index([status, scheduledAt])
 }
 
+/// One attempt to collect money for a booking.
+///
+/// A row per charge rather than a column on `Booking`, because a customer can
+/// let a QRIS code expire and then pay by virtual account: two attempts, one
+/// booking, and the failed one still has to be explicable afterwards.
+model Payment {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  provider String @default("xendit")
+
+  /// Our own reference, sent to Xendit as `external_id` / `reference_id`.
+  ///
+  /// Unique, and that is what makes the callback idempotent: Xendit retries
+  /// until it gets a 200 and can deliver the same status twice, so the handler
+  /// has to be able to recognise a charge it has already settled.
+  providerRef String @unique
+
+  /// Xendit's own id for the charge, used to re-fetch its status over the API.
+  /// The callback body is never trusted on its own — see PAYMENT-PLAN §5.
+  providerId String?
+
+  channel PaymentChannel
+  status  PaymentStatus  @default(PENDING)
+
+  /// Whole rupiah, like every other amount in this schema.
+  amountIdr     Int
+  /// What actually arrived. Differs from `amountIdr` on a partial refund.
+  amountPaidIdr Int @default(0)
+
+  /// Rendered in our own modal rather than on a hosted page: the QRIS payload
+  /// to draw, or the virtual account number to show. Null for card, which goes
+  /// through Xendit's own UI because 3-D Secure belongs to the issuing bank.
+  qrString    String?
+  vaBank      String?
+  vaNumber    String?
+  /// Xendit's hosted page. The card path, and the fallback for every channel.
+  checkoutUrl String?
+
+  expiresAt DateTime?
+  paidAt    DateTime?
+
+  /// Refunds, recorded even when the money moved by hand — most Indonesian
+  /// rails have no refund API, so this is often a note about a bank transfer
+  /// somebody made. See PAYMENT-PLAN §8.
+  refundedIdr Int       @default(0)
+  refundedAt  DateTime?
+  refundNote  String?
+
+  /// The callback exactly as it arrived. When a customer disputes a payment,
+  /// this is the evidence.
+  rawPayload Json?
+  lastError  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([status, expiresAt])
+}
+
 model AdminUser {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(cuid())
+  email        String    @unique
   passwordHash String
   name         String
-  active       Boolean  @default(true)
-  createdAt    DateTime @default(now())
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
   lastLoginAt  DateTime?
 }
 
 model AuditLog {
-  id       String   @id @default(cuid())
+  id       String @id @default(cuid())
   actor    String
   action   String
   entity   String

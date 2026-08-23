@@ -927,3 +927,375 @@ button.booking-step-body {
   color: color-mix(in oklab, var(--color-secondary) 48%, transparent);
   cursor: not-allowed;
 }
+
+/* ==========================================================================
+   Payment (components/booking/PaymentModal, PaymentMethodChoice, QrCode)
+
+   Appended after the booking wizard's block and, like it, deliberately
+   unlayered — see the note at the top of that block for why: a rule inside
+   `@layer components` loses to any Tailwind utility on the same element, and
+   the selected states below have to hold.
+
+   Everything here obeys the same rules as the rest of the site. Cream ground,
+   white cards, a 10px corner, a hairline border and **no shadows** — the
+   scrim is the only new surface and it is a plain scrim, not a drop shadow.
+   Filled surfaces carrying white text use `--color-primary-strong`, never
+   `--color-primary`, which is 3.67:1 with white and fails AA. Nothing here
+   starts at `opacity: 0`, and nothing responsive is expressed as a Tailwind
+   arbitrary breakpoint variant (CLAUDE.md, gotcha 2) — the order swap that
+   matters is an explicit `@media` block at the end of this file.
+   ========================================================================== */
+
+/* ── The choice on the summary step ──────────────────────────────────────── */
+
+.payment-method-group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.payment-method {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border: 1px solid color-mix(in oklab, var(--color-secondary) 14%, transparent);
+  border-radius: 10px;
+  padding: 14px 16px;
+  background-color: #fff;
+  cursor: pointer;
+  transition:
+    border-color 0.3s,
+    background-color 0.3s;
+}
+
+.payment-method:hover {
+  border-color: color-mix(in oklab, var(--color-primary) 45%, transparent);
+}
+
+.payment-method[data-selected="true"] {
+  border-color: var(--color-primary-strong);
+  background-color: color-mix(in oklab, var(--color-primary) 7%, #fff);
+}
+
+/* A real radio, tinted rather than replaced: it already announces itself
+   correctly, already works from a keyboard, and already looks like the thing
+   it is on every platform. */
+.payment-radio {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  accent-color: var(--color-primary-strong);
+}
+
+.payment-radio:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.payment-method-note {
+  color: color-mix(in oklab, var(--color-secondary) 58%, transparent);
+}
+
+/* ── The modal ───────────────────────────────────────────────────────────── */
+
+/* Above the 76px sticky header, which sits at z-40. */
+.payment-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background-color: color-mix(in oklab, var(--color-secondary) 55%, transparent);
+}
+
+/* A sheet on a phone, where a QR code plus a channel list plus a countdown
+   does not fit in anything smaller than the screen. */
+.payment-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 560px;
+  max-height: 100dvh;
+  border-radius: 10px 10px 0 0;
+  background-color: var(--color-cream);
+  overflow: hidden;
+}
+
+.payment-dialog:focus {
+  outline: none;
+}
+
+.payment-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid color-mix(in oklab, var(--color-secondary) 10%, transparent);
+  background-color: #fff;
+}
+
+.payment-dialog-body {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  overflow-y: auto;
+  /* The dialog scrolls, not the page behind it. */
+  overscroll-behavior: contain;
+}
+
+.payment-dialog-foot {
+  padding: 16px 20px;
+  border-top: 1px solid color-mix(in oklab, var(--color-secondary) 10%, transparent);
+  background-color: #fff;
+}
+
+.payment-close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid color-mix(in oklab, var(--color-secondary) 18%, transparent);
+  border-radius: 10px;
+  background-color: #fff;
+  font-family: var(--font-body);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 0.3s,
+    color 0.3s;
+}
+
+.payment-close:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ── Channel list ────────────────────────────────────────────────────────── */
+
+/* One column on a phone: four two-line buttons across a 350px dialog leaves
+   no room for the note under each label, and the note is what tells somebody
+   which of the four they actually have. */
+.payment-channels {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.payment-channel {
+  display: grid;
+  gap: 4px;
+  border: 1px solid color-mix(in oklab, var(--color-secondary) 14%, transparent);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background-color: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.3s,
+    background-color 0.3s,
+    color 0.3s;
+}
+
+.payment-channel:hover:enabled {
+  border-color: color-mix(in oklab, var(--color-primary) 45%, transparent);
+}
+
+.payment-channel[data-selected="true"] {
+  border-color: var(--color-primary-strong);
+  background-color: var(--color-primary-strong);
+  color: #fff;
+}
+
+.payment-channel:disabled {
+  cursor: default;
+}
+
+.payment-channel-note {
+  color: color-mix(in oklab, var(--color-secondary) 58%, transparent);
+}
+
+.payment-channel[data-selected="true"] .payment-channel-note {
+  color: color-mix(in oklab, #fff 82%, transparent);
+}
+
+/* ── Instruments ─────────────────────────────────────────────────────────── */
+
+.payment-rails {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Capped rather than stretched: a phone camera reads a 240px symbol from
+   15cm perfectly well, and a full-width one on a desktop is just a large
+   square. The white ground is drawn inside the SVG — a QR code with a cream
+   quiet zone is one some cameras will not lock onto. */
+.payment-qr {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+  border: 1px solid color-mix(in oklab, var(--color-secondary) 10%, transparent);
+  border-radius: 10px;
+}
+
+.payment-account {
+  border: 1px solid color-mix(in oklab, var(--color-secondary) 10%, transparent);
+  border-radius: 10px;
+  padding: 14px 16px;
+  background-color: #fff;
+}
+
+/* A virtual account number is copied by eye as often as by button, so it is
+   set large, tabular and loosely tracked. */
+.payment-number {
+  font-family: var(--font-body);
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  word-break: break-all;
+}
+
+.payment-copy {
+  flex: none;
+  border: 1px solid color-mix(in oklab, var(--color-secondary) 18%, transparent);
+  border-radius: 10px;
+  padding: 8px 14px;
+  background-color: #fff;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 0.3s,
+    color 0.3s;
+}
+
+.payment-copy:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.payment-wallet {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in oklab, var(--color-secondary) 18%, transparent);
+  border-radius: 999px;
+  padding: 9px 16px;
+  background-color: #fff;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1;
+  transition:
+    border-color 0.3s,
+    color 0.3s;
+}
+
+.payment-wallet:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.payment-checkout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  padding: 13px 24px;
+  background-color: var(--color-primary-strong);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1;
+  transition: background-color 0.3s;
+}
+
+.payment-checkout:hover {
+  background-color: var(--color-secondary);
+}
+
+.payment-inline-link {
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--color-secondary) 25%, transparent);
+  text-underline-offset: 5px;
+  cursor: pointer;
+  transition:
+    color 0.3s,
+    text-decoration-color 0.3s;
+}
+
+.payment-inline-link:hover:enabled {
+  color: var(--color-primary);
+  text-decoration-color: var(--color-primary);
+}
+
+.payment-hint {
+  color: color-mix(in oklab, var(--color-secondary) 58%, transparent);
+}
+
+.payment-countdown {
+  font-weight: 700;
+}
+
+.payment-notice {
+  border: 1px solid color-mix(in oklab, var(--color-primary) 35%, transparent);
+  border-radius: 10px;
+  padding: 12px 16px;
+  background-color: #fff;
+}
+
+/* ── The one thing that changes with width ───────────────────────────────── */
+
+/* A QR code on the screen of the phone you would have to scan it with cannot
+   be scanned (PAYMENT-PLAN.md §4, risk 9), and most of this studio's
+   customers book from a phone. So on a narrow screen the wallet links come
+   first and the code sits below for anyone holding a second device; on a wide
+   one the code leads, because that is where it makes sense. Bank transfer is
+   offered under both as the fallback that needs neither.
+
+   Written as `order` in an explicit media query rather than as
+   `max-[640px]:order-2`: arbitrary breakpoint variants have silently failed
+   in this project even when `matchMedia` agreed. */
+.payment-rails > .payment-rail-wallets {
+  order: 1;
+}
+
+.payment-rails > .payment-rail-qr {
+  order: 2;
+}
+
+@media only screen and (min-width: 640px) {
+  .payment-rails > .payment-rail-qr {
+    order: 1;
+  }
+
+  .payment-rails > .payment-rail-wallets {
+    order: 2;
+  }
+
+  /* Room for the sheet to become a dialog, centred with air around it. */
+  .payment-scrim {
+    align-items: center;
+    padding: 24px;
+  }
+
+  .payment-dialog {
+    max-height: calc(100dvh - 48px);
+    border-radius: 10px;
+  }
+
+  .payment-channels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

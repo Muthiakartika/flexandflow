@@ -6,6 +6,7 @@ import PageHero from "@/components/ui/PageHero";
 import { ButtonLink } from "@/components/ui/Button";
 import { BAND, WRAP } from "@/components/ui/tokens";
 import { listStaff } from "@/lib/booking/catalogue";
+import { paymentsEnabled } from "@/lib/env";
 import { DEFAULT_CANCEL_CUTOFF_HOURS } from "@/lib/booking/defaults";
 import type { StaffOption } from "@/lib/booking/types";
 import { contact } from "@/lib/site";
@@ -86,6 +87,14 @@ export default async function BookingPage(props: PageProps<"/booking">) {
     ? ((await listStaff()).find((option) => option.slug === slug) ?? null)
     : null;
 
+  /* Whether "pay now" may be offered at all. Decided here rather than in the
+     wizard because it depends on server secrets: a client component has no
+     business knowing whether a Xendit key exists, and one that guessed wrong
+     would take a visitor to a payment screen that cannot work. When Xendit is
+     unconfigured — which it is while the studio's account is being verified —
+     the option is simply absent and booking behaves as it always has. */
+  const canPayOnline = paymentsEnabled();
+
   return (
     <>
       <PageHero
@@ -110,6 +119,7 @@ export default async function BookingPage(props: PageProps<"/booking">) {
           <BookingWizard
             cancelCutoffHours={cancelCutoffHours}
             preselectedStaff={preselected}
+            paymentsEnabled={canPayOnline}
           />
         </Suspense>
       </section>

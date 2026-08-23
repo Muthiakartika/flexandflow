@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { PaymentChip } from "@/components/admin/PaymentPanel";
 import {
   Empty,
   PageHeading,
@@ -83,6 +84,32 @@ export default async function AdminAgendaPage() {
         />
       </div>
 
+      {/* The same money, split by where it is. One number cannot answer both
+          "how much did we take today?" and "how much has the desk still got to
+          ask for?", and it is the second one somebody needs at closing time. */}
+      <div className="admin-card mb-5 flex flex-wrap items-center gap-x-8 gap-y-3 px-4 py-3">
+        <div>
+          <p className="text-[11px] font-bold tracking-[0.06em] text-faint uppercase">
+            Already paid online
+          </p>
+          <p className="mt-1 text-[20px] leading-none font-bold text-ok">
+            {formatIdr(agenda.paidOnlineIdr)}
+          </p>
+        </div>
+        <div>
+          <p className="text-[11px] font-bold tracking-[0.06em] text-faint uppercase">
+            Due at the studio
+          </p>
+          <p className="mt-1 text-[20px] leading-none font-bold text-ink">
+            {formatIdr(agenda.dueAtStudioIdr)}
+          </p>
+        </div>
+        <p className="text-[12px] text-faint">
+          Cancellations and no-shows excluded. Anything refunded has already
+          been taken back off the online figure.
+        </p>
+      </div>
+
       <Panel title="Today's sessions">
         {agenda.bookings.length === 0 ? (
           <Empty>Nothing booked for today.</Empty>
@@ -96,6 +123,7 @@ export default async function AdminAgendaPage() {
                   <th scope="col">Therapist</th>
                   <th scope="col">Customer</th>
                   <th scope="col">Price</th>
+                  <th scope="col">Payment</th>
                   <th scope="col">Status</th>
                   <th scope="col">Note</th>
                   <th scope="col">
@@ -137,6 +165,18 @@ export default async function AdminAgendaPage() {
                     </td>
                     <td className="whitespace-nowrap">
                       {formatIdr(booking.priceIdr)}
+                    </td>
+                    <td>
+                      {/* So the person at the desk knows, before the customer
+                          reaches it, who still owes money. */}
+                      <PaymentChip state={booking.payment} />
+                      {booking.priceIdr > booking.paidIdr &&
+                      booking.paidIdr > 0 ? (
+                        <span className="mt-1 block text-[12px] whitespace-nowrap text-faint">
+                          {formatIdr(booking.priceIdr - booking.paidIdr)} to
+                          collect
+                        </span>
+                      ) : null}
                     </td>
                     <td>
                       <StatusChip status={booking.status} />

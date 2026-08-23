@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { BookingFilters } from "@/components/admin/BookingFilters";
+import { PaymentChip } from "@/components/admin/PaymentPanel";
 import {
   Empty,
   PageHeading,
@@ -14,7 +15,9 @@ import {
   BOOKINGS_PAGE_SIZE,
   listBookings,
   listTherapistOptions,
+  PAYMENT_FILTERS,
   type BookingFilters as Filters,
+  type PaymentFilterValue,
 } from "@/lib/admin/queries";
 import {
   formatIdr,
@@ -54,6 +57,7 @@ function readFilters(params: Search): Filters {
   const from = one(params, "from");
   const to = one(params, "to");
   const status = one(params, "status") as BookingStatusValue;
+  const payment = one(params, "payment") as PaymentFilterValue;
   const page = Number.parseInt(one(params, "page"), 10);
 
   return {
@@ -61,6 +65,7 @@ function readFilters(params: Search): Filters {
     to: isIsoDate(to) ? to : null,
     therapistId: one(params, "therapistId") || null,
     status: STATUS_VALUES.includes(status) ? status : null,
+    payment: PAYMENT_FILTERS.includes(payment) ? payment : null,
     page: Number.isFinite(page) && page > 0 ? page : 1,
   };
 }
@@ -72,6 +77,7 @@ function pageHref(filters: Filters, page: number): string {
   if (filters.to) query.set("to", filters.to);
   if (filters.therapistId) query.set("therapistId", filters.therapistId);
   if (filters.status) query.set("status", filters.status);
+  if (filters.payment) query.set("payment", filters.payment);
   if (page > 1) query.set("page", String(page));
 
   const search = query.toString();
@@ -130,6 +136,7 @@ export default async function AdminBookingsPage({
                   <th scope="col">Therapist</th>
                   <th scope="col">Customer</th>
                   <th scope="col">Price</th>
+                  <th scope="col">Payment</th>
                   <th scope="col">Status</th>
                   <th scope="col">
                     <span className="sr-only">Open</span>
@@ -170,6 +177,18 @@ export default async function AdminBookingsPage({
                       </td>
                       <td className="whitespace-nowrap">
                         {formatIdr(booking.priceIdr)}
+                      </td>
+                      <td>
+                        <PaymentChip state={booking.payment} />
+                        {/* Only when it disagrees with the chip: a part-paid
+                            deposit or a part-refund is the case where the
+                            single word is not the whole answer. */}
+                        {booking.paidIdr > 0 &&
+                        booking.paidIdr < booking.priceIdr ? (
+                          <span className="mt-1 block text-[12px] whitespace-nowrap text-faint">
+                            {formatIdr(booking.paidIdr)} in
+                          </span>
+                        ) : null}
                       </td>
                       <td>
                         <StatusChip status={booking.status} />

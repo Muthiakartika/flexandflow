@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import type {
   BookingFilters as Filters,
+  PaymentFilterValue,
   TherapistOption,
 } from "@/lib/admin/queries";
 import type { BookingStatusValue } from "@/lib/booking/types";
@@ -12,6 +13,18 @@ const STATUSES: { value: BookingStatusValue; label: string }[] = [
   { value: "CANCELLED", label: "Cancelled" },
   { value: "NO_SHOW", label: "No show" },
   { value: "PENDING", label: "Pending" },
+];
+
+/**
+ * Coarser than the payment column on purpose — a filter has to be a `WHERE`,
+ * and "paid in full" compares two columns of the same row. `paymentWhere` in
+ * `lib/admin/queries.ts` says what each one asks the database.
+ */
+const PAYMENTS: { value: PaymentFilterValue; label: string }[] = [
+  { value: "at_studio", label: "Pay at studio" },
+  { value: "unpaid", label: "Awaiting payment" },
+  { value: "paid", label: "Paid online" },
+  { value: "refunded", label: "Refunded" },
 ];
 
 /**
@@ -33,7 +46,7 @@ export function BookingFilters({
     <form
       method="get"
       action="/admin/bookings/"
-      className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6"
     >
       <div>
         <label className="admin-label" htmlFor="filter-from">
@@ -95,6 +108,25 @@ export function BookingFilters({
           {STATUSES.map((status) => (
             <option key={status.value} value={status.value}>
               {status.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="admin-label" htmlFor="filter-payment">
+          Payment
+        </label>
+        <select
+          id="filter-payment"
+          name="payment"
+          defaultValue={filters.payment ?? ""}
+          className="admin-input"
+        >
+          <option value="">Any payment</option>
+          {PAYMENTS.map((payment) => (
+            <option key={payment.value} value={payment.value}>
+              {payment.label}
             </option>
           ))}
         </select>

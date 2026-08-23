@@ -224,10 +224,11 @@ runs inside this app.
 | Customer flow | `/booking/` — five steps: staff, service, date & time, details, summary |
 | After booking | `/booking/confirmation/<reference>/` — the "add to calendar" page |
 | Customer self-service | `/booking/manage/<token>/` — view or cancel |
-| Studio | `/admin/` — today's agenda, bookings, schedule, prices, notification health |
+| Studio | `/admin/` — today's agenda, bookings, schedule, prices, payments, notification health |
 
 Everything about how it works is in [BOOKING-PLAN.md](BOOKING-PLAN.md);
-[CRON.md](CRON.md) covers the two scheduled jobs.
+[PAYMENT-PLAN.md](PAYMENT-PLAN.md) covers paying online, and [CRON.md](CRON.md) the two
+scheduled jobs.
 
 **Two things that are easy to get wrong:**
 

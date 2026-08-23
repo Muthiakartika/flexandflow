@@ -27,6 +27,7 @@ import type {
 } from "@/lib/booking/types";
 import { ANY_STAFF } from "@/lib/booking/types";
 import type { IsoDate } from "@/lib/booking/time";
+import type { PaymentIntent, PaymentMethodValue } from "@/lib/payments/types";
 
 import type { BookingDetail } from "./useBookingApi";
 
@@ -149,6 +150,28 @@ export type RescheduleState = {
   blocked: string | null;
 };
 
+/**
+ * A charge the server opened when the booking was saved.
+ *
+ * Present only on the pay-now path, and only for as long as this visit lasts.
+ * It is deliberately **not** persisted with the draft: a charge restored from
+ * `sessionStorage` an hour later would render a QR code that stopped being
+ * payable long ago, which is a worse outcome than not showing one. If the tab
+ * is refreshed mid-payment the booking is unaffected — the gateway's callback
+ * confirms it and the confirmation email still arrives.
+ */
+export type OpenPayment = {
+  /** The booking's manage token. Every payment call is keyed by it. */
+  token: string;
+  reference: string;
+  intent: PaymentIntent;
+  /**
+   * Whether the modal is showing. Dismissing it keeps the charge, so "Show
+   * payment again" can put the same QR back rather than opening a second one.
+   */
+  open: boolean;
+};
+
 export type BookingState = {
   step: StepId;
   /** `null` for a new booking; set when `?reschedule=<token>` opened this. */
@@ -171,6 +194,14 @@ export type BookingState = {
   date: IsoDate | null;
   slot: Slot | null;
   details: DetailsDraft;
+  /**
+   * How they said they would pay. `AT_STUDIO` is the default because it is the
+   * behaviour that already existed and already worked; paying online is the
+   * addition, and an addition should not become the path everyone is put on.
+   */
+  paymentMethod: PaymentMethodValue;
+  /** The open charge, on the pay-now path only. See `OpenPayment`. */
+  payment: OpenPayment | null;
   /** Field-level messages, keyed as `customerSchema` paths. */
   errors: Record<string, string>;
   submitting: boolean;
@@ -203,6 +234,8 @@ export function initialState(
     date: null,
     slot: null,
     details: emptyDetails,
+    paymentMethod: "AT_STUDIO",
+    payment: null,
     errors: {},
     submitting: false,
     notice: null,
@@ -223,6 +256,16 @@ export type BookingAction =
   | { type: "setPhone"; country: string; national: string; e164: string }
   | { type: "setErrors"; errors: Record<string, string> }
   | { type: "clearError"; field: string }
+  | { type: "choosePaymentMethod"; method: PaymentMethodValue }
+  | {
+      type: "paymentOpened";
+      /** The booking's manage token. */
+      token: string;
+      reference: string;
+      intent: PaymentIntent;
+    }
+  | { type: "paymentDismissed"; notice: string }
+  | { type: "paymentReopened" }
   | { type: "submitStart" }
   | { type: "submitFailed"; notice: string; errors?: Record<string, string> }
   | { type: "slotLost"; notice: string }
@@ -333,6 +376,45 @@ export function reducer(
 
     case "clearError":
       return { ...state, errors: withoutError(state.errors, action.field) };
+
+    case "choosePaymentMethod":
+      return state.paymentMethod === action.method
+        ? state
+        : { ...state, paymentMethod: action.method, notice: null };
+
+    case "paymentOpened":
+      /* The booking exists from here on. `submitting` ends, because what the
+         visitor is waiting for is no longer us. */
+      return {
+        ...state,
+        submitting: false,
+        notice: null,
+        payment: {
+          token: action.token,
+          reference: action.reference,
+          intent: action.intent,
+          open: true,
+        },
+      };
+
+    case "paymentDismissed":
+      if (state.payment === null) return state;
+      /* The charge is kept so the same one can be shown again — opening a
+         second charge for a booking that already has a payable one is how a
+         customer ends up paying twice. */
+      return {
+        ...state,
+        notice: action.notice,
+        payment: { ...state.payment, open: false },
+      };
+
+    case "paymentReopened":
+      if (state.payment === null) return state;
+      return {
+        ...state,
+        notice: null,
+        payment: { ...state.payment, open: true },
+      };
 
     case "submitStart":
       return { ...state, submitting: true, notice: null };
@@ -502,6 +584,11 @@ export function saveDraft(state: BookingState): void {
     /* Not persisted: a reload should ask the endpoint again and, if it refuses
        again, say so — rather than silently opening a blank new booking. */
     rescheduleFailed: null,
+    /* Nor this: an open charge has a deadline, and one restored from storage
+       would draw a QR code that stopped being payable while the tab was shut.
+       See `OpenPayment`. The chosen `paymentMethod` does survive — that is a
+       preference, not a charge. */
+    payment: null,
   };
 
   try {
@@ -545,6 +632,9 @@ export function loadDraft(token: string | null = null): BookingState | null {
         : null,
       rescheduleFailed: null,
       details: { ...emptyDetails, ...(parsed.details ?? {}) },
+      paymentMethod: parsed.paymentMethod === "ONLINE" ? "ONLINE" : "AT_STUDIO",
+      /* See `saveDraft`: never restored, whatever a hand-edited draft says. */
+      payment: null,
       submitting: false,
       notice: null,
       errors: {},
