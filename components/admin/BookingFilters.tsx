@@ -1,8 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useTransition, type FormEvent } from "react";
 
 import { AdminSelect, type SelectOption } from "@/components/admin/AdminSelect";
+import { PendingLink } from "@/components/admin/PendingLink";
 import type {
   BookingFilters as Filters,
   PaymentFilterValue,
@@ -43,6 +45,15 @@ const PAYMENTS: { value: PaymentFilterValue; label: string }[] = [
  * URL contract is not: every filter is still a query parameter, the form is
  * still a GET, and typing `?status=CANCELLED` by hand still works. Only the
  * three controls need scripting.
+ *
+ * Submitting goes through `router.push` inside a transition rather than
+ * letting the browser navigate. A native GET submit is a full document load:
+ * the panel's layout re-renders, its session query runs again, and the studio
+ * sits on the old table with nothing happening until the whole page comes
+ * back. Through the router it is a client navigation, which means the button
+ * can say it is working and `bookings/loading.tsx` can put a skeleton where
+ * the table is. `method="get"` and `action` stay on the element so that if the
+ * script has not loaded, the browser still does the old thing.
  */
 export function BookingFilters({
   filters,
@@ -51,6 +62,31 @@ export function BookingFilters({
   filters: Filters;
   therapists: TherapistOption[];
 }) {
+  const router = useRouter();
+  const [filtering, startFiltering] = useTransition();
+
+  /**
+   * The same URL the browser would have built, built here instead.
+   *
+   * Empty values are dropped rather than sent as `status=`, so a cleared
+   * filter leaves the address bar as short as it was before anyone touched it.
+   * `page` is deliberately not carried: changing a filter and landing on page
+   * four of a result set that now has two pages is not what anybody meant.
+   */
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const query = new URLSearchParams();
+    for (const [field, value] of new FormData(event.currentTarget).entries()) {
+      if (typeof value === "string" && value !== "") query.set(field, value);
+    }
+
+    const search = query.toString();
+    startFiltering(() => {
+      router.push(search ? `/admin/bookings/?${search}` : "/admin/bookings/");
+    });
+  }
+
   /* The empty value is the "no filter" row. `FormSelect` swaps it for a
      sentinel on the way into Radix, which refuses an empty one, and unwinds it
      again for the hidden input the form submits. */
@@ -76,6 +112,7 @@ export function BookingFilters({
     <form
       method="get"
       action="/admin/bookings/"
+      onSubmit={handleSubmit}
       className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6"
     >
       <div>
@@ -141,12 +178,19 @@ export function BookingFilters({
       </div>
 
       <div className="flex items-end gap-2">
-        <button type="submit" className="admin-btn admin-btn-solid">
-          Filter
+        <button
+          type="submit"
+          disabled={filtering}
+          className="admin-btn admin-btn-solid"
+        >
+          {filtering ? "Filtering…" : "Filter"}
         </button>
-        <Link href="/admin/bookings/" className="admin-btn admin-btn-quiet">
+        <PendingLink
+          href="/admin/bookings/"
+          className="admin-btn admin-btn-quiet"
+        >
           Clear
-        </Link>
+        </PendingLink>
       </div>
     </form>
   );

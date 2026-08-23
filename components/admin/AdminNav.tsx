@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+
+import { PendingLink } from "@/components/admin/PendingLink";
 
 /**
  * The panel's navigation: a sidebar on a laptop, a wrapped row of links on a
@@ -38,6 +41,7 @@ export function AdminNav({
   adminEmail: string;
 }) {
   const pathname = usePathname();
+  const [signingOut, setSigningOut] = useState(false);
 
   /* The rule between nav and content moves from the bottom edge to the right
      edge when the sidebar appears. Both live in `admin.css`, so no Tailwind
@@ -62,7 +66,7 @@ export function AdminNav({
             const current = isCurrent(pathname, link.href);
             return (
               <li key={link.href}>
-                <Link
+                <PendingLink
                   href={link.href}
                   aria-current={current ? "page" : undefined}
                   className={`block rounded-[8px] px-3 py-2 text-[14px] font-bold transition-colors ${
@@ -72,7 +76,7 @@ export function AdminNav({
                   }`}
                 >
                   {link.label}
-                </Link>
+                </PendingLink>
               </li>
             );
           })}
@@ -85,10 +89,27 @@ export function AdminNav({
 
         {/* A real form POST rather than a fetch: signing out has to work when
             the page's JavaScript has not loaded or has thrown, which is
-            precisely when somebody wants to get out of it. */}
-        <form action="/api/admin/logout/" method="post" className="mt-3">
-          <button type="submit" className="admin-btn admin-btn-quiet w-full">
-            Log out
+            precisely when somebody wants to get out of it. The pending label is
+            layered on top and changes nothing if the script never ran.
+
+            The button is not `disabled` while it waits, on purpose: taking a
+            submit button out of the form mid-submission cancels the submission
+            in some browsers, and this one is a full page POST rather than a
+            React action. Signing out twice costs nothing anyway. */}
+        <form
+          action="/api/admin/logout/"
+          method="post"
+          className="mt-3"
+          onSubmit={() => setSigningOut(true)}
+        >
+          <button
+            type="submit"
+            aria-busy={signingOut || undefined}
+            className={`admin-btn admin-btn-quiet w-full${
+              signingOut ? " pointer-events-none opacity-60" : ""
+            }`}
+          >
+            {signingOut ? "Signing out…" : "Log out"}
           </button>
         </form>
       </div>

@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { BookingFilters } from "@/components/admin/BookingFilters";
 import { PaymentChip } from "@/components/admin/PaymentPanel";
+import { PendingLink } from "@/components/admin/PendingLink";
 import {
   Empty,
   PageHeading,
@@ -186,13 +187,17 @@ export default async function AdminBookingsPage({
             aria-label="Booking pages"
             className="mt-4 flex items-center justify-between gap-3"
           >
+            {/* `PendingLink` rather than `Link`: paging is a navigation to
+                this same route, so `loading.tsx` has nothing new to swap in and
+                the screen sits unchanged while the next page is fetched. The
+                dot beside the label is the only thing that says it heard. */}
             {result.page > 1 ? (
-              <Link
+              <PendingLink
                 href={pageHref(filters, result.page - 1)}
                 className="admin-btn admin-btn-quiet"
               >
                 ← Newer
-              </Link>
+              </PendingLink>
             ) : (
               <span />
             )}
@@ -200,12 +205,12 @@ export default async function AdminBookingsPage({
               Page {result.page} of {result.pageCount}
             </p>
             {result.page < result.pageCount ? (
-              <Link
+              <PendingLink
                 href={pageHref(filters, result.page + 1)}
                 className="admin-btn admin-btn-quiet"
               >
                 Older →
-              </Link>
+              </PendingLink>
             ) : (
               <span />
             )}

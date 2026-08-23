@@ -244,6 +244,68 @@
     text-transform: uppercase;
     white-space: nowrap;
   }
+
+  /* One grey bar. `components/admin/Skeleton.tsx` builds every loading shape
+     out of these, and passes only sizing utilities — nothing that could
+     outrank the colour and the pulse set here, which is the usual trap with
+     `@layer components`. */
+  .admin-skeleton {
+    background-color: color-mix(in oklab, var(--color-line) 70%, transparent);
+    border-radius: 6px;
+    animation: admin-skeleton-pulse 1.4s ease-in-out infinite;
+  }
+
+  /**
+   * The dot beside a link that has been clicked and is still waiting.
+   *
+   * Always in the DOM at a fixed size, so switching it on cannot move the text
+   * beside it, and invisible until 120ms have passed — a navigation that lands
+   * quickly should not flash a spinner at somebody. `useLinkStatus` in
+   * `components/admin/PendingLink.tsx` is what adds `is-pending`.
+   */
+  .admin-link-hint {
+    display: inline-block;
+    width: 0.5em;
+    height: 0.5em;
+    margin-left: 0.45em;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .admin-link-hint.is-pending {
+    visibility: visible;
+    animation:
+      admin-hint-in 180ms ease 120ms forwards,
+      admin-skeleton-pulse 1s ease-in-out 120ms infinite;
+  }
+}
+
+@keyframes admin-skeleton-pulse {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes admin-hint-in {
+  to {
+    opacity: 0.55;
+  }
+}
+
+/* A loading state is information, not decoration: with the animation gone the
+   bars still say "this is not the answer yet", and nothing here depends on
+   movement to be understood. */
+@media (prefers-reduced-motion: reduce) {
+  .admin-skeleton {
+    animation: none;
+  }
+
+  .admin-link-hint.is-pending {
+    animation: none;
+    opacity: 0.55;
+  }
 }
 
 /* ==========================================================================
