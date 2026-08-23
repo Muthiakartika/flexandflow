@@ -884,10 +884,14 @@ export default function CardForm({
       {/* Said once, where it is decided. It is also exactly true: the fields
           above are read by Xendit's script and exchanged for a token in this
           browser, and only the token is sent to the studio. */}
+      {/* Named, not "our payment provider". Somebody deciding whether to type
+          a card number into a small studio's website is asking who is really
+          taking it, and a name they can look up answers that where a vague
+          phrase does not. */}
       <p className="payment-hint font-body text-[13px] leading-[1.6]">
-        Your card details go straight to our payment provider. They never reach
-        this site. Your bank may ask you to confirm the payment — that happens
-        here, in this window.
+        Your card details go straight to Xendit, our payment processor. They
+        never reach this site. Your bank may ask you to confirm the payment —
+        that happens here, in this window.
       </p>
     </form>
   );

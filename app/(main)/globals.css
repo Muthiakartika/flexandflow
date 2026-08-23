@@ -1339,3 +1339,33 @@ button.booking-step-body {
     width: 390px;
   }
 }
+
+/* ── Payment attribution ──────────────────────────────────────────────────
+   Who is actually taking the card. Quiet by design: it belongs beside the
+   Close button as a fact, not as a badge competing with the payment itself. */
+.payment-dialog-foot-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.payment-attribution {
+  font-size: 12px;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--color-body-text) 55%, transparent);
+}
+
+.payment-attribution a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--color-body-text) 30%, transparent);
+  text-underline-offset: 3px;
+  transition: color 300ms, text-decoration-color 300ms;
+}
+
+.payment-attribution a:hover {
+  color: var(--color-primary-strong);
+  text-decoration-color: var(--color-primary-strong);
+}

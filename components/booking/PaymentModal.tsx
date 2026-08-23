@@ -818,9 +818,29 @@ export default function PaymentModal({
               </div>
             </div>
           ) : (
-            <Button type="button" onClick={requestClose} disabled={cardLocked}>
-              Close
-            </Button>
+            <div className="payment-dialog-foot-row">
+              <Button type="button" onClick={requestClose} disabled={cardLocked}>
+                Close
+              </Button>
+              {/* Whose payment page this is, said plainly.
+                  A form asking for a card number on a small studio's website
+                  has to answer "who is actually taking this?", and naming the
+                  processor is the honest answer — it is Xendit that holds the
+                  card and Xendit that is regulated to. Text, not a logo: the
+                  mark is not ours to redraw, and a wrong one would undermine
+                  the reassurance it is there to give. */}
+              <p className="payment-attribution font-body">
+                Payments processed by{" "}
+                <a
+                  href="https://www.xendit.co"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={FOCUS}
+                >
+                  Xendit
+                </a>
+              </p>
+            </div>
           )}
         </div>
       </div>
