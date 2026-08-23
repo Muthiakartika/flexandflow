@@ -393,9 +393,12 @@ migrations *have* been applied. Treat every code path as unverified.
 - **A Xendit account**, verified. Needs company documents, NPWP and a business bank
   account; it takes weeks. Ask Xendit whether a sole trader can onboard or a PT is
   required — that decides what the client has to prepare.
-- **The callback URL** registered in the Xendit dashboard, pointing at
-  `/api/payments/xendit`, and the Callback Verification Token copied into the
-  environment.
+- **Four things from the Xendit dashboard**, only two of which are environment
+  variables: the API secret key, the Callback Verification Token, the callback URL
+  (`/api/payments/xendit`) registered against **every** payment event the studio
+  accepts, and the payment methods themselves switched on. A callback row left blank
+  means those payments are collected and never confirmed — the money arrives and the
+  booking stays unpaid. `PAYMENT-PLAN.md` §9 has the checklist.
 - **Two decisions from the owner that block the work being finished**: full payment or
   deposit, and the refund policy. Neither is a technical question and both must appear on
   the summary step before anyone presses pay.

@@ -434,6 +434,70 @@ Sengketa pembayaran hampir selalu soal siapa bilang apa. `rawPayload` dan
 | **7** | Uji sandbox menyeluruh: bayar, gagal, kedaluwarsa, callback dobel, token salah, refund | 1 hari |
 | **7b** | Uji di ponsel sungguhan: deeplink tiap dompet, QR di desktop, tutup modal lalu kembali | 0,5 hari |
 
+### Fase 0 — apa yang harus diambil dari dashboard Xendit
+
+Empat hal, dan **hanya dua di antaranya variabel environment**. Dua sisanya
+pengaturan di dalam dashboard, dan sistem tidak bekerja tanpanya.
+
+| # | Yang diambil | Di mana | Masuk ke |
+|---|---|---|---|
+| 1 | **API secret key** | Settings → Developers → **API Keys** | `XENDIT_SECRET_KEY` |
+| 2 | **Callback Verification Token** | Settings → Developers → **Callbacks** | `XENDIT_CALLBACK_TOKEN` |
+| 3 | **URL callback** | layar Callbacks yang sama | *bukan variabel* — diisi di dashboard |
+| 4 | **Metode pembayaran diaktifkan** | Settings → Payment methods | *bukan variabel* |
+
+> Nama menu di dashboard bisa bergeser dari waktu ke waktu. Yang penting adalah
+> keempat benda itu ada; kalau labelnya berbeda, cari berdasarkan isinya.
+
+**1. API secret key.** Buat kunci dengan izin tulis untuk *money-in*, bukan
+read-only. Kunci uji berawalan `xnd_development_`, kunci produksi
+`xnd_production_`. **Pakai kunci uji sampai seluruh alur lolos di sandbox** —
+kunci produksi memindahkan uang sungguhan sejak permintaan pertama.
+
+**2. Callback Verification Token.** Satu nilai untuk seluruh akun; tidak
+kedaluwarsa dan tidak per-event. Ini satu-satunya bukti sebuah callback benar
+datang dari Xendit, karena Xendit tidak menandatangani callback-nya (§5).
+Perlakukan seperti kata sandi.
+
+**3. URL callback — ini yang paling mudah terlewat.**
+
+Isi dengan:
+
+```
+https://flexandflow.fit/api/payments/xendit
+```
+
+Dan isikan untuk **setiap jenis pembayaran yang diterima studio** — invoice,
+virtual account, QR code, dan e-wallet masing-masing punya barisnya sendiri di
+layar itu. Satu handler melayani semuanya, tapi **baris yang dibiarkan kosong
+berarti pembayaran jenis itu diterima dan tidak pernah dikonfirmasi**: uangnya
+masuk, bookingnya tetap berstatus belum dibayar, dan tidak ada yang tahu sampai
+ada pelanggan yang protes.
+
+Saat menguji di sandbox, arahkan ke URL preview Vercel dulu. Xendit tidak bisa
+memanggil `localhost`; kalau ingin menguji dari mesin sendiri, pakai terowongan
+seperti ngrok dan daftarkan URL terowongannya.
+
+**4. Aktifkan metode pembayarannya.** QRIS, bank virtual account mana saja,
+e-wallet mana saja, dan kartu. Metode yang belum diaktifkan **tidak** gagal saat
+aplikasi menyala — ia gagal saat pelanggan menekan bayar, yang jauh lebih buruk.
+Sebagian metode perlu persetujuan terpisah dan tidak langsung aktif.
+
+**Plus rekening settlement** atas nama usaha, tempat uangnya nanti dikirim.
+
+### Urutan yang disarankan
+
+1. Buat akun, ajukan verifikasi bisnis. **Ini yang paling lambat**, bisa
+   berminggu-minggu — mulai dari sini.
+2. Sementara menunggu: ambil kunci **sandbox**, daftarkan URL callback ke
+   deployment preview, aktifkan metode di mode uji, lalu jalankan seluruh alur
+   dan tuntaskan setiap `TODO(xendit):` di `lib/payments/`.
+3. Setelah terverifikasi: tukar ke kunci produksi, ubah URL callback ke domain
+   asli, aktifkan metode di mode live.
+4. Lakukan satu transaksi sungguhan bernilai kecil untuk tiap metode, lalu
+   refund-kan. Itu satu-satunya cara membuktikan settlement benar-benar sampai
+   ke rekening.
+
 **Total ±8 hari kerja** setelah akun Xendit aktif — naik dari ±5,5 hari kalau
 memakai halaman hosted Xendit tanpa modal.
 
