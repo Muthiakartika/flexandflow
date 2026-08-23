@@ -57,7 +57,19 @@ export type CreatedPayment =
 
 export type CreateBookingResult =
   | { ok: true; booking: LoadedBooking; payment: CreatedPayment }
-  | { ok: false; code: ApiError["code"]; message: string };
+  | {
+      ok: false;
+      code: ApiError["code"];
+      message: string;
+      /**
+       * The customer's own unpaid hold on the slot they just asked for.
+       *
+       * Present only on `SLOT_TAKEN`, and only when the booking in the way is
+       * theirs. It gives the wizard something to offer besides "pick another
+       * time" — which would be wrong advice, since the time is not gone.
+       */
+      resume?: { reference: string; manageToken: string };
+    };
 
 /** 30^5 references make a collision rare; rare is not never. */
 const REFERENCE_ATTEMPTS = 5;
@@ -84,6 +96,44 @@ export const PAYMENT_HOLD_MINUTES = 15;
  * indefinitely without ever paying for it.
  */
 export const PAYMENT_HOLD_MAX_MINUTES = 45;
+
+/**
+ * An unpaid hold this same customer left at this same time.
+ *
+ * Matched on the phone number, because that is what identifies a person to this
+ * studio — it is the one contact detail the booking form insists on. Only a
+ * live hold counts: one whose `holdExpiresAt` has passed is about to be swept
+ * by the cron, and offering to resume it would send somebody to a charge that
+ * is already dead.
+ *
+ * Deliberately not matched on the therapist or the service. Nobody can be on
+ * two tables at once, so any live hold this person has at this instant is the
+ * attempt they walked away from, whoever it was booked with — and with "Any
+ * Staff" it will often be booked with someone else, because their own hold is
+ * exactly what made the first therapist look busy.
+ */
+async function findOwnHold(input: {
+  phoneE164: string;
+  startAt: Date;
+}): Promise<{ reference: string; manageToken: string } | null> {
+  const held = await prisma.booking.findFirst({
+    where: {
+      status: BookingStatus.AWAITING_PAYMENT,
+      startAt: input.startAt,
+      holdExpiresAt: { gt: new Date() },
+      customer: { is: { phoneE164: input.phoneE164 } },
+    },
+    /* Most recent first: someone who abandoned two is asking about the last. */
+    orderBy: { createdAt: "desc" },
+    select: { reference: true, manageToken: true },
+  });
+
+  return held ?? null;
+}
+
+const RESUME_MESSAGE =
+  "You already started booking this time and it is still held for you. " +
+  "Continue that payment rather than starting again.";
 
 const SLOT_TAKEN_MESSAGE =
   "Sorry — someone booked that time while you were filling in your details. " +
@@ -185,6 +235,29 @@ export async function createBooking(
   );
 
   const customer = input.customer;
+
+  /*
+   * Their own abandoned hold, caught before a second booking is written.
+   *
+   * The clash in the `catch` below covers the plain case — same therapist, same
+   * time, refused by the constraint. It cannot cover "Any Staff": the hold is
+   * precisely what makes the first therapist unavailable, so `resolveSlot`
+   * quietly assigns the next one and the insert succeeds. The customer then has
+   * two bookings for the same hour and will pay for one of them.
+   */
+  const alreadyHeld = await findOwnHold({
+    phoneE164: customer.phoneE164,
+    startAt: slot.startAt,
+  });
+
+  if (alreadyHeld) {
+    return {
+      ok: false,
+      code: "SLOT_TAKEN",
+      message: RESUME_MESSAGE,
+      resume: alreadyHeld,
+    };
+  }
 
   /*
    * The hold, and the only thing standing between an unpaid booking and the
@@ -338,6 +411,28 @@ export async function createBooking(
        * The customer is told plainly and sent back to the calendar.
        */
       if (isSlotTakenError(error)) {
+        /*
+         * The same check the pre-check above makes, repeated because the hold
+         * may have been opened in the moment between them — a customer with the
+         * booking page in two tabs, most plausibly. Reporting a stranger's
+         * clash when the row belongs to the person reading it would be both
+         * untrue and a dead end: the hold blocks them for a quarter of an hour
+         * and there is no way back to the payment they left.
+         */
+        const own = await findOwnHold({
+          phoneE164: input.customer.phoneE164,
+          startAt: slot.startAt,
+        });
+
+        if (own) {
+          return {
+            ok: false,
+            code: "SLOT_TAKEN",
+            message: RESUME_MESSAGE,
+            resume: own,
+          };
+        }
+
         return { ok: false, code: "SLOT_TAKEN", message: SLOT_TAKEN_MESSAGE };
       }
 

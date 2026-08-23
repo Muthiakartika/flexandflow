@@ -176,6 +176,7 @@ export default function PaymentModal({
   token,
   reference,
   intent: opened,
+  cardHolder,
   onPaid,
   onClose,
 }: {
@@ -185,6 +186,18 @@ export default function PaymentModal({
   reference: string;
   /** The charge opened alongside the booking, on the default channel. */
   intent: PaymentIntent;
+  /**
+   * Who the booking is for. Passed straight through to the card form, which
+   * prefills the name and sends the contact details Xendit requires with a
+   * card — the customer has already typed all of this and should not be asked
+   * for it twice.
+   */
+  cardHolder: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneE164: string;
+  };
   onPaid: (reference: string) => void;
   /** Dismissed without paying. The booking still exists and still holds. */
   onClose: () => void;
@@ -626,6 +639,7 @@ export default function PaymentModal({
       <CardForm
         key={intent.paymentId}
         token={token}
+        cardHolder={cardHolder}
         amountIdr={intent.amountIdr}
         onLockChange={setCardLocked}
         onPaid={cardPaid}

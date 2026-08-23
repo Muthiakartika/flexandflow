@@ -189,6 +189,15 @@ export type ApiError = {
     | "SERVER";
   /** Field-level messages, keyed by the input path. */
   fields?: Record<string, string>;
+  /**
+   * On `SLOT_TAKEN`, the caller's own unpaid booking for that slot.
+   *
+   * A clash is usually a stranger; sometimes it is the same person coming back
+   * after abandoning a payment, and their own hold is what stands in the way.
+   * Telling them to pick another time would be false — the time is still
+   * theirs — so the wizard is given what it needs to offer the payment again.
+   */
+  resume?: { reference: string; manageToken: string };
 };
 
 export function isApiError(value: unknown): value is ApiError {

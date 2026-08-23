@@ -61,6 +61,8 @@ export type FailOptions = {
    */
   status?: number;
   headers?: HeadersInit;
+  /** Only meaningful with `SLOT_TAKEN`; see `ApiError.resume`. */
+  resume?: { reference: string; manageToken: string };
 };
 
 export function fail(
@@ -72,6 +74,7 @@ export function fail(
   if (options.fields && Object.keys(options.fields).length > 0) {
     body.fields = options.fields;
   }
+  if (options.resume) body.resume = options.resume;
 
   return Response.json(
     body,

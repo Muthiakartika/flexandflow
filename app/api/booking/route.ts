@@ -72,7 +72,11 @@ export async function POST(request: Request): Promise<Response> {
     const result = await createBooking(payload);
 
     if (!result.ok) {
-      return fail(result.code, result.message);
+      /* `resume` rides along only when the clash is the caller's own unpaid
+         hold — see `createBooking`. The wizard uses it to offer that payment
+         again instead of sending them back to the calendar for a time that
+         was never taken from them. */
+      return fail(result.code, result.message, { resume: result.resume });
     }
 
     const booking = result.booking;

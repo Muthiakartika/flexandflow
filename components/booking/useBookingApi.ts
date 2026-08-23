@@ -33,12 +33,20 @@ import type {
 export class BookingApiError extends Error {
   readonly code: string;
   readonly fields: Record<string, string>;
+  /** Present only on a `SLOT_TAKEN` the caller caused themselves. */
+  readonly resume?: { reference: string; manageToken: string };
 
-  constructor(message: string, code: string, fields?: Record<string, string>) {
+  constructor(
+    message: string,
+    code: string,
+    fields?: Record<string, string>,
+    resume?: { reference: string; manageToken: string },
+  ) {
     super(message);
     this.name = "BookingApiError";
     this.code = code;
     this.fields = fields ?? {};
+    this.resume = resume;
   }
 }
 
@@ -63,7 +71,7 @@ async function request<T>(
 
   if (!response.ok) {
     if (isApiError(body)) {
-      throw new BookingApiError(body.error, body.code, body.fields);
+      throw new BookingApiError(body.error, body.code, body.fields, body.resume);
     }
     throw new BookingApiError(GENERIC, "SERVER");
   }

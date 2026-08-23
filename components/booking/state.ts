@@ -207,6 +207,13 @@ export type BookingState = {
   submitting: boolean;
   /** Whole-form message: a server error, or the slot-taken recovery note. */
   notice: string | null;
+  /**
+   * Set only when the slot that was "taken" is the visitor's own unpaid hold —
+   * they opened a payment, closed it, and came back. Sending them to the
+   * calendar would be a lie, because the time is still theirs; this is what
+   * the datetime step needs to offer them that payment again instead.
+   */
+  resume: { reference: string; manageToken: string } | null;
   /** Bumped to force the slot list to refetch after a slot is lost. */
   slotsToken: number;
 };
@@ -239,6 +246,7 @@ export function initialState(
     errors: {},
     submitting: false,
     notice: null,
+    resume: null,
     slotsToken: 0,
   };
 }
@@ -268,7 +276,12 @@ export type BookingAction =
   | { type: "paymentReopened" }
   | { type: "submitStart" }
   | { type: "submitFailed"; notice: string; errors?: Record<string, string> }
-  | { type: "slotLost"; notice: string }
+  | {
+      type: "slotLost";
+      notice: string;
+      /** Their own live hold on that slot, when that is what clashed. */
+      resume?: { reference: string; manageToken: string };
+    }
   | {
       type: "startReschedule";
       token: string;
@@ -350,7 +363,9 @@ export function reducer(
         : { ...state, date: action.date, slot: null };
 
     case "chooseSlot":
-      return { ...state, slot: action.slot, notice: null };
+      /* A different time means a different booking, so the offer to resume the
+         held one is no longer the thing in front of them. */
+      return { ...state, slot: action.slot, notice: null, resume: null };
 
     case "setDetail":
       return {
@@ -437,6 +452,7 @@ export function reducer(
         step: "datetime",
         slot: null,
         notice: action.notice,
+        resume: action.resume ?? null,
         slotsToken: state.slotsToken + 1,
       };
 
@@ -580,6 +596,11 @@ export function saveDraft(state: BookingState): void {
     ...state,
     submitting: false,
     notice: null,
+    /* Not persisted either, and for a stronger reason than the notice it came
+       with: it carries a manage token, which is a bearer credential for
+       somebody's booking. It belongs in the tab that earned it, not on the
+       disk of a shared laptop. */
+    resume: null,
     errors: {},
     /* Not persisted: a reload should ask the endpoint again and, if it refuses
        again, say so — rather than silently opening a blank new booking. */

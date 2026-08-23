@@ -82,6 +82,15 @@ type XenditCardData = {
   card_cvn: string;
   is_multiple_use: boolean;
   should_authenticate: boolean;
+  /* Required, which the sandbox said plainly: `child "card_holder_first_name"
+     fails because ["card_holder_first_name" is required]`. Xendit's own hosted
+     page asks for the same four, and 3-D Secure 2 wants contact details to
+     decide whether a challenge is needed at all — a charge with them is more
+     likely to pass without one. */
+  card_holder_first_name: string;
+  card_holder_last_name: string;
+  card_holder_email: string;
+  card_holder_phone_number: string;
 };
 
 type XenditGlobal = {
@@ -313,7 +322,7 @@ type Phase =
   | "renewing"
   | "paid";
 
-type FieldName = "number" | "expiry" | "cvn";
+type FieldName = "number" | "expiry" | "cvn" | "holder" | "last";
 
 const GENERIC = "We could not take that card. Please try again.";
 
@@ -331,12 +340,28 @@ const CHALLENGE_HEIGHT = 400;
 export default function CardForm({
   token,
   amountIdr,
+  cardHolder,
   onLockChange,
   onPaid,
   onRenew,
 }: {
   /** The booking's manage token. Every payment call is keyed by it. */
   token: string;
+  /**
+   * Who the booking is for, used to prefill the name and to supply the contact
+   * details Xendit wants with a card.
+   *
+   * Prefilled rather than assumed: the name on the card is often not the name
+   * on the booking — a partner's card, a company card — so the fields are
+   * editable. The email and phone are the booking's and are not asked for
+   * twice; they identify the payer to the bank, not the cardholder.
+   */
+  cardHolder: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneE164: string;
+  };
   /** Shown on the button. Never sent — the server charges what it recorded. */
   amountIdr: number;
   /**
@@ -353,6 +378,10 @@ export default function CardForm({
    */
   onRenew: () => Promise<boolean>;
 }) {
+  /* Prefilled from the booking, editable because the name on the card is often
+     not the name on the booking — a partner's card, a company card. */
+  const [holderFirst, setHolderFirst] = useState(cardHolder.firstName);
+  const [holderLast, setHolderLast] = useState(cardHolder.lastName);
   const [number, setNumber] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvn, setCvn] = useState("");
@@ -430,6 +459,13 @@ export default function CardForm({
     card?: { number: string; month: string; year: string; cvn: string };
   } {
     const found: Partial<Record<FieldName, string>> = {};
+
+    /* Xendit refuses a token without it, so catching it here saves a round trip
+       and shows the complaint beside the field rather than as a raw API string
+       under the button. */
+    if (holderFirst.trim().length === 0) {
+      found.holder = "Enter the first name printed on the card.";
+    }
 
     if (digits.length === 0) {
       found.number = "Enter the long number across the front of your card.";
@@ -616,6 +652,13 @@ export default function CardForm({
         card_cvn: checked.card.cvn,
         is_multiple_use: false,
         should_authenticate: true,
+        card_holder_first_name: holderFirst.trim(),
+        /* Xendit wants both halves. When somebody gave only one name — which
+           our own booking form allows — repeating it is better than sending an
+           empty string the API rejects outright. */
+        card_holder_last_name: holderLast.trim() || holderFirst.trim(),
+        card_holder_email: cardHolder.email,
+        card_holder_phone_number: cardHolder.phoneE164,
       },
       handleToken,
     );
@@ -783,6 +826,50 @@ export default function CardForm({
       autoComplete="on"
     >
       <div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor={field("holder")} className={label}>
+            First name on card
+          </label>
+          <input
+            id={field("holder")}
+            name="ccname-given"
+            type="text"
+            autoComplete="cc-given-name"
+            maxLength={60}
+            value={holderFirst}
+            onChange={(event) => setHolderFirst(event.target.value)}
+            aria-invalid={errors.holder ? true : undefined}
+            aria-describedby={errors.holder ? errorId("holder") : undefined}
+            className={FIELD}
+          />
+          {errors.holder ? (
+            <p
+              id={errorId("holder")}
+              className="mt-1.5 font-body text-[13px] leading-[1.5] font-bold text-primary-strong"
+            >
+              {errors.holder}
+            </p>
+          ) : null}
+        </div>
+
+        <div>
+          <label htmlFor={field("last")} className={label}>
+            Last name on card
+          </label>
+          <input
+            id={field("last")}
+            name="ccname-family"
+            type="text"
+            autoComplete="cc-family-name"
+            maxLength={60}
+            value={holderLast}
+            onChange={(event) => setHolderLast(event.target.value)}
+            className={FIELD}
+          />
+        </div>
+      </div>
+
         <label htmlFor={field("number")} className={label}>
           Card number{brand.label ? ` · ${brand.label}` : ""}
         </label>
