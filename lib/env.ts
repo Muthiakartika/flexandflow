@@ -16,6 +16,26 @@ import { z } from "zod";
 
 import { DEFAULT_CANCEL_CUTOFF_HOURS } from "@/lib/booking/defaults";
 
+/**
+ * A credential, cleaned of the punctuation a dashboard paste tends to carry.
+ *
+ * `.env` files are read by dotenv, which strips surrounding quotes before the
+ * value ever reaches us. Hosting dashboards do not: paste `"xnd_development_…"`
+ * into Vercel with the quotes it was written with and the quotes become part of
+ * the key. So does a trailing newline picked up by a triple-click.
+ *
+ * All three were verified against Xendit to produce exactly the same answer —
+ * `401 INVALID_API_KEY` — which points at the key rather than at its
+ * punctuation and is a genuinely hard afternoon to spend. Trimming here costs
+ * nothing and no legitimate secret has a quote or a space at either end.
+ */
+const secret = () =>
+  z
+    .string()
+    /* `[\s\S]` rather than `.` with the `s` flag: the project targets ES2017,
+       where that flag does not exist. */
+    .transform((value) => value.trim().replace(/^["']([\s\S]*)["']$/, "$1"));
+
 /** Comma-separated list → trimmed, non-empty entries. */
 const list = z
   .string()
@@ -34,7 +54,7 @@ const schema = z.object({
   DIRECT_URL: z.string().optional(),
 
   // ── Email (SendGrid) ───────────────────────────────────────────────────
-  SENDGRID_API_KEY: z.string().min(1),
+  SENDGRID_API_KEY: secret().pipe(z.string().min(1)),
   /**
    * Must be on an authenticated domain. Sending as `…@gmail.com` through
    * SendGrid fails DMARC and lands in spam — see BOOKING-PLAN.md §6.2.
@@ -49,7 +69,7 @@ const schema = z.object({
     .string()
     .url()
     .transform((value) => value.replace(/\/+$/, "")),
-  WAHA_API_KEY: z.string().min(1),
+  WAHA_API_KEY: secret().pipe(z.string().min(1)),
   WAHA_SESSION: z.string().default("default"),
   /** E.164, comma separated. Who gets the "new booking" WhatsApp. */
   ADMIN_WHATSAPP_NUMBERS: list,
@@ -70,7 +90,9 @@ const schema = z.object({
     .min(0)
     .default(DEFAULT_CANCEL_CUTOFF_HOURS),
   /** HMAC key for manage-booking links and .ics URLs. */
-  BOOKING_TOKEN_SECRET: z.string().min(24, "Use at least 24 random characters"),
+  BOOKING_TOKEN_SECRET: secret().pipe(
+    z.string().min(24, "Use at least 24 random characters"),
+  ),
 
   // ── Payments (Xendit) ──────────────────────────────────────────────────
   /**
@@ -79,7 +101,7 @@ const schema = z.object({
    * should happen while the studio's Xendit account is still being verified,
    * rather than showing a payment option that cannot work.
    */
-  XENDIT_SECRET_KEY: z.string().optional(),
+  XENDIT_SECRET_KEY: secret().optional(),
   /**
    * The Callback Verification Token from the Xendit dashboard.
    *
@@ -90,16 +112,18 @@ const schema = z.object({
    * the charge over the API before believing anything in the body.
    * See PAYMENT-PLAN.md §5.
    */
-  XENDIT_CALLBACK_TOKEN: z.string().optional(),
+  XENDIT_CALLBACK_TOKEN: secret().optional(),
   /** Minutes a Xendit charge stays payable. Kept under the booking hold. */
   XENDIT_INVOICE_MINUTES: z.coerce.number().int().min(1).default(13),
 
   // ── Admin & cron ───────────────────────────────────────────────────────
-  ADMIN_SESSION_SECRET: z.string().min(24, "Use at least 24 random characters"),
-  CRON_SECRET: z.string().min(16),
+  ADMIN_SESSION_SECRET: secret().pipe(
+    z.string().min(24, "Use at least 24 random characters"),
+  ),
+  CRON_SECRET: secret().pipe(z.string().min(16)),
 
   // ── Anti-spam (optional; skipped entirely when unset) ──────────────────
-  TURNSTILE_SECRET_KEY: z.string().optional(),
+  TURNSTILE_SECRET_KEY: secret().optional(),
 
   // ── Public ─────────────────────────────────────────────────────────────
   NEXT_PUBLIC_SITE_URL: z
