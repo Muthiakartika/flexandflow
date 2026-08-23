@@ -766,11 +766,23 @@ button.booking-step-body {
     color 0.3s;
 }
 
-/* A day that can be booked is a filled target; everything else is flat text,
-   so the difference is legible before the cursor goes anywhere near it. */
-.booking-day[data-state="available"] {
+/*
+ * A day that can be booked is a filled target; everything else is flat text,
+ * so the difference is legible before the cursor goes anywhere near it.
+ *
+ * Each of these three rules also paints the matching entry in the key below
+ * the grid, which is why the selectors are doubled. The key used to draw its
+ * own little squares and got all three wrong — a booked day is a struck
+ * numeral and a closed one a faded numeral, neither of which is a square. One
+ * declaration for both is what stops them disagreeing again.
+ */
+.booking-day[data-state="available"],
+.booking-legend > li[data-state="available"] {
   background-color: var(--color-cream);
   color: var(--color-body-text);
+}
+
+.booking-day[data-state="available"] {
   cursor: pointer;
 }
 
@@ -780,16 +792,26 @@ button.booking-step-body {
 
 /* Open, but nothing left. Struck through rather than faded out: the studio is
    trading that day, and it should read as "gone", not as "closed". */
-.booking-day[data-state="full"] {
+.booking-day[data-state="full"],
+.booking-legend > li[data-state="full"] {
   color: color-mix(in oklab, var(--color-secondary) 42%, transparent);
   text-decoration: line-through;
+}
+
+.booking-day[data-state="full"] {
   cursor: default;
 }
 
 .booking-day[data-state="closed"],
 .booking-day[data-state="out"],
-.booking-day[data-state="other"] {
+.booking-day[data-state="other"],
+.booking-legend > li[data-state="closed"] {
   color: color-mix(in oklab, var(--color-secondary) 26%, transparent);
+}
+
+.booking-day[data-state="closed"],
+.booking-day[data-state="out"],
+.booking-day[data-state="other"] {
   cursor: default;
 }
 
@@ -830,41 +852,26 @@ button.booking-step-body {
   color: color-mix(in oklab, var(--color-secondary) 55%, transparent);
 }
 
+/* Padded so the `available` fill reads as the same cream target the grid
+   uses, rather than as a highlighter pen through the words. */
 .booking-legend > li {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 3px 8px;
+  border-radius: 6px;
 }
 
 /*
- * The key is a real day cell, not a drawing of one.
- *
- * It used to be three coloured squares, and all three were wrong: the grid
- * marks a booked day by striking the numeral through and a closed one by fading
- * it, neither of which is a square, and the olive dot for today was not in the
- * key at all. A legend that promises marks the calendar never makes is worse
- * than none, so the swatch now carries `.booking-day` and every state rule
- * above applies to it unchanged. The two cannot drift apart again.
+ * The dot that marks today, repeated beside the word. Inline here rather than
+ * absolutely positioned under a numeral, but the same size and the same olive.
  */
-.booking-legend-swatch {
-  width: 22px;
-  aspect-ratio: 1 / 1;
-  /* Scaled from the grid's 40px cell at 10px, so the corner reads the same. */
-  border-radius: 6px;
-  font-size: 11px;
-  /* The list tracks its uppercase labels out; a single numeral must not be. */
-  letter-spacing: normal;
-  /* The grid stretches its cells; here the size above is the whole point. */
-  flex: none;
-  /* Purely illustrative — the number inside is a sample, not a date. */
-  pointer-events: none;
-}
-
-/* The dot is 4px on a 40px cell; at 22px it needs to sit closer in. */
-.booking-legend-swatch[data-today="true"]::after {
-  bottom: 2px;
-  width: 3px;
-  height: 3px;
+.booking-legend > li[data-today="true"]::after {
+  content: "";
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background-color: var(--color-primary);
 }
 
 .booking-slot-grid {

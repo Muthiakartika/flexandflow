@@ -302,24 +302,20 @@ export default function Calendar({
               : ""}
       </p>
 
-      {/* Sample numerals, hidden from the accessibility tree: a screen reader
-          gets the state from each day's own `aria-label`, and would otherwise
-          hear four stray numbers with no month attached. */}
+      {/*
+        The key demonstrates each mark by wearing it: "Fully booked" is struck
+        through because that is what a booked day looks like, "Closed" is faded
+        because that is what a closed one looks like. A sample numeral was tried
+        and read as a quantity — "8 Available" looks like a count, not a swatch.
+      */}
       <ul className="booking-legend">
         {LEGEND.map(([state, label, today]) => (
-          <li key={label}>
-            <span
-              aria-hidden
-              className="booking-day booking-legend-swatch"
-              data-state={state}
-              data-today={today ? "true" : "false"}
-            >
-              8
-            </span>
+          <li key={label} data-state={state} data-today={today ? "true" : "false"}>
             {label}
           </li>
         ))}
       </ul>
+
     </div>
   );
 }
