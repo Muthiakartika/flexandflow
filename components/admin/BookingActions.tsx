@@ -53,7 +53,8 @@ export function BookingActions({
         <h2 className="mb-1 text-[15px] font-bold text-ink">Mark the outcome</h2>
         <p className="mb-3 text-[13px] text-muted">
           Completed and no-show are what the takings and the therapist&rsquo;s
-          record are counted from. Neither sends the customer anything.
+          record are counted from. Neither sends the customer anything &mdash;
+          they are written after the customer has left.
         </p>
 
         <div className="flex flex-wrap gap-2">
@@ -101,8 +102,8 @@ export function BookingActions({
           <FieldError message={statusState.fields?.reason} />
 
           <p className="mt-2 text-[12px] text-muted">
-            Cancelling frees the slot and messages the customer. It cannot be
-            taken back — rebooking them is a new booking.
+            Cancelling frees the slot and messages the customer on WhatsApp and
+            by email. It cannot be taken back — rebooking them is a new booking.
           </p>
 
           <div className="mt-2">
@@ -120,7 +121,8 @@ export function BookingActions({
         <p className="mb-3 text-[13px] text-muted">
           Times are Bali time (WITA), the same clock as the wall in the studio.
           Moving re-issues the calendar entry the customer already has rather
-          than adding a second one, and tells them the new time.
+          than adding a second one, and tells them the new time on WhatsApp and
+          by email.
         </p>
 
         <form action={moveAction}>

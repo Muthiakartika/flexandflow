@@ -25,6 +25,7 @@
  * next update rather than replacing the first.
  */
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 
 import { PaymentStatus } from "@/generated/prisma/enums";
@@ -46,7 +47,47 @@ import {
 } from "@/lib/booking/transitions";
 import { parseMinuteOfDay, studioInstant } from "@/lib/booking/time";
 import { prisma } from "@/lib/db";
-import { dispatchPending, sendTestMessages } from "@/lib/notifications";
+import {
+  dispatchPending,
+  queueBookingCancelled,
+  queueBookingRescheduled,
+  sendTestMessages,
+} from "@/lib/notifications";
+
+/**
+ * Queue what a change owes the customer, then send it after the response.
+ *
+ * The admin actions used to queue nothing at all. `queueBookingCancelled` and
+ * `queueBookingRescheduled` were called only by the two customer-facing API
+ * routes, so a booking the studio cancelled from this panel messaged nobody —
+ * while the panel's own copy said it had. Somebody was told their session was
+ * off and turned up anyway.
+ *
+ * Queuing is allowed to fail loudly-in-the-log and quietly-on-screen: the
+ * change itself is already committed, and refusing to report a cancellation
+ * that has happened would be worse than a late message. The send is deferred
+ * with `after` for the same reason the API routes defer it — the studio should
+ * not watch a spinner while WhatsApp is contacted — and the cron picks up
+ * anything it misses.
+ */
+async function notifyCustomer(
+  queue: (bookingId: string) => Promise<void>,
+  bookingId: string,
+): Promise<void> {
+  try {
+    await queue(bookingId);
+  } catch (error) {
+    console.error("[admin] could not queue notices", error);
+  }
+
+  after(async () => {
+    try {
+      await dispatchPending();
+    } catch (error) {
+      console.error("[admin] deferred dispatch failed", error);
+    }
+  });
+}
 
 const NO_SESSION: ActionState = {
   ...IDLE,
@@ -200,6 +241,17 @@ export async function setBookingStatusAction(
     return failed(reason(error));
   }
 
+  /*
+   * Only cancelling. Completed and no-show are the studio's own bookkeeping,
+   * written after the customer has already left: "you were marked as a
+   * no-show" is an accusation rather than a notice, and it would be sent by
+   * whichever button a tired receptionist pressed by mistake. Confirming is
+   * the undo for those two and equally has nothing to announce.
+   */
+  if (status === "CANCELLED") {
+    await notifyCustomer(queueBookingCancelled, bookingId);
+  }
+
   await audit({
     actor: admin.email,
     action: `booking.${status.toLowerCase()}`,
@@ -255,6 +307,8 @@ export async function rescheduleBookingAction(
   } catch (error) {
     return failed(reason(error));
   }
+
+  await notifyCustomer(queueBookingRescheduled, bookingId);
 
   await audit({
     actor: admin.email,
