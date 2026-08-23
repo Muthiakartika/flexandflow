@@ -490,6 +490,19 @@ export default function PaymentModal({
               on its own once the payment goes through.
             </p>
           </div>
+        ) : Object.keys(intent.deepLinks).length > 0 ? (
+          /* A wallet link and nothing else, which is what GoPay returns: its
+             only action is a deep link into the app. The links above are the
+             whole instrument, so saying nothing more here is right — the
+             failure line below would contradict a control that works.
+
+             It is a phone link, though, and this studio's customers book from
+             phones and laptops alike, so a laptop gets told plainly rather than
+             left tapping something that will not open. */
+          <p className="payment-hint font-body text-[13px] leading-[1.6]">
+            On a computer? This opens on your phone. Pay by QRIS or bank
+            transfer instead — both are above.
+          </p>
         ) : (
           <p className="font-body text-[14px] leading-[1.7]">
             This payment method could not be opened. Choose another one above.

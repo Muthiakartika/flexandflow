@@ -340,11 +340,17 @@ async function openCardInvoice(
  * a phone (PRODUCT.md), and a QR code on the screen of the phone you would scan
  * with is useless — the deep link is what turns that dead end into one tap.
  *
- * Endpoint and `channel_code` confirmed against the sandbox — it got past
- * validation to the callback check. TODO(xendit): the `actions` field names
- * below, and which of them GoPay actually returns. PAYMENT-PLAN §4 is explicit
- * that deep-link support differs per wallet and must be tested one at a time in
- * the sandbox rather than assumed.
+ * Confirmed against the sandbox, including which `actions` come back. GoPay
+ * returns **only** `mobile_deeplink_checkout_url`; `desktop_web_checkout_url`,
+ * `mobile_web_checkout_url` and `qr_checkout_string` are all null. So the guard
+ * below is not defensive padding — for this wallet the deep link is the single
+ * thing there is to hand anyone.
+ *
+ * The consequence is a desktop one: a GoPay deep link is meant for a phone, so
+ * a visitor paying from a laptop has nothing useful here and should be steered
+ * to QRIS or a virtual account instead. PAYMENT-PLAN §4 says deep-link support
+ * differs per wallet and must be tested one at a time; this is that finding for
+ * the only wallet currently offered.
  *
  * TODO(xendit): the e-wallet charge API takes its expiry from the wallet rather
  * than from us, so `expiresAt` on the row is our own deadline and may be longer
@@ -364,9 +370,15 @@ async function openEwallet(
       amount: input.amountIdr,
       checkout_method: "ONE_TIME_PAYMENT",
       channel_code: EWALLET_CHANNEL_CODE,
+      /* All three redirects are mandatory for GoPay — the charge is refused
+         outright without `cancel_redirect_url`, which is easy to miss because
+         the other two are the ones every example shows. They point at the same
+         page: it reads the booking's real state from our database, so it is
+         correct whether the customer paid, gave up, or the wallet failed. */
       channel_properties: {
         success_redirect_url: input.returnUrl,
         failure_redirect_url: input.returnUrl,
+        cancel_redirect_url: input.returnUrl,
       },
     },
   });

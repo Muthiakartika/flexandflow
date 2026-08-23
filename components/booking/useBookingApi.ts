@@ -222,14 +222,18 @@ export function startPayment(
   token: string,
   channel: PaymentChannelValue,
 ): Promise<PaymentIntent> {
-  return request<PaymentIntent>(
+  /* `{ payment }`, not the intent on its own — the same envelope `POST
+     /api/booking/` uses. Reading the wrapper as the intent leaves every field
+     undefined, which surfaces as "IDR NaN" and a "NaN:NaN" countdown rather
+     than as an error, so it is worth being explicit about. */
+  return request<{ payment: PaymentIntent }>(
     `/api/booking/${encodeURIComponent(token)}/payment/`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ channel }),
     },
-  );
+  ).then((body) => body.payment);
 }
 
 /**
