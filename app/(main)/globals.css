@@ -1306,6 +1306,57 @@ button.booking-step-body {
   background-color: #fff;
 }
 
+/* The card form stays on screen while the charge is in flight, so something
+   has to say that the wait is ours and not the browser's. */
+.payment-busy {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid color-mix(in oklab, var(--color-primary) 35%, transparent);
+  border-radius: 10px;
+  padding: 12px 16px;
+  background-color: #fff;
+}
+
+.payment-busy-hint {
+  color: color-mix(in oklab, var(--color-secondary) 58%, transparent);
+}
+
+.payment-spinner {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid color-mix(in oklab, var(--color-primary) 25%, transparent);
+  /* One quadrant in full strength is what makes the rotation readable. */
+  border-top-color: var(--color-primary);
+  border-radius: 999px;
+  animation: payment-spin 0.8s linear infinite;
+}
+
+@keyframes payment-spin {
+  to {
+    rotate: 1turn;
+  }
+}
+
+/*
+ * Someone who asked their system not to animate should not be given a
+ * perpetually spinning ring — but the element still has to say "working", so
+ * it pulses in opacity instead of vanishing.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .payment-spinner {
+    animation: payment-pulse 1.6s ease-in-out infinite;
+    border-color: var(--color-primary);
+  }
+
+  @keyframes payment-pulse {
+    50% {
+      opacity: 0.35;
+    }
+  }
+}
+
 /* ── The one thing that changes with width ───────────────────────────────── */
 
 /* A QR code on the screen of the phone you would have to scan it with cannot

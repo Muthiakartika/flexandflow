@@ -63,7 +63,7 @@ const SCRIPT_SRC = "https://js.xendit.co/v1/xendit.min.js";
  */
 type XenditToken = {
   id: string;
-  /** `VERIFIED`, `VERIFICATION_REQUIRED`, `FAILED`, … */
+  /** `IN_REVIEW` (3DS challenge), `VERIFIED`, or `FAILED`. */
   status: string;
   /** Present once a challenge has been completed. */
   authentication_id?: string | null;
@@ -415,6 +415,11 @@ export default function CardForm({
   const locked =
     phase === "tokenising" || phase === "challenge" || phase === "charging";
   const done = phase === "paid";
+  /* `locked` is what the modal is told, and it includes the challenge — the
+     iframe replaces the form entirely there. `busy` is the narrower question
+     this form asks of itself: are we working while the fields are still up. */
+  const busy =
+    phase === "tokenising" || phase === "charging" || phase === "renewing";
 
   /* The script is fetched when this mounts, which is the moment the customer
      picked Card — not on the booking page, where most people never get here. */
@@ -550,13 +555,24 @@ export default function CardForm({
         return;
       }
 
-      if (result.status === "VERIFICATION_REQUIRED") {
-        /* TODO(xendit): confirm that Xendit.js re-invokes *this* callback once
-           the framed challenge finishes, rather than expecting the page to
-           listen for a `message` event from the frame or to poll the token.
-           This is the single assumption the whole embedded flow rests on: if it
-           is wrong, the challenge completes at the bank and this modal sits
-           there saying "your bank is checking" forever. */
+      if (result.status === "IN_REVIEW") {
+        /*
+         * `IN_REVIEW` is the 3DS challenge, and the name matters: this read
+         * `VERIFICATION_REQUIRED` — a status Xendit.js does not have — so every
+         * card that asked for a challenge fell through to the branch below and
+         * was reported to the customer as refused by their bank.
+         *
+         * Read out of `js.xendit.co/v1/xendit.min.js` rather than assumed. Its
+         * `createToken` does, on this status:
+         *
+         *   registerMessageHandler(auth.id, cb); cb(null, auth)
+         *
+         * — so the callback fires now with `payer_authentication_url`, and the
+         * *same* callback fires again when the challenge finishes, that time
+         * carrying the card token and `authentication_id`. The handler is a
+         * plain `window` "message" listener, which is why the challenge works
+         * in an iframe of ours rather than needing a popup.
+         */
         const url = result.payer_authentication_url;
         forget();
 
@@ -577,20 +593,21 @@ export default function CardForm({
 
       if (result.status === "VERIFIED") {
         forget();
-        /* TODO(xendit): confirm the completed challenge's id arrives as
-           `authentication_id` on the token itself. `lib/payments/cards.ts`
-           passes it straight through as `authentication_id` on the charge, and
-           a card that was challenged but charged without it is one the bank can
-           later disown — the liability shift is the whole point of doing 3DS. */
+        /* `authentication_id` does arrive on the token: the library builds the
+           second callback's argument as `{id: credit_card_token_id,
+           authentication_id: id, …}`. `lib/payments/cards.ts` passes it
+           through to the charge, and a card that was challenged but charged
+           without it is one the bank can later disown — the liability shift is
+           the whole point of doing 3DS. */
         void charge(result.id, result.authentication_id ?? null);
         return;
       }
 
-      /* FAILED, and anything else Xendit may add later. Treated as a refusal
-         rather than guessed at: charging a token whose status we do not
-         recognise is the one mistake here that costs real money.
-         TODO(xendit): confirm the full status list — `IN_REVIEW` in particular
-         may be a state that later becomes VERIFIED rather than a refusal. */
+      /* FAILED, and anything else Xendit may add later. The library ships
+         exactly three statuses — IN_REVIEW, VERIFIED, FAILED — so this is
+         genuinely the end of the list rather than a guess, but an unknown one
+         is still treated as a refusal: charging a token whose status we do not
+         recognise is the one mistake here that costs real money. */
       setPhase("form");
       setNotice(
         result.failure_reason
@@ -773,23 +790,6 @@ export default function CardForm({
     );
   }
 
-  if (phase === "charging" || phase === "tokenising" || phase === "renewing") {
-    return (
-      <div className="grid gap-2">
-        <p className="font-body text-[15px] leading-[1.7]" role="status">
-          {phase === "tokenising"
-            ? "Checking your card…"
-            : phase === "charging"
-              ? "Taking the payment…"
-              : "Starting a new payment…"}
-        </p>
-        <p className="payment-hint font-body text-[13px] leading-[1.6]">
-          Please keep this window open.
-        </p>
-      </div>
-    );
-  }
-
   if (phase === "declined") {
     return (
       <div className="grid gap-4">
@@ -825,6 +825,31 @@ export default function CardForm({
          values go to Xendit either way. */
       autoComplete="on"
     >
+      {/*
+        Above the fields, not instead of them. Swapping the form out for a
+        status line collapsed the modal to a third of its height mid-payment,
+        which reads as the window having closed on you — and it took the card
+        details with it, so a refusal meant typing the whole number again.
+      */}
+      {busy ? (
+        <p role="status" className="payment-busy font-body text-[14px] leading-[1.6]">
+          <span className="payment-spinner" aria-hidden />
+          <span>
+            {phase === "tokenising"
+              ? "Checking your card…"
+              : phase === "charging"
+                ? "Taking the payment…"
+                : "Starting a new payment…"}{" "}
+            <span className="payment-busy-hint">Please keep this window open.</span>
+          </span>
+        </p>
+      ) : null}
+
+      {/* `display: contents`, so disabling every field at once costs nothing in
+          layout. The submit button is inside it too — a second press while a
+          charge is in flight is the expensive kind of double-click. */}
+      <fieldset disabled={busy} className="contents">
+
       <div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
@@ -964,9 +989,11 @@ export default function CardForm({
 
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" variant="solid">
-          Pay {formatIdr(amountIdr)}
+          {busy ? "Working…" : `Pay ${formatIdr(amountIdr)}`}
         </Button>
       </div>
+
+      </fieldset>
 
       {/* Said once, where it is decided. It is also exactly true: the fields
           above are read by Xendit's script and exchanged for a token in this
