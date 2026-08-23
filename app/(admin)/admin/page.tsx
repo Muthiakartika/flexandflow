@@ -188,7 +188,7 @@ export default async function AdminAgendaPage() {
                 >
                   {formatStudioDateShort(studioDayStart(ahead.nextDate))}
                 </Link>
-                , {aheadLabel} booked ahead.
+                {`, ${aheadLabel} booked ahead.`}
               </>
             ) : null}
           </Empty>
