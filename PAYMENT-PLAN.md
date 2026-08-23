@@ -586,17 +586,43 @@ Yang sudah benar-benar diverifikasi:
   halaman termasuk route callback.
 - `npm run check:prices` masih melaporkan seluruh harga cocok.
 
-Yang **tidak** bisa diverifikasi dari sini, dan harus diuji di sandbox Xendit
-sebelum menyentuh uang sungguhan: setiap endpoint, bentuk payload, dan nama
-field. Semuanya ditulis dari ekspektasi, bukan dari panggilan yang berhasil.
-Setiap tempat semacam itu ditandai `TODO(xendit):` di `lib/payments/` — **itu
-daftar periksa sebelum go-live**, bukan sekadar catatan.
+### Diuji terhadap sandbox Xendit
 
-Satu hal yang paling tidak pasti dan patut diperiksa lebih dulu: **cara
-mengetahui bahwa sebuah virtual account sudah dibayar.** Endpoint yang
-mendeskripsikan VA menjelaskan akunnya, bukan apakah ada uang masuk, sementara
-§5 melarang mempercayai isi callback. Implementasinya menempuh ledger Transaksi;
-kalau itu keliru, alternatifnya sudah ditulis di komentar.
+Kunci sandbox sudah ada, dan alur pembuatan charge dijalankan sungguhan:
+
+| Metode | Hasil |
+|---|---|
+| **QRIS** | **Berhasil** — `POST /qr_codes`, id `qr_…` kembali. Nilai `qr_string`-nya placeholder (`"some-random-qr-string"`) karena mode uji, tapi nama field-nya terbukti benar |
+| **Virtual Account** | **Berhasil** — nomor BCA sungguhan kembali |
+| **Kartu** | **Berhasil** — URL checkout Xendit kembali |
+| **E-wallet** | **Terhalang konfigurasi dashboard**, bukan kode — lihat di bawah |
+
+Izin kuncinya juga diuji: money-in dan Transaction menjawab `200`, Balance
+ditolak `403` — persis sesuai prinsip hak seminimal mungkin.
+
+**Satu bug ditemukan dan diperbaiki:** kode channel GoPay ditulis `ID_GOPAY`,
+padahal Xendit mengharapkan `GOPAY` tanpa prefiks. Sebagian besar dompet
+Indonesia memang berprefiks (`ID_OVO`, `ID_DANA`, `ID_SHOPEEPAY`), GoPay
+pengecualiannya — jadi tebakan yang paling wajar justru yang salah. Ini tidak
+akan pernah tertangkap tanpa memanggil API-nya sungguhan.
+
+**Yang menghalangi e-wallet:** Xendit menjawab `CALLBACK_URL_NOT_FOUND` dan
+menolak membuat charge sama sekali sampai URL callback e-wallet diisi di
+dashboard. Ini persis risiko yang ditulis di §9 nomor 3, terbukti nyata: baris
+callback yang kosong bukan sekadar melewatkan konfirmasi — untuk e-wallet ia
+menolak transaksinya sejak awal.
+
+### Yang masih belum terbukti
+
+Sisa `TODO(xendit):` di `lib/payments/` — tinggal 8 dari 11 — sekarang hanya
+menyangkut **membaca status pembayaran**, bukan membuatnya. Tidak ada yang bisa
+membuktikannya tanpa benar-benar membayar sebuah charge di sandbox.
+
+Yang paling tidak pasti tetap sama: **cara mengetahui sebuah virtual account
+sudah dibayar.** Endpoint yang mendeskripsikan VA menjelaskan akunnya, bukan
+apakah ada uang masuk, sementara §5 melarang mempercayai isi callback.
+Implementasinya menempuh ledger Transaksi; kalau keliru, alternatifnya sudah
+ditulis di komentar.
 
 ### Masih menunggu klien
 

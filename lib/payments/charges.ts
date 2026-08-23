@@ -84,14 +84,20 @@ const VA_BANK = "BCA";
  * picker in the modal means passing the chosen `channel_code` down to here —
  * the `PaymentIntent.deepLinks` map is already keyed by wallet for exactly that.
  *
- * TODO(xendit): confirm the channel code for GoPay in the current e-wallet API
- * and that it is enabled on the studio's account. OVO in particular behaves
- * differently — it pushes a notification to a registered number instead of
- * returning a link — so it cannot be swapped in here without a UI change.
+ * `GOPAY`, with no `ID_` prefix — confirmed against the sandbox, which rejected
+ * `ID_GOPAY` and named the whole allowed list back at us. Most Indonesian
+ * wallets there *are* prefixed (`ID_OVO`, `ID_DANA`, `ID_SHOPEEPAY`,
+ * `ID_LINKAJA`); GoPay is the exception, so the obvious guess is the wrong one.
+ *
+ * One wallet, not a choice, because each is a separate charge and the modal
+ * would have to ask which before it could open one. GoPay is the reasonable
+ * default for a Bali studio. OVO could not be swapped in here even if it were
+ * offered: it pushes a notification to a registered number rather than
+ * returning a link, so there is nothing for the modal to send anyone to.
  */
-const EWALLET_CHANNEL_CODE = "ID_GOPAY";
+const EWALLET_CHANNEL_CODE = "GOPAY";
 
-/** `ID_GOPAY` → `GOPAY`, which is what `PaymentIntent.deepLinks` is keyed by. */
+/** Strips the country prefix the other wallets carry; GoPay has none. */
 function walletKey(channelCode: string): string {
   return channelCode.replace(/^ID_/, "");
 }
@@ -166,7 +172,7 @@ function unexpected(what: string): XenditError {
  * QR payload as a string and we draw the code ourselves, which is the entire
  * reason the modal in PAYMENT-PLAN §4 is possible.
  *
- * TODO(xendit): confirm the endpoint path (`POST /qr_codes`), the
+ * Confirmed against the sandbox: `POST /qr_codes` with the
  * `api-version` header the QR Codes API currently expects, and that the payload
  * still comes back as `qr_string`. This API has had two generations with
  * different field names (`external_id` vs `reference_id`), and picking the
@@ -210,7 +216,7 @@ async function openQris(
  * exactly once. Open accounts take any amount, which turns every underpayment
  * into a reconciliation problem somebody has to solve by hand.
  *
- * TODO(xendit): confirm `POST /callback_virtual_accounts` and the field names
+ * Confirmed against the sandbox: `POST /callback_virtual_accounts` and the field names
  * below (`is_closed`, `expected_amount`, `expiration_date`), and check whether
  * the account number comes back immediately on every bank — some banks
  * historically returned a `PENDING` account with the number arriving by
@@ -269,7 +275,7 @@ async function openVirtualAccount(
  * directly, above — an unrestricted invoice would quietly offer QRIS on a page
  * we do not control and lose the modal.
  *
- * TODO(xendit): confirm `payment_methods: ["CREDIT_CARD"]` is still the way to
+ * Confirmed against the sandbox: `payment_methods: ["CREDIT_CARD"]` is the way to
  * restrict an invoice to cards, and whether `invoice_duration` is seconds
  * (assumed here) or minutes in the current API.
  */
@@ -334,7 +340,8 @@ async function openCardInvoice(
  * a phone (PRODUCT.md), and a QR code on the screen of the phone you would scan
  * with is useless — the deep link is what turns that dead end into one tap.
  *
- * TODO(xendit): confirm `POST /ewallets/charges`, the `actions` field names
+ * Endpoint and `channel_code` confirmed against the sandbox — it got past
+ * validation to the callback check. TODO(xendit): the `actions` field names
  * below, and which of them GoPay actually returns. PAYMENT-PLAN §4 is explicit
  * that deep-link support differs per wallet and must be tested one at a time in
  * the sandbox rather than assumed.

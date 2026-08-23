@@ -1,0 +1,14 @@
+▲ Next.js 16.2.12
+- Local:         http://localhost:3200
+- Network:       http://192.168.1.11:3200
+✓ Ready in 285ms
+[booking] POST /api/booking/[token]/payment failed Error [XenditError]: Failed to validate the request, 1 error occurred.
+    at I (C:\Users\Gigabyte\Documents\flex\.next\server\chunks\lib_payments_charges_ts_0jyo4wy._.js:1:3020)
+    at async w (C:\Users\Gigabyte\Documents\flex\.next\server\chunks\lib_payments_charges_ts_0jyo4wy._.js:1:5608)
+    at async D (C:\Users\Gigabyte\Documents\flex\.next\server\chunks\lib_payments_charges_ts_0jyo4wy._.js:1:6626)
+    at async P (C:\Users\Gigabyte\Documents\flex\.next\server\chunks\[root-of-the-server]__074s320._.js:1:6783)
+    at async l (C:\Users\Gigabyte\Documents\flex\.next\server\chunks\[root-of-the-server]__074s320._.js:1:10560)
+    at async s (C:\Users\Gigabyte\Documents\flex\.next\server\chunks\[root-of-the-server]__074s320._.js:1:11601) {
+  status: 400,
+  errorCode: 'API_VALIDATION_ERROR'
+}
