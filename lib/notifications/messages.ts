@@ -30,6 +30,7 @@ import {
   whatsappLink,
 } from "@/lib/booking/format";
 import type { BookingView } from "@/lib/booking/types";
+import { PAYMENT_CHANNEL_LABEL } from "@/lib/payments/types";
 import { contact } from "@/lib/site";
 
 /**
@@ -63,6 +64,34 @@ export function customerConfirmationMessage(view: BookingView): string {
     manageLine(view, `Add to your calendar, or change the time:`),
     ``,
     `Keep the code ${view.reference}. Reply here if you need anything.`,
+  ]);
+}
+
+/**
+ * The receipt, on the pay-now path only.
+ *
+ * It arrives in the same breath as the confirmation, so it deliberately does
+ * not repeat it: no therapist, no address, no manage link. What it carries is
+ * the one thing the confirmation cannot — proof of what was taken, by which
+ * rail, and the id the studio can look the charge up by. Somebody scrolling
+ * back for "did that payment go through" should find this line and stop.
+ */
+export function customerPaymentReceivedMessage(view: BookingView): string {
+  const paid = view.receipt;
+  /* Queued only when a payment settled, so this is unreachable in practice.
+     Returning null rather than inventing a figure is the only safe reading:
+     a receipt for an amount we are guessing at is worse than none. */
+  if (!paid) return "";
+
+  return joinLines([
+    `*Payment received* — ${view.reference}`,
+    `${formatRupiah(paid.amountPaidIdr)} paid by ${PAYMENT_CHANNEL_LABEL[paid.channel].toLowerCase()}`,
+    ``,
+    `For: ${view.serviceTitle}`,
+    `Session: ${view.dateLabel}, ${view.timeLabel} WITA`,
+    `Nothing is left to pay at the studio.`,
+    ``,
+    `Your booking confirmation is in the message beside this one. Keep the code ${view.reference}.`,
   ]);
 }
 

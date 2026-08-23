@@ -20,6 +20,8 @@ import {
   whatsappLink,
 } from "@/lib/booking/format";
 import type { BookingView } from "@/lib/booking/types";
+import { formatStudioDate, formatStudioTime } from "@/lib/booking/time";
+import { PAYMENT_CHANNEL_LABEL } from "@/lib/payments/types";
 import { contact, siteConfig } from "@/lib/site";
 
 import {
@@ -125,6 +127,64 @@ export function customerConfirmationEmail(view: BookingView): EmailContent {
     actions: customerActions(view),
     outro: [
       `Keep the reference ${view.reference} — it is what we look you up by.`,
+    ],
+  });
+}
+
+/**
+ * The receipt, on the pay-now path only.
+ *
+ * Sent beside the confirmation rather than folded into it, because the two do
+ * different jobs: the confirmation is what a customer opens the morning of the
+ * session, and the receipt is what they keep, forward to whoever is paying, or
+ * dig out if a charge is queried. It carries no calendar file and no manage
+ * link for that reason — nothing here changes a booking.
+ */
+export function customerPaymentReceivedEmail(
+  view: BookingView,
+): EmailContent | null {
+  const paid = view.receipt;
+
+  /* Only ever queued once a payment settled, so this is unreachable. Null
+     rather than a throw, because the caller already treats null as "there is
+     nothing to send for this kind" and retires the job — where an exception
+     would escape into the dispatch loop and take the whole batch with it.
+     Guessing at the figure is the one failure here a customer could act on. */
+  if (!paid) return null;
+
+  const rows: DetailRow[] = [
+    { label: "Amount paid", value: formatIdr(paid.amountPaidIdr) },
+    { label: "Paid with", value: PAYMENT_CHANNEL_LABEL[paid.channel] },
+    {
+      label: "Paid at",
+      /* Studio time, like every other instant this site shows a customer. The
+         server is UTC and would be eight hours out. */
+      value: `${formatStudioDate(new Date(paid.paidAt))}, ${formatStudioTime(new Date(paid.paidAt))} WITA`,
+    },
+    { label: "Booking reference", value: view.reference },
+    { label: "Service", value: view.serviceTitle },
+    ...whenRows(view),
+  ];
+
+  /* Xendit's own id for the charge. Meaningless to most people and the first
+     thing asked for by anyone whose bank statement disagrees with us, so it
+     goes last rather than not at all. */
+  if (paid.providerId) {
+    rows.push({ label: "Payment id", value: paid.providerId });
+  }
+
+  return renderEmail({
+    subject: `Payment received — ${view.reference}`,
+    preheader: `${formatIdr(paid.amountPaidIdr)} received for ${view.serviceTitle}.`,
+    heading: "We have your payment",
+    intro: [
+      `Hi ${view.customer.firstName}, thank you — your payment has arrived and there is nothing left to pay at the studio.`,
+      "Your booking confirmation, with the calendar file and the link to change the time, is in a separate email.",
+    ],
+    rows,
+    actions: [whatsAppAction()],
+    outro: [
+      `Keep this email as your receipt. Quote ${view.reference} if you ever need to ask us about it.`,
     ],
   });
 }

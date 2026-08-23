@@ -42,6 +42,9 @@ enum NotificationChannel {
 
 enum NotificationKind {
   CUSTOMER_CONFIRMATION
+  /// The receipt, on the pay-now path only. Queued by the settlement, never by
+  /// the booking route — see `queueBookingCreated`.
+  CUSTOMER_PAYMENT_RECEIVED
   ADMIN_NEW_BOOKING
   CUSTOMER_REMINDER
   CUSTOMER_CANCELLED

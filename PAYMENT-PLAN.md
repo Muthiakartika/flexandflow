@@ -384,6 +384,18 @@ Perbaikannya: route `POST /api/booking` hanya memanggilnya untuk
 `AT_STUDIO`. Untuk `ONLINE`, yang memanggil adalah webhook, setelah pembayaran
 berhasil.
 
+**Kwitansi menyusul, bukan menggantikan.** Sejak 2026-08-23, begitu pembayaran
+masuk pelanggan menerima **dua** pesan, bukan satu: konfirmasi booking seperti
+biasa, plus `CUSTOMER_PAYMENT_RECEIVED` — WhatsApp dan email — yang menyebut
+jumlah yang benar-benar diterima, rail-nya, dan id charge dari Xendit.
+Keduanya diantre di `queueBookingCreated()`, bukan di dua jalur penyelesaian
+(callback dan route kartu), supaya aturannya tidak perlu diulang di dua tempat
+dan berlaku di satu tapi tidak di satunya. Syaratnya adalah **uangnya**
+(`settledPayment()`), bukan metode bayarnya: booking yang entah bagaimana
+sampai ke sana tanpa terbayar akan menerima konfirmasi dan tidak menerima
+kwitansi — arah keliru yang benar. Admin tidak dikirimi kwitansi; ia sudah
+menerima `ADMIN_NEW_BOOKING` pada detik yang sama.
+
 Selain itu:
 
 | Berkas | Perubahan |

@@ -31,7 +31,12 @@ import {
   studioDayStart,
   studioInstant,
 } from "@/lib/booking/time";
-import { loadBookingById, toBookingSummary, toBookingView } from "@/lib/booking/view";
+import {
+  loadBookingById,
+  settledPayment,
+  toBookingSummary,
+  toBookingView,
+} from "@/lib/booking/view";
 import type { BookingView } from "@/lib/booking/types";
 import type { LoadedBooking } from "@/lib/booking/view";
 import { bookingIcs, icsFilename, type IcsMethod } from "@/lib/calendar/ics";
@@ -200,6 +205,27 @@ export async function queueBookingCreated(bookingId: string): Promise<void> {
   ];
 
   /*
+   * The receipt, and it is seeded here rather than by the two settlement paths
+   * because there are two of them — the gateway callback and the card route —
+   * and a rule that has to be repeated in both is a rule that will eventually
+   * hold in one. This function is what each of them calls, and on the pay-now
+   * path it runs exactly once: at settlement, not at booking.
+   *
+   * Conditioned on the money rather than on the payment method, so a booking
+   * that somehow reaches here unpaid gets a confirmation and no receipt, which
+   * is the right way round to be wrong.
+   *
+   * The studio is not sent one. It already gets `ADMIN_NEW_BOOKING` in the same
+   * second on this path, and a second message saying the same thing arrives as
+   * noise rather than as information.
+   */
+  if (settledPayment(booking)) {
+    seeds.push(
+      ...customerSeeds(booking, NotificationKind.CUSTOMER_PAYMENT_RECEIVED),
+    );
+  }
+
+  /*
    * The reminder is queued now with a date in the future rather than found by
    * a nightly scan — the row exists from the moment the booking does, so a
    * cron that misses a night costs nothing. Booked less than a day ahead and
@@ -349,6 +375,8 @@ function emailFor(kind: NotificationKind, view: BookingView): EmailContent | nul
   switch (kind) {
     case NotificationKind.CUSTOMER_CONFIRMATION:
       return templates.customerConfirmationEmail(view);
+    case NotificationKind.CUSTOMER_PAYMENT_RECEIVED:
+      return templates.customerPaymentReceivedEmail(view);
     case NotificationKind.CUSTOMER_REMINDER:
       return templates.customerReminderEmail(view);
     case NotificationKind.CUSTOMER_CANCELLED:
@@ -370,6 +398,8 @@ function whatsAppTextFor(kind: NotificationKind, view: BookingView): string | nu
   switch (kind) {
     case NotificationKind.CUSTOMER_CONFIRMATION:
       return messages.customerConfirmationMessage(view);
+    case NotificationKind.CUSTOMER_PAYMENT_RECEIVED:
+      return messages.customerPaymentReceivedMessage(view);
     case NotificationKind.CUSTOMER_REMINDER:
       return messages.customerReminderMessage(view);
     case NotificationKind.CUSTOMER_CANCELLED:

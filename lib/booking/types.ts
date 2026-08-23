@@ -132,6 +132,22 @@ export type CreateBookingInput = {
   website?: string;
 };
 
+/**
+ * A settled payment, on bookings that were paid online.
+ *
+ * Null on the pay-at-the-studio path and on anything still awaiting payment —
+ * only money that actually arrived is described here, so a surface can render
+ * this without checking the booking's status first.
+ */
+export type PaidPayment = {
+  channel: "QRIS" | "VIRTUAL_ACCOUNT" | "EWALLET" | "CARD";
+  /** What was actually collected, which is what a receipt must state. */
+  amountPaidIdr: number;
+  paidAt: string;
+  /** Xendit's id for the charge — what the studio quotes when chasing one. */
+  providerId: string | null;
+};
+
 /** The booking as every surface renders it: confirmation, email, admin, manage. */
 export type BookingSummary = {
   id: string;
@@ -158,6 +174,9 @@ export type BookingSummary = {
   createdAt: string;
   cancelledAt: string | null;
   cancelReason: string | null;
+
+  /** The money, once it has arrived. Null on every other path. */
+  receipt: PaidPayment | null;
 };
 
 /** Everything the confirmation and manage pages need, links included. */

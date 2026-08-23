@@ -29,6 +29,7 @@ import type {
   BookingStatusValue,
   BookingSummary,
   BookingView,
+  PaidPayment,
   Tier,
 } from "@/lib/booking/types";
 
@@ -37,6 +38,25 @@ export const bookingInclude = {
   customer: true,
   therapist: true,
   variant: { include: { service: true } },
+  /*
+   * The settled payment, and only that one. A booking can accumulate several
+   * `Payment` rows — a QR code that lapsed, a bank transfer opened instead —
+   * but at most one of them is ever `PAID`, so this is a single row rather
+   * than a history. `take: 1` keeps it that way even if that ever stops being
+   * true, and the whole join is skipped on the pay-at-the-studio path because
+   * there is nothing to match.
+   */
+  payments: {
+    where: { status: "PAID" as const },
+    orderBy: { paidAt: "desc" as const },
+    take: 1,
+    select: {
+      channel: true,
+      amountPaidIdr: true,
+      paidAt: true,
+      providerId: true,
+    },
+  },
 } as const;
 
 type BookingRow = {
@@ -83,6 +103,12 @@ type BookingRow = {
       image: string | null;
     };
   };
+  payments: {
+    channel: string;
+    amountPaidIdr: number;
+    paidAt: Date | null;
+    providerId: string | null;
+  }[];
 };
 
 /** The customer-facing end of the session: buffer excluded. */
@@ -124,6 +150,30 @@ export function toBookingSummary(row: BookingRow): BookingSummary {
     createdAt: row.createdAt.toISOString(),
     cancelledAt: row.cancelledAt?.toISOString() ?? null,
     cancelReason: row.cancelReason,
+
+    receipt: settledPayment(row),
+  };
+}
+
+/*
+ * `paidAt` is what marks a payment settled, and it is searched for rather than
+ * assumed to be first. `bookingInclude` narrows the join to the settled row,
+ * but the admin queries override `payments` to tally refunds across all of
+ * them — so position means nothing there, and a `find` is right in both.
+ *
+ * A refund does not erase this. The receipt describes money that arrived at a
+ * time, which stays true afterwards; what was given back is the admin panel's
+ * `paidIdr` and `paymentState`, not this.
+ */
+export function settledPayment(row: BookingRow): PaidPayment | null {
+  const paid = row.payments.find((entry) => entry.paidAt !== null);
+  if (!paid?.paidAt) return null;
+
+  return {
+    channel: paid.channel as PaidPayment["channel"],
+    amountPaidIdr: paid.amountPaidIdr,
+    paidAt: paid.paidAt.toISOString(),
+    providerId: paid.providerId,
   };
 }
 

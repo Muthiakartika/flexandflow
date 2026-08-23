@@ -67,9 +67,18 @@ export type PaymentState =
   | "REFUNDED";
 
 /** The three columns every payment tally is worked out from. */
+/*
+ * Refund arithmetic needs every payment on the booking, not just the settled
+ * one, which is why these queries override `bookingInclude`'s narrower join.
+ * The three fields beyond the tally are there because `toBookingSummary` reads
+ * them for `receipt` — overriding the join must not leave it unable to.
+ */
 const paymentTallySelect = {
   amountPaidIdr: true,
   refundedIdr: true,
+  channel: true,
+  paidAt: true,
+  providerId: true,
 } as const;
 
 /** Everything the booking detail page prints about one charge. */
