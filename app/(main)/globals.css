@@ -1471,3 +1471,78 @@ button.booking-step-body {
   color: var(--color-primary-strong);
   text-decoration-color: var(--color-primary-strong);
 }
+
+
+/* ==========================================================================
+   Waiting.
+
+   Every "Book with Ginny" is a navigation into a server-rendered route that
+   asks the database who that is, so there is a real pause between the click
+   and the booking form — and until these existed, nothing on screen changed
+   during it. Which is indistinguishable from a click that did not land.
+   ========================================================================== */
+
+@layer components {
+  /**
+   * The dot beside a link that has been clicked and is still waiting.
+   *
+   * Always in the DOM at a fixed size, so switching it on cannot move the
+   * label beside it, and invisible until 120ms have passed — most navigations
+   * on this site land well inside that and should flash nothing. `currentColor`
+   * so it reads white on the filled olive button and black on the outlined
+   * one, with no second rule. `components/ui/PendingLink.tsx` adds
+   * `is-pending`.
+   */
+  .link-hint {
+    display: inline-block;
+    width: 0.45em;
+    height: 0.45em;
+    margin-left: 0.5em;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .link-hint.is-pending {
+    visibility: visible;
+    animation:
+      link-hint-in 180ms ease 120ms forwards,
+      page-skeleton-pulse 1s ease-in-out 120ms infinite;
+  }
+
+  /* One grey bar, for the shapes `loading.tsx` puts on screen while a page is
+     still coming back. Sized at the call site; only the colour and the pulse
+     are here. */
+  .page-skeleton {
+    display: block;
+    background-color: color-mix(in oklab, var(--color-secondary) 10%, transparent);
+    border-radius: 8px;
+    animation: page-skeleton-pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes page-skeleton-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes link-hint-in {
+  to {
+    opacity: 0.65;
+  }
+}
+
+/* A loading state is information, not decoration: with the movement gone the
+   bars and the dot still say "this is not the answer yet". */
+@media (prefers-reduced-motion: reduce) {
+  .page-skeleton {
+    animation: none;
+  }
+
+  .link-hint.is-pending {
+    animation: none;
+    opacity: 0.65;
+  }
+}

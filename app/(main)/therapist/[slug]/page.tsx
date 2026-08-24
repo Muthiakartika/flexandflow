@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
+import { LinkPendingHint, PendingLink } from "@/components/ui/PendingLink";
 import { BAND, CARD, FOCUS, H3, WRAP } from "@/components/ui/tokens";
 import { therapistBySlug, therapists } from "@/lib/data/therapists";
 import { bookingUrlFor, contact, workingHours } from "@/lib/site";
@@ -72,8 +72,13 @@ export default async function TherapistPage(
           { label: therapist.name },
         ]}
         actions={
+          /* The hint goes in as a child because `ButtonLink` renders the
+             `<Link>` itself, and `useLinkStatus` only reads from inside one.
+             Same reason as the team cards: `/booking/` is rendered per request
+             and looks this therapist up before it answers. */
           <ButtonLink href={bookingHref} variant="solid">
             Book with {therapist.name}
+            <LinkPendingHint />
           </ButtonLink>
         }
       />
@@ -148,12 +153,12 @@ export default async function TherapistPage(
                 </p>
               ))}
 
-              <Link
+              <PendingLink
                 href={bookingHref}
                 className={`mt-5 flex w-full items-center justify-center rounded-[10px] bg-primary-strong px-5 py-3 font-body text-[14px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
               >
                 Book with {therapist.name}
-              </Link>
+              </PendingLink>
 
               <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
                 <a
