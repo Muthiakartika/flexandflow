@@ -384,6 +384,16 @@ Perbaikannya: route `POST /api/booking` hanya memanggilnya untuk
 `AT_STUDIO`. Untuk `ONLINE`, yang memanggil adalah webhook, setelah pembayaran
 berhasil.
 
+**Pembayaran gagal tidak membatalkan booking.** Callback `FAILED` atau
+`EXPIRED` hanya menulis status charge-nya; hold-nya dibiarkan. Sampai
+2026-08-23 ia memanggil `expireBookingHold`, yang membatalkan booking — padahal
+modal-nya justru berkata *"your time is still held, choose a method above to
+try again"*, dan percobaan berikutnya ditolak dengan *"that booking has been
+cancelled"*. Satu kartu ditolak mengakhiri booking-nya, bukan percobaannya.
+Yang membebaskan slot adalah `sweepExpiredHolds`, memakai jam booking itu
+sendiri — dan itu memang sebabnya `XENDIT_INVOICE_MINUTES` (13) sengaja
+lebih pendek dari hold 15 menit.
+
 **Charge dibuka saat pelanggan memilih, bukan saat booking dibuat.** Sampai
 2026-08-23 `POST /api/booking` langsung membuka charge pada rail pertama di
 `PAYMENT_CHANNELS`, jadi setiap pelanggan yang sampai ke modal sudah

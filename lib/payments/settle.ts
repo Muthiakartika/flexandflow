@@ -30,7 +30,7 @@ import "server-only";
 
 import { Prisma } from "@/generated/prisma/client";
 
-import { expireBookingHold, markBookingPaid } from "@/lib/booking/transitions";
+import { markBookingPaid } from "@/lib/booking/transitions";
 import { prisma } from "@/lib/db";
 import { queueBookingCreated } from "@/lib/notifications";
 import { refetchCharge } from "@/lib/payments/charges";
@@ -249,15 +249,27 @@ export async function settlePayment(
     return { applied: true, status: next };
   }
 
+  /*
+   * A charge that failed or lapsed leaves the booking alone.
+   *
+   * This used to release the hold, which cancels the booking outright — and it
+   * was wrong in the most expensive way available: the customer is still
+   * sitting in front of the modal, which tells them "your time is still held,
+   * choose a method above to try again", and the retry then came back "that
+   * booking has been cancelled". A declined card ended the booking rather than
+   * the attempt.
+   *
+   * The design already has the right mechanism and this was competing with it.
+   * `XENDIT_INVOICE_MINUTES` (13) is deliberately under the 15-minute hold so
+   * that a lapsed QR leaves room to switch to a bank transfer, and opening the
+   * replacement extends the hold up to its ceiling. Freeing the slot the moment
+   * a charge failed threw that window away.
+   *
+   * `sweepExpiredHolds` is what frees an abandoned slot, on the booking's own
+   * clock, whether or not any callback ever arrives. That is the backstop this
+   * one was duplicating badly.
+   */
   if (next === "EXPIRED" || next === "FAILED") {
-    await expireBookingHold({
-      bookingId: payment.bookingId,
-      reason:
-        next === "EXPIRED"
-          ? "The payment expired before it was completed."
-          : "The payment failed.",
-    });
-
     return { applied: true, status: next };
   }
 
