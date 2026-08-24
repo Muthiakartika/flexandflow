@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
-
 import { Button } from "@/components/ui/Button";
 import { FormSelect } from "@/components/ui/FormSelect";
 import { FIELD, SELECT_CONTENT, SELECT_TRIGGER } from "@/components/ui/tokens";
+import { contact } from "@/lib/site";
 
 /** Service options, in the same order as the WordPress select. */
 const serviceOptions = [
@@ -17,16 +16,58 @@ const serviceOptions = [
 ];
 
 /**
- * Contact form — presentation only. The brief defers wiring a backend, so
- * submitting shows a local confirmation instead of posting anywhere. Field
- * names match the original Contact Form 7 setup.
+ * A field value, safe to drop into the WhatsApp message. `*`, `_`, `~` and
+ * backtick are WhatsApp's own bold/italic/strikethrough/code markers — one
+ * stray character typed into "Message" would otherwise bend the formatting
+ * of everything after it.
+ */
+function forWhatsapp(value: string): string {
+  return value.replace(/[*_~`]/g, "");
+}
+
+/** Turns the submitted fields into the message WhatsApp opens with. */
+function whatsappMessage(data: FormData): string {
+  const name = forWhatsapp(String(data.get("your-name") ?? "").trim());
+  const email = forWhatsapp(String(data.get("your-email") ?? "").trim());
+  const service = forWhatsapp(String(data.get("How") ?? "").trim());
+  const phone = forWhatsapp(String(data.get("phone") ?? "").trim());
+  const message = forWhatsapp(String(data.get("your-message") ?? "").trim());
+
+  const lines = [
+    "Hi Flex & Flow, I'd like to get in touch.",
+    "",
+    `*Name:* ${name}`,
+    `*Email:* ${email}`,
+  ];
+
+  if (service && service !== "Select Services") {
+    lines.push(`*Service:* ${service}`);
+  }
+
+  lines.push(`*Phone:* ${phone}`);
+
+  if (message) {
+    /* `> ` is WhatsApp's block-quote marker; it applies per line, so a
+       multi-line message needs it repeated rather than once at the top. */
+    const quoted = message
+      .split("\n")
+      .map((line) => `> ${line}`)
+      .join("\n");
+    lines.push("", "*Message:*", quoted);
+  }
+
+  return lines.join("\n");
+}
+
+/**
+ * Contact form — submitting opens WhatsApp with the fields already written
+ * into the message, rather than posting anywhere. Field names match the
+ * original Contact Form 7 setup.
  *
  * Fields are labelled visibly rather than by placeholder alone: the original
  * relied on placeholders, which vanish as soon as anyone types.
  */
 export default function ContactForm() {
-  const [sent, setSent] = useState(false);
-
   const label = "page-label mb-1.5 block";
 
   return (
@@ -34,7 +75,12 @@ export default function ContactForm() {
       className="flex flex-col gap-4"
       onSubmit={(event) => {
         event.preventDefault();
-        setSent(true);
+        const text = whatsappMessage(new FormData(event.currentTarget));
+        window.open(
+          `${contact.whatsapp}?text=${encodeURIComponent(text)}`,
+          "_blank",
+          "noopener,noreferrer",
+        );
       }}
     >
       <div className="grid gap-4 sm:grid-cols-2">
@@ -120,9 +166,6 @@ export default function ContactForm() {
         <Button type="submit" variant="solid">
           Send Message
         </Button>
-        <p aria-live="polite" className="font-body text-[14px] text-primary">
-          {sent ? "Thanks — we’ll be in touch shortly." : ""}
-        </p>
       </div>
     </form>
   );

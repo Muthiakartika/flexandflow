@@ -27,14 +27,14 @@ Cloned (26 routes):
 | `/uluwatu-bali/[slug]` | 8 services + 6 posts |
 | `/injury-guide/[slug]` | 2 posts |
 | `/therapist/[slug]` | Ginny, Yuni |
+| `/price-list` | price list, by therapist — [`lib/data/priceList.ts`](lib/data/priceList.ts) |
 
-**Still on WordPress:** the price list only. Link to it with the absolute URL
-from `wordpressUrls` in [`lib/site.ts`](lib/site.ts); never route it through
-`next/link`.
+**Still on WordPress:** nothing. Booking moved into this app in Phase 3; the
+price list followed in Phase 2's tail end.
 
 > The brief named `/pricelist/`, which 404s on the live site. The working path is
 > `/price-list/`, which is what the code uses. `next.config.ts` redirects the
-> Next.js equivalents outward so no link dead-ends.
+> misspelling to it.
 
 Booking used to be on WordPress too, at `/appointment/`. It now runs in this app
 — see below.

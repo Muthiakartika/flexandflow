@@ -71,17 +71,17 @@ const nextConfig: NextConfig = {
         destination: "/uluwatu-bali/lymphatic-drainage/",
         permanent: true,
       },
-      /* The price list is not cloned — it stays on WordPress. These redirects
-         catch anyone landing on the Next.js paths directly. */
-      {
-        source: "/price-list",
-        destination: "https://flexandflow.fit/price-list/",
-        permanent: false,
-      },
+      /**
+       * The brief named `/pricelist/` (no hyphen), which never existed —
+       * WordPress's real path, now this app's too, is `/price-list/`. Kept
+       * alive permanently in case anything already links the brief's
+       * spelling; `/price-list` itself needs no entry here, `trailingSlash`
+       * normalises it like any other page.
+       */
       {
         source: "/pricelist",
-        destination: "https://flexandflow.fit/price-list/",
-        permanent: false,
+        destination: "/price-list/",
+        permanent: true,
       },
       /**
        * Booking now runs in this app at `/booking/`. `/appointment/` is the URL

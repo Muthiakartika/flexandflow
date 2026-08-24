@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { CARD, FOCUS, LINK } from "@/components/ui/tokens";
 import { formatIdr, priceAmount, serviceMinutes, tierMinutes } from "@/lib/pricing";
-import { bookingUrl } from "@/lib/site";
+import { externalBookingUrl } from "@/lib/site";
 import type { Service } from "@/types";
 
 /**
@@ -15,8 +15,8 @@ import type { Service } from "@/types";
  * the two rates sit in the open where they can be compared across the grid.
  *
  * Durations are per tier: they usually match, in which case the length is
- * stated once as a chip on the photo. "Book Session" goes to the WordPress
- * booking page, which is not cloned.
+ * stated once as a chip on the photo. "Book Session" goes to
+ * booking.flexandflow.fit, a separate deployment from this site.
  */
 export default function ServicePriceCard({ service }: { service: Service }) {
   const href = `/uluwatu-bali/${service.slug}`;
@@ -96,12 +96,14 @@ export default function ServicePriceCard({ service }: { service: Service }) {
         </dl>
 
         <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-5">
-          <Link
-            href={bookingUrl}
+          <a
+            href={externalBookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className={`inline-flex items-center justify-center rounded-[10px] bg-primary-strong px-5 py-2.5 font-body text-[14px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
           >
             Book Session
-          </Link>
+          </a>
           <Link href={href} className={LINK}>
             What it involves
           </Link>

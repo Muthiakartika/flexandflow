@@ -4,8 +4,10 @@ import ServicePriceCard from "@/components/cards/ServicePriceCard";
 import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
 import { BAND, LINK, WRAP } from "@/components/ui/tokens";
-import { serviceBySlug } from "@/lib/data/services";
-import { contact, wordpressUrls } from "@/lib/site";
+import Link from "next/link";
+
+import { pricedServiceSlugs, serviceBySlug } from "@/lib/data/services";
+import { contact } from "@/lib/site";
 
 const description =
   "Check out our services that offer massage, stretching, and therapy to improve mobility and support your health.";
@@ -22,19 +24,8 @@ export const metadata: Metadata = {
   },
 };
 
-/** Priced service cards, in the same order as the WordPress grid. */
-const order = [
-  "lymphatic-detox-massage-for-men",
-  "trauma-healing",
-  "assisted-stretching",
-  "sport-massage",
-  "cupping-therapy",
-  "lymphatic-drainage",
-  "pregnancy-massage-service",
-];
-
 export default function ServicesPage() {
-  const services = order
+  const services = pricedServiceSlugs
     .map((slug) => serviceBySlug.get(slug))
     .filter((service) => service !== undefined);
 
@@ -54,17 +45,13 @@ export default function ServicesPage() {
 
       <section className={`${WRAP} ${BAND}`}>
         {/* Every card carries both rates, so this grid is the price list in
-            miniature; the full one stays on WordPress. */}
+            miniature; the full one — including the per-therapist rates — is
+            its own page. */}
         <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
           <p className="page-label">Every treatment, both tiers, prices in IDR</p>
-          <a
-            href={wordpressUrls.priceList}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={LINK}
-          >
+          <Link href="/price-list" className={LINK}>
             Full price list
-          </a>
+          </Link>
         </div>
 
         <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

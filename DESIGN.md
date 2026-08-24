@@ -6,9 +6,8 @@ copy word for word. What follows is everything the redesign *does* own — measu
 scale, surface, motion — so the next change to the site can be made without
 re-deriving it.
 
-It applies to **every page**, including the booking wizard added in Phase 3. The only
-page still on WordPress is the price list; link to it through `wordpressUrls`, never
-through `next/link`. The **admin panel** at `/admin` is the one surface outside this
+It applies to **every page**, including the booking wizard added in Phase 3 and the
+price list that followed it — nothing is left on WordPress. The **admin panel** at `/admin` is the one surface outside this
 system — it is an internal tool on its own stylesheet, denser by design, but it keeps
 these colours and these two faces.
 

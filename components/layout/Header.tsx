@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
-import { bookingUrl, primaryNav, siteConfig } from "@/lib/site";
+import { externalBookingUrl, primaryNav, siteConfig } from "@/lib/site";
 
 /**
  * Site header, rebuilt for the studio look: a slim sticky bar rather than the
@@ -52,22 +52,26 @@ export default function Header() {
         <div className="ml-auto flex items-center gap-7 max-[1180px]:hidden">
           <DesktopNav items={primaryNav} />
 
-          <Link
-            href={bookingUrl}
+          <a
+            href={externalBookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center rounded-[10px] bg-primary-strong px-6 py-3 font-body text-[13px] tracking-[0.12em] text-white uppercase transition-colors duration-300 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             Book now
-          </Link>
+          </a>
         </div>
 
         {/* Below 1181px the nav collapses to the drawer, with the action kept. */}
         <div className="ml-auto flex items-center gap-3 min-[1181px]:hidden">
-          <Link
-            href={bookingUrl}
+          <a
+            href={externalBookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center rounded-[10px] bg-primary-strong px-5 py-2.5 font-body text-[12px] tracking-[0.12em] text-white uppercase transition-colors duration-300 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary max-[380px]:hidden"
           >
             Book
-          </Link>
+          </a>
           <MobileNav items={primaryNav} />
         </div>
       </div>

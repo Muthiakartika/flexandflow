@@ -4,10 +4,9 @@ import { notFound } from "next/navigation";
 
 import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
-import { LinkPendingHint, PendingLink } from "@/components/ui/PendingLink";
 import { BAND, CARD, FOCUS, H3, WRAP } from "@/components/ui/tokens";
 import { therapistBySlug, therapists } from "@/lib/data/therapists";
-import { bookingUrlFor, contact, workingHours } from "@/lib/site";
+import { externalBookingUrl, contact, workingHours } from "@/lib/site";
 
 export function generateStaticParams() {
   return therapists.map((therapist) => ({ slug: therapist.slug }));
@@ -56,11 +55,11 @@ export default async function TherapistPage(
   const therapist = therapistBySlug.get(slug);
   if (!therapist) notFound();
 
-  /* Into the wizard with this therapist already selected, rather than out to
-     WhatsApp: somebody on this page has read the bio and decided. The studio's
-     phone number stays under the button in the aside for anyone who would
-     rather just ask a question first. */
-  const bookingHref = bookingUrlFor(therapist.slug);
+  /* booking.flexandflow.fit — a WordPress plugin that reads no query string,
+     so there's no per-therapist link to build. The studio's phone number
+     stays under the button in the aside for anyone who would rather just ask
+     a question first. */
+  const bookingHref = externalBookingUrl;
 
   return (
     <>
@@ -72,13 +71,8 @@ export default async function TherapistPage(
           { label: therapist.name },
         ]}
         actions={
-          /* The hint goes in as a child because `ButtonLink` renders the
-             `<Link>` itself, and `useLinkStatus` only reads from inside one.
-             Same reason as the team cards: `/booking/` is rendered per request
-             and looks this therapist up before it answers. */
-          <ButtonLink href={bookingHref} variant="solid">
+          <ButtonLink href={bookingHref} external variant="solid">
             Book with {therapist.name}
-            <LinkPendingHint />
           </ButtonLink>
         }
       />
@@ -153,12 +147,14 @@ export default async function TherapistPage(
                 </p>
               ))}
 
-              <PendingLink
+              <a
                 href={bookingHref}
+                target="_blank"
+                rel="noopener noreferrer"
                 className={`mt-5 flex w-full items-center justify-center rounded-[10px] bg-primary-strong px-5 py-3 font-body text-[14px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
               >
                 Book with {therapist.name}
-              </PendingLink>
+              </a>
 
               <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
                 <a

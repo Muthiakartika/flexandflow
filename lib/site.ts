@@ -1,13 +1,17 @@
 /**
  * Single source of truth for site-wide constants.
  *
- * The **price list** is still on WordPress: link to it with an absolute URL
- * from `wordpressUrls`, never through `next/link`.
+ * Nothing is on WordPress any more. Booking moved into this app in Phase 3;
+ * the price list followed, at `/price-list/`, backed by
+ * `lib/data/priceList.ts`.
  *
- * **Booking is not.** It used to be — `/appointment/` on WordPress — and this
- * file used to say so. It now runs inside this app at `bookingUrl`, which is an
- * ordinary internal route and belongs in `next/link` like any other. See
- * `BOOKING-PLAN.md`.
+ * **Booking is split two ways.** The wizard itself still runs inside this app
+ * at `bookingUrl` — reschedule links and anything mid-flow use that, through
+ * `next/link` like any other internal route. But every marketing "Book now" /
+ * "Book Appointment" / "Book with <therapist>" CTA points visitors at
+ * `externalBookingUrl` instead: a separate booking.flexandflow.fit
+ * deployment, absolute like `wordpressUrls` and opened the same way — new
+ * tab, no client-side router. See `BOOKING-PLAN.md`.
  */
 
 import { ACADEMY_ENABLED } from "./flags";
@@ -21,15 +25,6 @@ export const siteConfig = {
     "Join wellness journeys with Flex and Flow. Our services focus on improving flexibility, reducing discomfort, and enhancement of well-being.",
   logo: "/images/2025/06/FlexnFlow_new_logo.png",
   copyright: "All Right Reserved © 2026 Flex&Flow",
-} as const;
-
-/**
- * What is still served by WordPress. Only the price list now — booking moved
- * into this app. Verified against the live site: `/price-list/` returns 200,
- * while the `/pricelist/` path named in the brief 404s.
- */
-export const wordpressUrls = {
-  priceList: "https://flexandflow.fit/price-list/",
 } as const;
 
 /**
@@ -57,8 +52,16 @@ export const bookingUrl = "/booking/";
  * `lib/data/therapists.ts`, which has never heard of the booking tables, and a
  * URL somebody might read aloud should say `ginny` rather than a cuid.
  */
-export const bookingUrlFor = (therapistSlug: string) =>
-  `${bookingUrl}?staff=${encodeURIComponent(therapistSlug)}`;
+/**
+ * Where every marketing "Book now" / "Book Appointment" / "Book with
+ * <therapist>" CTA points — a separate booking.flexandflow.fit deployment,
+ * not a page in this app. Treat it like `wordpressUrls`: absolute, external,
+ * new tab. It's a WordPress booking plugin and reads no query string, so
+ * every CTA uses this same bare URL — there is no per-therapist variant, and
+ * "Book with Ginny" doesn't preselect anything on arrival. `bookingUrl` above
+ * still matters: the wizard's own reschedule links stay on it.
+ */
+export const externalBookingUrl = "https://booking.flexandflow.fit/";
 
 /**
  * The training academy used to be a separate deployment on its own domain; it
@@ -95,7 +98,7 @@ export const workingHours = [
 export type NavItem = {
   label: string;
   href: string;
-  /** Absolute links leave the Next.js app (WordPress pages, socials). */
+  /** Absolute links leave the Next.js app (external sites, socials). */
   external?: boolean;
   children?: NavItem[];
   /** Wide multi-column panel, used where a plain list would not group well. */
@@ -126,7 +129,7 @@ export type NavMega = {
 const allNavItems: NavItem[] = [
   { label: "Home", href: "/" },
   { label: "About us", href: "/about-us" },
-  { label: "Price List", href: wordpressUrls.priceList, external: true },
+  { label: "Price List", href: "/price-list" },
   {
     label: "Services",
     href: "/services",

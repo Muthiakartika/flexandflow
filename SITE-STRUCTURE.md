@@ -43,10 +43,11 @@ layouts, and it is what keeps the two stylesheets off the same page.
 | Footer intro paragraph, address, phone, e‑mail, opening hours, socials | [lib/site.ts](lib/site.ts) → `footerIntro`, `contact`, `workingHours` |
 | Where header and footer are mounted onto every page | [app/(main)/layout.tsx](app/(main)/layout.tsx) |
 | Colours, fonts, spacing tokens | [app/(main)/globals.css](app/(main)/globals.css) |
-| Where every "Book now" button points | [lib/site.ts](lib/site.ts) → `bookingUrl` |
-| "Book with Ginny" / "Book with Yuni" — straight into the wizard with that therapist chosen | [lib/site.ts](lib/site.ts) → `bookingUrlFor(slug)` |
+| Where every marketing "Book now" / "Book Appointment" / "Book with Ginny" / "Book with Yuni" button points | [lib/site.ts](lib/site.ts) → `externalBookingUrl` — booking.flexandflow.fit, a WordPress booking plugin, opened in a new tab. It reads no query string, so there is no per-therapist link. |
+| The wizard's own internal links (reschedule) | [lib/site.ts](lib/site.ts) → `bookingUrl` — unchanged, still `/booking/` inside this app |
 | The booking wizard itself (staff → service → date → details → summary) | [components/booking/](components/booking) |
 | Prices and durations customers can actually book | the database, edited at `/admin/services` — **not** `lib/data/services.ts` |
+| The price list page, and Ginny/Yuni's per-therapist rates | [app/(main)/price-list/page.tsx](app/(main)/price-list/page.tsx), [lib/data/priceList.ts](lib/data/priceList.ts) — separate from `lib/data/services.ts`, on purpose; see the note at the top of that file |
 
 Note: `components/layout/SlideMenu.tsx` is **not mounted anywhere**. It is a
 leftover from the WordPress clone. Editing it changes nothing on the live site —

@@ -1,7 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
 
 import { BAND, BTN_GHOST, H2, WRAP } from "@/components/ui/tokens";
+import { externalBookingUrl } from "@/lib/site";
 
 /* The studio's own list of what every session is aimed at, in source order. */
 const points = [
@@ -39,9 +39,14 @@ export default function CompleteWellness() {
               ))}
             </ul>
 
-            <Link href="/contact-us" className={`${BTN_GHOST} mt-7`}>
+            <a
+              href={externalBookingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${BTN_GHOST} mt-7`}
+            >
               Book Appointment
-            </Link>
+            </a>
           </div>
 
           <div className="relative">

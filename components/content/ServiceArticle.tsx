@@ -6,7 +6,7 @@ import PageHero from "@/components/ui/PageHero";
 import { BAND, CARD, FOCUS, LINK, WRAP } from "@/components/ui/tokens";
 import { services } from "@/lib/data/services";
 import { formatIdr, priceAmount, serviceMinutes, tierMinutes } from "@/lib/pricing";
-import { bookingUrl, contact } from "@/lib/site";
+import { externalBookingUrl, contact } from "@/lib/site";
 import RichText from "./RichText";
 import type { Service } from "@/types";
 
@@ -90,7 +90,9 @@ export default function ServiceArticle({ service }: { service: Service }) {
               <ButtonLink href={contact.whatsapp} external variant="solid">
                 Book on WhatsApp
               </ButtonLink>
-              <ButtonLink href="/contact-us">Book an Appointment</ButtonLink>
+              <ButtonLink href={externalBookingUrl} external>
+                Book an Appointment
+              </ButtonLink>
             </div>
           </article>
 
@@ -126,12 +128,14 @@ export default function ServiceArticle({ service }: { service: Service }) {
                 ))}
               </dl>
 
-              <Link
-                href={bookingUrl}
+              <a
+                href={externalBookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className={`mt-4 flex w-full items-center justify-center rounded-[10px] bg-primary-strong px-5 py-3 font-body text-[14px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
               >
                 Book Session
-              </Link>
+              </a>
 
               <p className="mt-3 text-center">
                 <a

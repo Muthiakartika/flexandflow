@@ -102,9 +102,15 @@ awaiting the owner's review. The system — measure, scale, surfaces, motion, th
 derived-price rule, the copy rule — is documented in **`DESIGN.md`**; read that before
 changing any of it. Shared class strings live in `components/ui/tokens.ts`.
 
-The only page left on WordPress is the **price list**. Link to it through
-`wordpressUrls`, never `next/link`. The **booking flow** was also on WordPress and is
-not any more — Phase 3 built it into this app; see below.
+**Nothing is left on WordPress.** The **booking flow** moved into this app in
+Phase 3 — see below. The **price list** followed on 2026-08-24: it's now
+`/price-list`, an ordinary internal route like any other, backed by
+`lib/data/priceList.ts` — a separate file from `lib/data/services.ts` because
+its per-therapist rates (and two treatments, Combo Stretching and Massage and
+Traditional Javanese Massage, that have no service page at all) don't fit
+that shape, and because keeping it separate keeps it out of
+`npm run check:prices`, which would otherwise fail on rows it has no
+`ServiceVariant` to compare against.
 
 Verified at 390 / 768 / 1280px across every route: no horizontal overflow, nothing
 shipping at `opacity: 0`, header/body/footer gutters aligned, build generating all 32

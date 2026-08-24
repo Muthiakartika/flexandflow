@@ -1056,3 +1056,19 @@ export const services: Service[] = [
 ];
 
 export const serviceBySlug = new Map(services.map((s) => [s.slug, s]));
+
+/**
+ * The seven services with published rates, in the same order as the
+ * WordPress grid — shared by `/services` and `/price-list` so the two pages
+ * agree on what's on offer. `full-body-massage` and `facial-massage` are
+ * deliberately absent: neither has a published rate (see CLAUDE.md).
+ */
+export const pricedServiceSlugs = [
+  "lymphatic-detox-massage-for-men",
+  "trauma-healing",
+  "assisted-stretching",
+  "sport-massage",
+  "cupping-therapy",
+  "lymphatic-drainage",
+  "pregnancy-massage-service",
+] as const;

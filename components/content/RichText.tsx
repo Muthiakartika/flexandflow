@@ -24,7 +24,7 @@ function renderInline(text: string): ReactNode[] {
       const path = internal
         ? href.replace("https://flexandflow.fit", "").replace(/\/$/, "") || "/"
         : href;
-      const staysOnWordPress = /\/(price-list|appointment)\/?$/.test(href);
+      const staysOnWordPress = /\/appointment\/?$/.test(href);
 
       nodes.push(
         internal && !staysOnWordPress ? (

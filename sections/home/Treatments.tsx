@@ -3,7 +3,6 @@ import Link from "next/link";
 
 import { serviceBySlug } from "@/lib/data/services";
 import { formatIdr, ratesFor, serviceMinutes } from "@/lib/pricing";
-import { wordpressUrls } from "@/lib/site";
 import { BAND, CARD, FOCUS, H2, LINK, WRAP } from "@/components/ui/tokens";
 
 /** Treatments featured on the home page, in the original order. */
@@ -39,14 +38,9 @@ export default function Treatments() {
           <p className="page-label">Come &amp; Explore</p>
           <h2 className={`mt-2 ${H2}`}>MORE TREATMENTS FOR&nbsp;YOU</h2>
         </div>
-        <a
-          href={wordpressUrls.priceList}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={LINK}
-        >
+        <Link href="/price-list" className={LINK}>
           Full price list
-        </a>
+        </Link>
       </div>
 
       <p className="mt-4 max-w-[68ch] font-body text-[15px] leading-[1.7] text-body-text/75">

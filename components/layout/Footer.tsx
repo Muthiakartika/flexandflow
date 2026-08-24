@@ -3,13 +3,7 @@ import Link from "next/link";
 
 import NewsletterForm from "./NewsletterForm";
 import { Social, socialLinks } from "@/components/ui/Social";
-import {
-  contact,
-  footerIntro,
-  siteConfig,
-  wordpressUrls,
-  workingHours,
-} from "@/lib/site";
+import { contact, footerIntro, siteConfig, workingHours } from "@/lib/site";
 import type { NavItem } from "@/lib/site";
 
 const label = "font-body text-[11px] tracking-[0.18em] text-body-text/55 uppercase";
@@ -21,14 +15,13 @@ const link =
 /**
  * Home and Price List were missing here, which left this column two links
  * shorter than the other two and made the row look untidy. Both are pages the
- * header already offers, and Price List is the one a visitor at the foot of the
- * page is most likely to want — it stays on WordPress, so it is an absolute
- * URL, never `next/link`.
+ * header already offers, and Price List is the one a visitor at the foot of
+ * the page is most likely to want.
  */
 const nav: NavItem[] = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/services" },
-  { label: "Price List", href: wordpressUrls.priceList, external: true },
+  { label: "Price List", href: "/price-list" },
   { label: "About us", href: "/about-us" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact-us" },
