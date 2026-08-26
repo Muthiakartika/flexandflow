@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 import { ACADEMY_ENABLED } from "./lib/flags";
+import { externalBookingUrl } from "./lib/site";
 
 /**
  * The academy's own routes, kept in one place because the switch flips them as
@@ -84,22 +85,46 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       /**
-       * Booking now runs in this app at `/booking/`. `/appointment/` is the URL
-       * WordPress published and the one Google has indexed, so it cannot simply
-       * stop resolving — it is redirected, permanently, because the move is.
-       *
-       * The destination carries its trailing slash written in: `trailingSlash`
-       * normalises incoming URLs but not redirect destinations, so without it
-       * this lands on a second 308 rather than on the page.
+       * `/appointment/` is the URL WordPress published and the one Google has
+       * indexed, so it cannot simply stop resolving. Booking itself stays on
+       * WordPress's own plugin at booking.flexandflow.fit for now — this app's
+       * internal wizard (`/booking/`) is built but not live, the same reason
+       * every marketing "Book Now" CTA already points at `externalBookingUrl`
+       * instead of `/booking/`. Sending this redirect anywhere internal would
+       * be the one path still landing real visitors on a wizard backed by
+       * unconfigured infrastructure. Revisit this once the Phase 3 stack in
+       * BOOKING-PLAN.md actually goes live and `/booking/` is meant to be used.
        */
       {
         source: "/appointment",
-        destination: "/booking/",
+        destination: externalBookingUrl,
         permanent: true,
       },
       {
         source: "/appointment/:path*",
-        destination: "/booking/",
+        destination: externalBookingUrl,
+        permanent: true,
+      },
+      /**
+       * WordPress's live blog index is `/blog-2/` (a slug-collision artifact —
+       * see the comment in app/(main)/blog/page/[page]/page.tsx), not `/blog/`,
+       * which genuinely 404s on WordPress. This app correctly uses the clean
+       * `/blog/` path, so an old link, a bookmark, or Google's index still
+       * pointing at `/blog-2/` needs to land on the real page instead of a 404.
+       *
+       * The trailing slash is written into both destinations for the same
+       * reason as everywhere else in this file: `trailingSlash` normalises
+       * incoming URLs but not redirect destinations, so without it this lands
+       * on a second 308 rather than on the page.
+       */
+      {
+        source: "/blog-2",
+        destination: "/blog/",
+        permanent: true,
+      },
+      {
+        source: "/blog-2/:path*",
+        destination: "/blog/:path*/",
         permanent: true,
       },
       ...academyRedirects,

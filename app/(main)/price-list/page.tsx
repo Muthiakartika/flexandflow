@@ -16,15 +16,19 @@ const pricedServices = pricedServiceSlugs
   .map((slug) => serviceBySlug.get(slug))
   .filter((service) => service !== undefined);
 
+/** Title and description are WordPress's, verbatim — matched against the
+ *  live `/price-list/` page on 2026-08-26, same rule as every other page. */
+const title = "Wellness Therapy Price List - Uluwatu, Bali";
 const description =
-  "Every session at Flex & Flow, priced by therapist and by length — Ginny's Master Therapist rate and Yuni's more affordable one, side by side.";
+  "Check out our price list for all services offered. Find the perfect " +
+  "treatment to enhance your overall wellness at an affordable price.";
 
 export const metadata: Metadata = {
-  title: "Price List - Flex and Flow",
+  title,
   description,
   alternates: { canonical: "/price-list/" },
   openGraph: {
-    title: "Price List - Flex and Flow",
+    title,
     description,
     url: "/price-list/",
     type: "article",
@@ -60,14 +64,19 @@ export default function PriceListPage() {
 
             return (
               <div key={card.therapistSlug} className={`${CARD} p-5`}>
+                {/* Pulled up over the card's own top edge with a negative
+                    margin rather than absolute positioning — it stays a
+                    normal flex sibling of the name, just taller than the row
+                    around it, and a white ring reads as the card's own edge
+                    rather than a random circle floating on the page. */}
                 <div className="flex items-center gap-4">
                   <Image
                     src={therapist.portrait}
                     alt={therapist.name}
                     width={200}
                     height={200}
-                    sizes="56px"
-                    className="h-14 w-14 shrink-0 rounded-full object-cover object-top"
+                    sizes="80px"
+                    className="-mt-12 h-20 w-20 shrink-0 rounded-full object-cover object-top ring-4 ring-white"
                   />
                   <div className="min-w-0">
                     <h2 className="font-display text-[24px] leading-none font-bold">
@@ -80,38 +89,27 @@ export default function PriceListPage() {
                 </div>
 
                 <dl className="mt-4">
-                  {card.rows.map((row) => {
-                    const excerpt = row.serviceSlug
-                      ? serviceBySlug.get(row.serviceSlug)?.excerpt
-                      : undefined;
-
-                    return (
-                      <div
-                        key={`${row.treatment}-${row.minutes}`}
-                        className="flex items-start justify-between gap-4 border-t border-secondary/10 py-2.5"
-                      >
-                        <dt className="min-w-0">
-                          <span className="page-label block">{row.treatment}</span>
-                          <span className="mt-1 block font-body text-[12px] leading-none text-body-text/55">
-                            {row.minutes} min
-                          </span>
-                          {excerpt ? (
-                            <span className="mt-1 line-clamp-1 font-body text-[12px] leading-snug text-body-text/50">
-                              {excerpt}
-                            </span>
-                          ) : null}
-                        </dt>
-                        <dd className="shrink-0 font-body text-[15px] leading-none font-bold tabular-nums">
-                          {formatIdr(row.amount)}
-                        </dd>
-                      </div>
-                    );
-                  })}
+                  {card.rows.map((row) => (
+                    <div
+                      key={`${row.treatment}-${row.minutes}`}
+                      className="flex items-baseline justify-between gap-4 border-t border-secondary/10 py-2.5"
+                    >
+                      <dt>
+                        <span className="page-label block">{row.treatment}</span>
+                        <span className="mt-1 block font-body text-[12px] leading-none text-body-text/55">
+                          {row.minutes} min
+                        </span>
+                      </dt>
+                      <dd className="font-body text-[15px] leading-none font-bold tabular-nums">
+                        {formatIdr(row.amount)}
+                      </dd>
+                    </div>
+                  ))}
                 </dl>
 
                 <PendingLink
                   href={`/therapist/${therapist.slug}`}
-                  className={`group/link mt-4 inline-flex items-center gap-1.5 font-body text-[13px] transition-colors duration-300 hover:text-primary ${FOCUS}`}
+                  className={`group/link mt-4 inline-flex items-center gap-1.5 rounded-[10px] border border-secondary/20 px-4 py-2.5 font-body text-[13px] leading-none transition-colors duration-300 hover:border-primary hover:text-primary ${FOCUS}`}
                 >
                   Full profile
                   <span

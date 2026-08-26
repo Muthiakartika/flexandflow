@@ -46,7 +46,10 @@ export default function NewsletterForm() {
         </button>
       </div>
 
-      <p aria-live="polite" className="mt-2 font-body text-[13px] text-primary">
+      <p className="mt-2 font-body text-[13px] text-body-text/55">
+        We Won&rsquo;t Spam. We Hate It More Than You Do.
+      </p>
+      <p aria-live="polite" className="mt-1 font-body text-[13px] text-primary">
         {submitted ? "Thanks for subscribing." : ""}
       </p>
     </form>

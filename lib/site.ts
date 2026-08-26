@@ -278,6 +278,16 @@ export const footerIntro =
   "tailored to help you move better, feel lighter, and restore balance in " +
   "both body and mind.";
 
+/**
+ * The footer's first sentence alone — still the studio's own words verbatim,
+ * just without the second sentence, so the Identity column reads as a
+ * complete thought at a height closer to Visit and Newsletter instead of
+ * needing a `line-clamp` ellipsis that reads as cut off mid-thought.
+ */
+export const footerIntroShort =
+  "Flex & Flow offers personalised treatments designed to support recovery, " +
+  "relaxation, and overall wellbeing.";
+
 /** The two "Accepted Payments" marks shown in the footer. */
 export const paymentIcons = [
   { src: "/images/2023/09/Footer.png", alt: "Mastercard" },

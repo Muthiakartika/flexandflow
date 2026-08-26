@@ -15,11 +15,14 @@ export function generateStaticParams() {
 }
 
 /**
- * WordPress gives every paginated page the same `<head>` as /blog/ itself —
- * same title, same description, and a canonical pointing back at /blog/ — so
- * the pages consolidate there rather than being suppressed. Mirrored exactly:
- * an earlier version numbered the title and self-canonicalised under noindex,
- * which is a cleaner pattern but is not what Google has on record.
+ * WordPress's actual blog index is at `/blog-2/` — not `/blog/`, which
+ * genuinely 404s (a slug collision left WordPress to append "-2"; that
+ * detail is exactly why testing `/blog/page/2/` earlier gave the wrong
+ * answer and led this comment astray for one revision). Checked directly
+ * against `/blog-2/page/2/` on 2026-08-26: same title, same description,
+ * and a canonical pointing back at `/blog-2/` — WordPress really does
+ * consolidate every paginated page into page 1's `<head>`, and it is not
+ * noindexed either. Mirrored exactly, now against the right URL.
  */
 export function generateMetadata(): Metadata {
   return {

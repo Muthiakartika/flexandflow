@@ -1,75 +1,22 @@
+import { Clock, Mail, MapPin, Phone as PhoneIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 import NewsletterForm from "./NewsletterForm";
 import { Social, socialLinks } from "@/components/ui/Social";
-import { contact, footerIntro, siteConfig, workingHours } from "@/lib/site";
-import type { NavItem } from "@/lib/site";
+import {
+  contact,
+  footerIntroShort,
+  paymentIcons,
+  siteConfig,
+  workingHours,
+} from "@/lib/site";
 
 const label = "font-body text-[11px] tracking-[0.18em] text-body-text/55 uppercase";
 const link =
   "font-body text-[14px] text-body-text/80 transition-colors duration-300 " +
   "hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 " +
   "focus-visible:outline-primary";
-
-/**
- * Home and Price List were missing here, which left this column two links
- * shorter than the other two and made the row look untidy. Both are pages the
- * header already offers, and Price List is the one a visitor at the foot of
- * the page is most likely to want.
- */
-const nav: NavItem[] = [
-  { label: "Home", href: "/" },
-  { label: "Services", href: "/services" },
-  { label: "Price List", href: "/price-list" },
-  { label: "About us", href: "/about-us" },
-  { label: "Blog", href: "/blog" },
-  { label: "Contact", href: "/contact-us" },
-];
-
-/**
- * The footer's link list, in two columns filled column-wise: a single file of
- * six left the right half of this column empty while the two either side of it
- * were full.
- *
- * `grid-flow-col` over an explicit row count, not CSS multi-column and not the
- * default row flow. Row flow fills across, so the six would read Home, Services
- * / Price List, About us — scrambled for a list of links. Multi-column reads in
- * the right order but balances by height, so any label long enough to wrap
- * would silently move the split off 3/3; the row count pins it.
- *
- * The row count goes in `style` because Tailwind cannot see a class name built
- * at runtime — `grid-rows-${rows}` would compile to nothing.
- */
-function FooterLinks({ items }: { items: NavItem[] }) {
-  const rows = Math.ceil(items.length / 2);
-
-  return (
-    <ul
-      className="mt-3 grid grid-flow-col grid-cols-2 gap-x-6 gap-y-1.5"
-      style={{ gridTemplateRows: `repeat(${rows}, auto)` }}
-    >
-      {items.map((item) => (
-        <li key={item.href}>
-          {item.external ? (
-            <a
-              href={item.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={link}
-            >
-              {item.label}
-            </a>
-          ) : (
-            <Link href={item.href} className={link}>
-              {item.label}
-            </Link>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
-}
 
 /**
  * Site footer: deliberately small. It closes the page with the practical
@@ -80,10 +27,19 @@ export default function Footer() {
   return (
     <footer className="border-t border-secondary/10 bg-white">
       <div className="page-wrap py-10">
-        {/* 48px between columns, not 32. The intro paragraph fills its column,
-            so at the old gutter its last word sat a hair from the Pages list
-            and the three columns read as one crowded block. */}
-        <div className="grid gap-y-8 gap-x-12 lg:grid-cols-[minmax(0,4fr)_minmax(0,3fr)_minmax(0,4fr)]">
+        {/* Three columns, one block of content each — Pages (a short nav
+            list) used to sit here, but a six-link list has no natural way to
+            reach the height of a real content column, and every attempt at
+            pairing it with another block just moved the mismatch around
+            instead of closing it. Splitting Visit and Newsletter back into
+            their own columns, matching booking.flexandflow.fit's, means each
+            one only has to be as tall as itself.
+
+            `items-start`, not the grid default `stretch`: a stretched column
+            leaves dead space below whichever content is shorter than the
+            tallest — no border makes that invisible in code, but not on the
+            actual page. */}
+        <div className="grid items-start gap-y-8 gap-x-12 lg:grid-cols-3">
           {/* Identity + reach */}
           <div>
             <Link
@@ -91,9 +47,6 @@ export default function Footer() {
               aria-label={siteConfig.name}
               className="inline-block rounded-[6px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
             >
-              {/* 56px, not 48: the mark is fine olive line work on its own
-                  white disc, so on the white footer only the linework carries
-                  it — at 48 the ring and the lettering were disappearing. */}
               <Image
                 src={siteConfig.logo}
                 alt={siteConfig.name}
@@ -104,58 +57,76 @@ export default function Footer() {
               />
             </Link>
 
-            {/* The summary the WordPress footer carried. It was ported into
-                `footerIntro` with the rest of the copy and then never rendered,
-                which left this column as a logo and three words. It is the
-                studio's own wording — do not rewrite it.
-
-                No `max-w` here on purpose: capping the measure at 46ch inside a
-                400px column bought nothing and cost a sixth line, which is the
-                line that pushed this column below the other two. */}
-            <p className="mt-4 font-body text-[14px] leading-[1.7] text-body-text/70">
-              {footerIntro}
+            {/* `footerIntroShort` — the first sentence only, verbatim, see
+                its definition in lib/site.ts for why. */}
+            <p className="mt-4 max-w-[38ch] font-body text-[14px] leading-[1.7] text-body-text/70">
+              {footerIntroShort}
             </p>
           </div>
 
-          {/* Pages */}
-          <nav aria-label="Footer">
-            <p className={label}>Pages</p>
-            <FooterLinks items={nav} />
-          </nav>
-
-          {/* Practicalities */}
+          {/* Practicalities. Each line gets a small marker — a bare list of
+              four lines in a row otherwise reads as one grey block, and the
+              icon is what a glance uses to find "the phone number" without
+              reading all four. */}
           <div>
             <p className={label}>Visit</p>
-            <address className="mt-3 max-w-[34ch] font-body text-[14px] leading-[1.65] text-body-text/80 not-italic">
-              {contact.address}
-            </address>
+            <div className="mt-3 flex items-start gap-2">
+              <MapPin
+                aria-hidden
+                className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+              />
+              <address className="max-w-[30ch] font-body text-[14px] leading-[1.65] text-body-text/80 not-italic">
+                {contact.address}
+              </address>
+            </div>
             {workingHours.map((slot) => (
-              <p
-                key={slot.days}
-                className="mt-1.5 font-body text-[14px] text-body-text/80"
-              >
-                {slot.days} &middot; {slot.hours}
-              </p>
+              <div key={slot.days} className="mt-2 flex items-start gap-2">
+                <Clock aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <p className="font-body text-[14px] text-body-text/80">
+                  {slot.days} &middot; {slot.hours}
+                </p>
+              </div>
             ))}
-            <p className="mt-1.5">
+            <div className="mt-2 flex items-center gap-2">
+              <PhoneIcon aria-hidden className="h-4 w-4 shrink-0 text-primary" />
               <a href={contact.phoneHref} className={link}>
                 {contact.phone}
               </a>
-            </p>
-
-            <div className="mt-5">
-              <NewsletterForm />
             </div>
+            <div className="mt-2 flex items-center gap-2">
+              <Mail aria-hidden className="h-4 w-4 shrink-0 text-primary" />
+              <a href={`mailto:${contact.email}`} className={link}>
+                {contact.email}
+              </a>
+            </div>
+          </div>
+
+          {/* Newsletter, with the payment marks underneath — the social
+              profiles sit in the bottom bar instead, level with copyright. */}
+          <div>
+            <p className={label}>Newsletter</p>
+            <NewsletterForm />
+
+            <ul className="mt-4 flex items-center gap-2">
+              {paymentIcons.map((icon) => (
+                <li
+                  key={icon.src}
+                  className="flex h-8 items-center rounded-[6px] border border-secondary/12 px-2.5"
+                >
+                  <Image
+                    src={icon.src}
+                    alt={icon.alt}
+                    width={50}
+                    height={32}
+                    className="h-4 w-auto object-contain"
+                  />
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
 
-      {/* The two profiles live down here rather than under the intro
-          paragraph. In the identity column they were a fourth element hanging
-          well below where the other two columns ended, which is what made the
-          row look out of true; on this bar they sit opposite the copyright
-          line, which had the whole right-hand side empty. E-mail is not
-          repeated here — it is a column above and a row on the Contact page. */}
       <div className="page-wrap flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-secondary/10 py-5">
         <p className="font-body text-[13px] text-body-text/60">
           {siteConfig.copyright}
