@@ -1,9 +1,9 @@
-import { Clock, Mail, MapPin, Phone as PhoneIcon } from "lucide-react";
+import { Clock, Mail, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 import NewsletterForm from "./NewsletterForm";
-import { Social, socialLinks } from "@/components/ui/Social";
+import { Social, socialLinks, WHATSAPP_PATH } from "@/components/ui/Social";
 import {
   contact,
   footerIntroShort,
@@ -88,8 +88,20 @@ export default function Footer() {
               </div>
             ))}
             <div className="mt-2 flex items-center gap-2">
-              <PhoneIcon aria-hidden className="h-4 w-4 shrink-0 text-primary" />
-              <a href={contact.phoneHref} className={link}>
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden
+                fill="currentColor"
+                className="h-4 w-4 shrink-0 text-primary"
+              >
+                <path d={WHATSAPP_PATH} />
+              </svg>
+              <a
+                href={contact.whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={link}
+              >
                 {contact.phone}
               </a>
             </div>
