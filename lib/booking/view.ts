@@ -178,7 +178,7 @@ export function settledPayment(row: BookingRow): PaidPayment | null {
 }
 
 export function manageUrlFor(token: string): string {
-  return `${env().NEXT_PUBLIC_SITE_URL}/booking/manage/${token}/`;
+  return `${env().NEXT_PUBLIC_SITE_URL}/appointment/manage/${token}/`;
 }
 
 export function icsUrlFor(token: string): string {

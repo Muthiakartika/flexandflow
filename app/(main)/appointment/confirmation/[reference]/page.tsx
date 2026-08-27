@@ -36,7 +36,7 @@ const MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURICom
 )}`;
 
 export default async function BookingConfirmationPage(
-  props: PageProps<"/booking/confirmation/[reference]">,
+  props: PageProps<"/appointment/confirmation/[reference]">,
 ) {
   const { reference } = await props.params;
 

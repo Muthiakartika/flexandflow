@@ -19,7 +19,8 @@
  * Runs under `tsx`, outside Next, so it builds its own client rather than
  * importing `lib/db.ts` (which pulls in `server-only`).
  */
-import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local" });
 
 import { neonConfig } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";

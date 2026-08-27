@@ -6,8 +6,9 @@ import InlineFaq from "./InlineFaq";
 import type { ContentBlock } from "@/types";
 
 /** Turn the extractor's `[text](href)` / `**bold**` / `*italic*` markers back
- *  into elements. Internal links use `next/link`. */
-function renderInline(text: string): ReactNode[] {
+ *  into elements. Internal links use `next/link`. Exported for `InlineFaq`,
+ *  which renders body text of its own outside this component's switch. */
+export function renderInline(text: string): ReactNode[] {
   const pattern = /\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*/g;
   const nodes: ReactNode[] = [];
   let last = 0;

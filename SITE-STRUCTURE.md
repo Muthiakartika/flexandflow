@@ -44,7 +44,7 @@ layouts, and it is what keeps the two stylesheets off the same page.
 | Where header and footer are mounted onto every page | [app/(main)/layout.tsx](app/(main)/layout.tsx) |
 | Colours, fonts, spacing tokens | [app/(main)/globals.css](app/(main)/globals.css) |
 | Where every marketing "Book now" / "Book Appointment" / "Book with Ginny" / "Book with Yuni" button points | [lib/site.ts](lib/site.ts) → `externalBookingUrl` — booking.flexandflow.fit, a WordPress booking plugin, opened in a new tab. It reads no query string, so there is no per-therapist link. |
-| The wizard's own internal links (reschedule) | [lib/site.ts](lib/site.ts) → `bookingUrl` — unchanged, still `/booking/` inside this app |
+| The wizard's own internal links (reschedule) | [lib/site.ts](lib/site.ts) → `bookingUrl` — `/appointment/` inside this app |
 | The booking wizard itself (staff → service → date → details → summary) | [components/booking/](components/booking) |
 | Prices and durations customers can actually book | the database, edited at `/admin/services` — **not** `lib/data/services.ts` |
 | The price list page, and Ginny/Yuni's per-therapist rates | [app/(main)/price-list/page.tsx](app/(main)/price-list/page.tsx), [lib/data/priceList.ts](lib/data/priceList.ts) — separate from `lib/data/services.ts`, on purpose; see the note at the top of that file |
@@ -218,13 +218,14 @@ The four `/preview/…` routes are noindex for the same reason.
 ## Booking
 
 Booking used to be a WordPress page at `flexandflow.fit/appointment/`. It now
-runs inside this app.
+runs inside this app, at the same `/appointment/` slug — the one Google has
+indexed, so it keeps working for anyone who already has that link.
 
 | | |
 |---|---|
-| Customer flow | `/booking/` — five steps: staff, service, date & time, details, summary |
-| After booking | `/booking/confirmation/<reference>/` — the "add to calendar" page |
-| Customer self-service | `/booking/manage/<token>/` — view or cancel |
+| Customer flow | `/appointment/` — five steps: staff, service, date & time, details, summary |
+| After booking | `/appointment/confirmation/<reference>/` — the "add to calendar" page |
+| Customer self-service | `/appointment/manage/<token>/` — view or cancel |
 | Studio | `/admin/` — today's agenda, bookings, schedule, prices, payments, notification health |
 
 Everything about how it works is in [BOOKING-PLAN.md](BOOKING-PLAN.md);
@@ -241,8 +242,7 @@ is in the `ServiceVariant` table. Changing one does not change the other. Run
 repo has published a wrong price three times; that script exists so the fourth
 time is caught before a customer sees it.
 
-**`/appointment/` is a permanent redirect, not a dead URL.** It is what Google
-has indexed and what old links point at, so `next.config.ts` sends it to
-`/booking/` with a 301. Do not remove that redirect, and do not turn off the
-WordPress page until the redirect is live and verified.
+**The wizard lives at `/appointment/`, not `/booking/`.** That is a deliberate
+match to the slug WordPress published and Google indexed — a visitor with an
+old link or a bookmark lands on the wizard directly, with nothing to redirect.
 

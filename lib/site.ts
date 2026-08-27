@@ -30,28 +30,19 @@ export const siteConfig = {
 /**
  * The booking flow — staff, service, date and time, details, summary.
  *
- * Internal, and every CTA on the site points here. The trailing slash is not
- * decoration: `trailingSlash: true` in `next.config.ts` matches the shape
- * WordPress published and Google indexed, and a link without one answers a 308
- * before it resolves.
+ * Internal. Reschedule links and anything already mid-flow use this directly;
+ * the site's marketing CTAs currently point at `externalBookingUrl` instead
+ * (see below) rather than here. The trailing slash is not decoration:
+ * `trailingSlash: true` in `next.config.ts` matches the shape WordPress
+ * published and Google indexed, and a link without one answers a 308 before
+ * it resolves.
  *
- * `/appointment/` — the WordPress URL this replaced, and the one that is in
- * Google's index — is redirected here permanently by `next.config.ts`.
+ * `/appointment/` on purpose, not `/booking/`: it's the exact slug WordPress
+ * published and the one Google has indexed, so the wizard uses it directly
+ * instead of making a visitor land somewhere else first.
  */
-export const bookingUrl = "/booking/";
+export const bookingUrl = "/appointment/";
 
-/**
- * The booking flow with a therapist already chosen.
- *
- * Sessions are priced by who performs them, so "Book with Ginny" is a decision
- * the visitor has already made by the time they click it. Asking it again as
- * step one is a step that can only be got wrong. The wizard reads `staff`,
- * selects that therapist and opens on the treatment.
- *
- * The slug, not the database id: this link is rendered from
- * `lib/data/therapists.ts`, which has never heard of the booking tables, and a
- * URL somebody might read aloud should say `ginny` rather than a cuid.
- */
 /**
  * Where every marketing "Book now" / "Book Appointment" / "Book with
  * <therapist>" CTA points — a separate booking.flexandflow.fit deployment,
@@ -92,7 +83,7 @@ export const contact = {
 } as const;
 
 export const workingHours = [
-  { days: "Monday to Friday", hours: "08:00 - 17:00 hrs" },
+  { days: "Monday to Saturday", hours: "09:00 - 17:00 hrs" },
 ] as const;
 
 export type NavItem = {
@@ -136,7 +127,7 @@ const allNavItems: NavItem[] = [
     children: [
       { label: "Assisted Stretching", href: "/uluwatu-bali/assisted-stretching" },
       { label: "Cupping Therapy", href: "/uluwatu-bali/cupping-therapy" },
-      { label: "Sports Massage", href: "/uluwatu-bali/sport-massage" },
+      { label: "Sport Massage", href: "/uluwatu-bali/sport-massage" },
       {
         label: "Home Massage",
         href: "/uluwatu-bali/outcall-home-service-massage",
@@ -242,11 +233,6 @@ export const slideMenuServices = [
     label: "Sport Massage",
     href: "/uluwatu-bali/sport-massage",
     image: "/images/2026/08/sport-massage.jpg",
-  },
-  {
-    label: "Facial Massage",
-    href: "/uluwatu-bali/facial-massage",
-    image: "/images/2025/03/Facial-Massage.jpg",
   },
   {
     label: "Cupping Service",

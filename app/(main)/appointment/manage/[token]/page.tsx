@@ -28,7 +28,7 @@ export const metadata: Metadata = {
  * what is being checked, and that guessing ids is worth their time.
  */
 export default async function ManageBookingPage(
-  props: PageProps<"/booking/manage/[token]">,
+  props: PageProps<"/appointment/manage/[token]">,
 ) {
   const { token } = await props.params;
 

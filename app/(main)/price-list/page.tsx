@@ -125,10 +125,9 @@ export default function PriceListPage() {
         </div>
 
         <p className="mt-6 max-w-[62ch] font-body text-[13px] leading-[1.7] text-body-text/60">
-          Home service is available exclusively in the Uluwatu area. Two
-          treatments above — Combo Stretching and Massage, and Traditional
-          Javanese Massage — are priced by therapist only; every other
-          treatment is broken down below.
+          Home service is available exclusively in the Uluwatu area. One
+          treatment above — Combo Stretching and Massage — is priced by
+          therapist only; every other treatment is broken down below.
         </p>
 
         {/* One `page-band` covers the whole page below the hero; a second one

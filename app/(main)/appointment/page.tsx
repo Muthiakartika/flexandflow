@@ -24,11 +24,11 @@ function first(value: string | string[] | undefined): string | null {
 export const metadata: Metadata = {
   title: "Book Appointment - Flex and Flow",
   description,
-  alternates: { canonical: "/booking/" },
+  alternates: { canonical: "/appointment/" },
   openGraph: {
     title: "Book Appointment - Flex and Flow",
     description,
-    url: "/booking/",
+    url: "/appointment/",
     type: "website",
   },
 };
@@ -48,12 +48,11 @@ const cancelCutoffHours = Number(
 );
 
 /**
- * The booking page.
- *
- * Booking used to live on WordPress and `/booking` redirected out to it. It
- * runs here now, inside `(main)`, so it keeps the site's header, footer and
- * measure instead of dropping a visitor onto a differently-styled island
- * halfway through deciding to spend money.
+ * The booking page, at `/appointment/` — the slug WordPress published and the
+ * one Google has indexed, so the internal wizard uses it directly rather than
+ * making visitors land somewhere else first. It runs inside `(main)`, so it
+ * keeps the site's header, footer and measure instead of dropping a visitor
+ * onto a differently-styled island halfway through deciding to spend money.
  *
  * The wizard reads its step from the query string, so it sits behind a
  * `Suspense` boundary — `useSearchParams` in a client component needs one, or
@@ -75,7 +74,7 @@ const cancelCutoffHours = Number(
  * the visitor had already earned. It is resolved here instead, before anything
  * is sent, and handed to the wizard as its opening state.
  */
-export default async function BookingPage(props: PageProps<"/booking">) {
+export default async function AppointmentPage(props: PageProps<"/appointment">) {
   const params = await props.searchParams;
   const slug = first(params.staff);
 

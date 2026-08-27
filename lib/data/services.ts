@@ -114,7 +114,7 @@ export const services: Service[] = [
   },
   {
     slug: "sport-massage",
-    title: "Sport Massage Bali",
+    title: "Sport Massage",
     excerpt: "Boost your strength and ease muscle fatigue with our sport massage designed for active lifestyles",
     image: "/images/2026/08/sport-massage.jpg",
     tiers: [
@@ -132,7 +132,7 @@ export const services: Service[] = [
       },
     ],
     seo: {
-      title: "Sport Massage Bali",
+      title: "Sport Massage",
       description: "Recover faster with our sport massage in Bali. Relieve muscle tension, improve mobility, reduce soreness, and boost performance with expert therapists.",
       canonicalPath: "/uluwatu-bali/sport-massage/",
       ogImage: "/images/2026/08/sport-massage.jpg",

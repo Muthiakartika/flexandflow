@@ -11,11 +11,9 @@ import type { Therapist } from "@/lib/data/therapists";
  *
  * Sessions are priced by who performs them, so the practitioner is a real
  * decision and not a footnote: the card carries the portrait, the specialisms
- * verbatim from the profile data, and a booking link that has already made the
- * choice. That link used to open WhatsApp, because there was nowhere on this
- * site to send anyone; it now goes into the wizard with this therapist
- * selected, so the visitor lands on the treatment rather than on a question
- * they answered by clicking.
+ * verbatim from the profile data, and a booking button. That link goes to
+ * booking.flexandflow.fit, same as every other "Book" CTA on the site — see
+ * `externalBookingUrl` in `lib/site.ts`.
  */
 export default function TherapistCard({ therapist }: { therapist: Therapist }) {
   return (

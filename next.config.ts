@@ -39,12 +39,20 @@ const academyRedirects = ACADEMY_ENABLED
       },
     ]
   : [
-      /* Academy held back — see `ACADEMY_ENABLED` in `lib/flags.ts`. Both rules
-         are deliberately temporary (307): a permanent redirect would be cached
-         by browsers and search engines and would still be sending people to the
-         home page long after the academy is published. */
-      { source: "/academy", destination: "/", permanent: false },
-      { source: "/academy/:path*", destination: "/", permanent: false },
+      /* Academy held back — see `ACADEMY_ENABLED` in `lib/flags.ts`. Sent to
+         the studio's booking link rather than the home page, same destination
+         as every other "Book Now" CTA on the site right now, so a visitor who
+         reaches a dead academy link still lands somewhere they can act on
+         instead of just bouncing to the home page. Both rules are deliberately
+         temporary (307): a permanent redirect would be cached by browsers and
+         search engines and would still be firing long after the academy is
+         published. */
+      { source: "/academy", destination: externalBookingUrl, permanent: false },
+      {
+        source: "/academy/:path*",
+        destination: externalBookingUrl,
+        permanent: false,
+      },
     ];
 
 const nextConfig: NextConfig = {
@@ -82,27 +90,6 @@ const nextConfig: NextConfig = {
       {
         source: "/pricelist",
         destination: "/price-list/",
-        permanent: true,
-      },
-      /**
-       * `/appointment/` is the URL WordPress published and the one Google has
-       * indexed, so it cannot simply stop resolving. Booking itself stays on
-       * WordPress's own plugin at booking.flexandflow.fit for now — this app's
-       * internal wizard (`/booking/`) is built but not live, the same reason
-       * every marketing "Book Now" CTA already points at `externalBookingUrl`
-       * instead of `/booking/`. Sending this redirect anywhere internal would
-       * be the one path still landing real visitors on a wizard backed by
-       * unconfigured infrastructure. Revisit this once the Phase 3 stack in
-       * BOOKING-PLAN.md actually goes live and `/booking/` is meant to be used.
-       */
-      {
-        source: "/appointment",
-        destination: externalBookingUrl,
-        permanent: true,
-      },
-      {
-        source: "/appointment/:path*",
-        destination: externalBookingUrl,
         permanent: true,
       },
       /**

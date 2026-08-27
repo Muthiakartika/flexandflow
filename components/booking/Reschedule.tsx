@@ -43,7 +43,7 @@ export function managePath(booking: BookingDetail): string {
   try {
     return new URL(booking.manageUrl).pathname;
   } catch {
-    return "/booking/";
+    return "/appointment/";
   }
 }
 

@@ -94,7 +94,7 @@ const PAYMENT_DISMISSED_NOTICE =
  * modal takes over, and what it is waiting for is the server's word that the
  * money arrived — not the browser's. See `PaymentModal`.
  *
- * **Reschedule mode.** `/booking/?reschedule=<manageToken>` is where the manage
+ * **Reschedule mode.** `/appointment/?reschedule=<manageToken>` is where the manage
  * page's "Choose a new time" leads. The booking behind that token is fetched
  * once on arrival and the flow shrinks to the two steps that are still open
  * questions: a new time, and confirming the move. The therapist and the
@@ -205,8 +205,8 @@ export default function BookingWizard({
   const hrefFor = useCallback(
     (step: StepId) =>
       token
-        ? `/booking/?reschedule=${encodeURIComponent(token)}&step=${step}`
-        : `/booking/?step=${step}`,
+        ? `/appointment/?reschedule=${encodeURIComponent(token)}&step=${step}`
+        : `/appointment/?step=${step}`,
     [token],
   );
 
@@ -282,7 +282,7 @@ export default function BookingWizard({
           "booking here, or message us on WhatsApp to move the existing one.",
         draft: loadDraft(),
       });
-      router.replace("/booking/?step=staff", { scroll: false });
+      router.replace("/appointment/?step=staff", { scroll: false });
     }
   }, [token, existing.data, existing.error, cancelCutoffHours, router]);
 
@@ -372,7 +372,7 @@ export default function BookingWizard({
     try {
       const booking = await rescheduleBooking(moving.token, state.slot.startAt);
       clearDraft(moving.token);
-      router.push(`/booking/confirmation/${booking.reference}/`);
+      router.push(`/appointment/confirmation/${booking.reference}/`);
     } catch (cause) {
       if (!(cause instanceof BookingApiError)) {
         dispatch({
@@ -455,7 +455,7 @@ export default function BookingWizard({
         return;
       }
 
-      router.push(`/booking/confirmation/${created.reference}/`);
+      router.push(`/appointment/confirmation/${created.reference}/`);
     } catch (cause) {
       if (cause instanceof BookingApiError && cause.code === "SLOT_TAKEN") {
         /* Usually a stranger got there first. Sometimes the clash is the
@@ -782,7 +782,7 @@ export default function BookingWizard({
             phoneE164: state.details.phoneE164,
           }}
           onPaid={(reference) =>
-            router.push(`/booking/confirmation/${reference}/`)
+            router.push(`/appointment/confirmation/${reference}/`)
           }
           onClose={() =>
             dispatch({

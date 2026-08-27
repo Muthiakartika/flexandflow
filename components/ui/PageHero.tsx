@@ -77,7 +77,7 @@ export default function PageHero({
         <div className="mt-4 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
           <div>
             {eyebrow ? <p className="page-label mb-2">{eyebrow}</p> : null}
-            <h1 className={`max-w-[22ch] ${H1}`}>{title}</h1>
+            <h1 className={`max-w-[60ch] ${H1}`}>{title}</h1>
             {lead ? (
               <p className="mt-3 max-w-[62ch] font-body text-[15px] leading-[1.7] text-body-text/75">
                 {lead}

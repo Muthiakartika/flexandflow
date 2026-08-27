@@ -23,7 +23,7 @@ import { env } from "@/lib/env";
  * `trailingSlash: true` exempts "URLs with a file extension" from the slash it
  * otherwise appends, and Next decides that by looking for a dot in the last
  * path segment. A token shaped `<id>.<signature>` is the last segment of
- * `/booking/manage/<token>/`, so every link in every confirmation email spent a
+ * `/appointment/manage/<token>/`, so every link in every confirmation email spent a
  * 308 before it reached the page. `~` is unreserved in RFC 3986, so it survives
  * a URL untouched, and it appears in neither a cuid nor base64url — which is
  * what makes `lastIndexOf` below unambiguous.

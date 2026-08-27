@@ -20,7 +20,8 @@
  * its own client instead of importing `lib/db.ts` — that module pulls in
  * `server-only`, which throws anywhere but a Next server build.
  */
-import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local" });
 
 import { neonConfig } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";

@@ -34,7 +34,7 @@ import { fetchPaymentStatus, startPayment, useEvent } from "./useBookingApi";
  *
  * The same fact is what makes closing this modal survivable. If the customer
  * pays and then shuts the tab, the callback still lands, the confirmation is
- * still sent, and `/booking/confirmation/<reference>/` is still correct when
+ * still sent, and `/appointment/confirmation/<reference>/` is still correct when
  * they open it from their email. The modal is a convenience, not the record.
  *
  * Two smaller decisions worth keeping:
