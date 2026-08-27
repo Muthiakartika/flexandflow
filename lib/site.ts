@@ -252,7 +252,7 @@ export const slideMenuServices = [
   {
     label: "Trauma Healing",
     href: "/uluwatu-bali/trauma-healing",
-    image: "/images/2026/08/trauma-healing.jpg",
+    image: "/images/2026/08/trauma-healing-new.jpg",
   },
 ] as const;
 

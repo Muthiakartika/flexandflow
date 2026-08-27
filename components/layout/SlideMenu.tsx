@@ -103,7 +103,15 @@ export default function SlideMenu() {
                     width={200}
                     height={125}
                     sizes="80px"
-                    className="h-[50px] w-[80px] shrink-0 rounded-[var(--radius-1x)] object-cover"
+                    className={`h-[50px] w-[80px] shrink-0 rounded-[var(--radius-1x)] object-cover ${
+                      /* trauma-healing-new.jpg is a tall portrait; object-cover's
+                         default centering crops straight into the client's torso.
+                         The therapist's hands and face sit in the top third, so
+                         anchoring there instead keeps the actual treatment in frame. */
+                      service.href === "/uluwatu-bali/trauma-healing"
+                        ? "object-top"
+                        : ""
+                    }`}
                   />
                   <h5 className="text-[22px] leading-tight transition-colors duration-300 group-hover:text-primary">
                     {service.label}

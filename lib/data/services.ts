@@ -547,7 +547,7 @@ export const services: Service[] = [
     slug: "trauma-healing",
     title: "Trauma Healing Bali",
     excerpt: "Trauma Healing Bali helps release emotional blocks, reduce stress, and restore inner balance and peace",
-    image: "/images/2026/08/trauma-healing.jpg",
+    image: "/images/2026/08/trauma-healing-new.jpg",
     tiers: [
       {
         label: "Master Therapist",
@@ -560,7 +560,7 @@ export const services: Service[] = [
       title: "Trauma Healing Bali",
       description: "Trauma Healing Bali helps release emotional blocks, reduce stress, and restore inner balance and peace.",
       canonicalPath: "/uluwatu-bali/trauma-healing/",
-      ogImage: "/images/2026/08/trauma-healing.jpg",
+      ogImage: "/images/2026/08/trauma-healing-new.jpg",
     },
     body: [
       {
