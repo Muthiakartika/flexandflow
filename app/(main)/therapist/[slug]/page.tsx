@@ -158,7 +158,9 @@ export default async function TherapistPage(
 
               <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
                 <a
-                  href={contact.phoneHref}
+                  href={contact.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={`font-body text-[14px] tabular-nums transition-colors duration-300 hover:text-primary ${FOCUS}`}
                 >
                   {contact.phone}

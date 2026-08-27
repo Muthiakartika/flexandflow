@@ -139,7 +139,9 @@ export default function ServiceArticle({ service }: { service: Service }) {
 
               <p className="mt-3 text-center">
                 <a
-                  href={contact.phoneHref}
+                  href={contact.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={`font-body text-[14px] tabular-nums transition-colors duration-300 hover:text-primary ${FOCUS}`}
                 >
                   {contact.phone}

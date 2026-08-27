@@ -134,7 +134,9 @@ export default function Hero() {
           </span>
         ))}
         <a
-          href={contact.phoneHref}
+          href={contact.whatsapp}
+          target="_blank"
+          rel="noopener noreferrer"
           className={`page-label transition-colors duration-300 hover:text-primary ${FOCUS}`}
         >
           {contact.phone}

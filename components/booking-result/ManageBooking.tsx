@@ -110,7 +110,9 @@ export default function ManageBooking({
           <p className="mt-4">{whatsappLink}</p>
           <p className="mt-2 font-body text-[15px] leading-[1.6]">
             <a
-              href={contact.phoneHref}
+              href={contact.whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
               className={`tabular-nums transition-colors duration-300 hover:text-primary ${FOCUS}`}
             >
               {contact.phone}

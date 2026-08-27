@@ -104,7 +104,9 @@ export default function ContactPage() {
                 <dt className="page-label">Phone</dt>
                 <dd className="mt-1.5">
                   <a
-                    href={contact.phoneHref}
+                    href={contact.whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className={`font-body text-[15px] font-bold tabular-nums transition-colors duration-300 hover:text-primary ${FOCUS}`}
                   >
                     {contact.phone}

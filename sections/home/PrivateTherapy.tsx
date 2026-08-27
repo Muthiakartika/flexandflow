@@ -83,7 +83,9 @@ export default function PrivateTherapy({
               <span>
                 <span className="page-label">Chat Us Anytime</span>
                 <a
-                  href={contact.phoneHref}
+                  href={contact.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={`mt-1.5 block font-body text-[16px] leading-none font-bold tabular-nums transition-colors duration-300 hover:text-primary ${FOCUS}`}
                 >
                   {contact.phone}

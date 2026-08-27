@@ -242,7 +242,9 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
         </ButtonLink>
 
         <div className="mt-8 flex flex-col gap-2 font-body text-[15px]">
-          <a href={contact.phoneHref}>{contact.phone}</a>
+          <a href={contact.whatsapp} target="_blank" rel="noopener noreferrer">
+            {contact.phone}
+          </a>
           <a href={`mailto:${contact.email}`}>{contact.email}</a>
           <p className="text-body-text">{contact.address}</p>
         </div>

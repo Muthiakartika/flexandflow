@@ -143,7 +143,9 @@ export default async function BookingConfirmationPage(
               </a>
               <p className="mt-2">
                 <a
-                  href={contact.phoneHref}
+                  href={contact.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={`font-body text-[14px] tabular-nums transition-colors duration-300 hover:text-primary ${FOCUS}`}
                 >
                   {contact.phone}
