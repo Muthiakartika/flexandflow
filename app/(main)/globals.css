@@ -332,8 +332,7 @@
 
   /* Elementor gave every widget a flat 20px bottom margin, so an article had no
      typographic rhythm: a heading sat as far from the paragraph it introduced as
-     from the one it followed. Headings now bind to the text underneath them, and
-     the body measure is capped so long articles stay readable. */
+     from the one it followed. Headings now bind to the text underneath them. */
   .prose-flex > * {
     margin-block: 0 1.15em;
   }
@@ -349,8 +348,13 @@
     color: color-mix(in oklab, var(--color-body-text) 82%, transparent);
   }
 
+  /* Paragraphs run the full article column, like the featured image, the
+     headings and the lists above and below them. A 68ch cap here stopped the
+     paragraphs ~300px short of everything else in the same column, which read
+     as a broken layout rather than as a measure. The column itself is what
+     bounds the line: the grid holds it to ~900px beside the sidebar. */
   .prose-flex :where(p) {
-    max-width: 68ch;
+    max-width: none;
   }
 
   .prose-flex :where(h2, h3, h4) {

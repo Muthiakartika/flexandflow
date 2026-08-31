@@ -29,7 +29,7 @@ assisted stretching."* Calibrate to Stretchr.
 | Inner-page h1 | 32px → 48px | `H1` |
 | h2 | 28px → 44px | `H2` |
 | Body | 15–17px, 1.7 leading | |
-| Article body | 15px, 1.75 leading, 68ch measure | `.prose-flex` |
+| Article body | 15px, 1.75 leading, full column width | `.prose-flex` |
 | Label | 11px, 0.18em tracking, uppercase, 58% black | `.page-label` |
 
 Header, every page body and the footer all use `.page-wrap`, so nothing sits off the
@@ -55,8 +55,8 @@ the same photo on every page — is gone.
 `--color-primary` stays `#7f8c3a`. White text on it is **3.67:1** and fails AA, so
 filled surfaces use `--color-primary-strong: #6d7932` — the same olive one step down,
 **4.76:1**. It is used for solid buttons, the header CTA, the closing band and the
-article callout. Reverting is a one-line change in `app/globals.css`; the brand colour
-itself was never touched.
+article callout. Reverting is a one-line change in `app/(main)/globals.css`; the brand
+colour itself was never touched.
 
 The focus ring is 2px olive at 2px offset (`FOCUS` in `components/ui/tokens.ts`),
 3.20:1 against cream — above the 3:1 UI-component floor. On the olive band it flips to
@@ -135,7 +135,7 @@ Tailwind **arbitrary** breakpoint variants (`max-[1280px]:hidden`,
 `matchMedia` reports a match, and competing `max-[...]` rules lose to each other by
 emit order. Standard `sm:` / `lg:` variants are fine. Anything responsive that matters
 — `.page-wrap`, `.page-band`, `.mosaic`, `.icon-list` — is written as an explicit
-`@media` block in `app/globals.css`.
+`@media` block in `app/(main)/globals.css`.
 
 Verified at 390 / 768 / 1280px across every route: no horizontal overflow, no element
 shipping at `opacity: 0`, header/body/footer gutters aligned, and the production build

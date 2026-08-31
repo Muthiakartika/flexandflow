@@ -1073,7 +1073,7 @@ export const posts: Post[] = [
     body: [
       {
         type: "paragraph",
-        text: "We know how important peace is, especially in Bali. It’s not just the beaches and views that matter. It’s the calm vibes that make this place special. Our home service massage is a journey to wellness, right at your hotel, villa, or home.",
+        text: "We know how important peace is, especially in Bali. It’s not just the beaches and views that matter, it’s the calm vibes that make this place special, and plenty of travelers find that feeling simply by [trying a home massage from the comfort of their own hotel room or villa](https://flexandflow.fit/uluwatu-bali/outcall-home-service-massage/), no travel required.",
       },
       {
         type: "heading",
@@ -1132,7 +1132,7 @@ export const posts: Post[] = [
       },
       {
         type: "paragraph",
-        text: "We know how key flexibility and support recovery are. Our massages are tailored to help you stay healthy and active. They offer therapeutic benefits that are great for post-workout relaxation and keeping your muscles feeling good.",
+        text: "We know how key flexibility and support recovery are. Our massages are tailored to help you stay healthy and active. They offer therapeutic benefits that are great for post-workout relaxation and keeping your muscles feeling good. Some guests also like to [try a stretching massage for back pain or trouble moving around](https://flexandflow.fit/uluwatu-bali/assisted-stretching/), especially after a long day on your feet.",
       },
       {
         type: "paragraph",
@@ -1296,7 +1296,7 @@ export const posts: Post[] = [
       },
       {
         type: "paragraph",
-        text: "We focus on managing chronic conditions. Dealing with long-term ailments like arthritis and chronic pain can be tough. Our physiotherapists provide personalized care to help you feel better and live better.",
+        text: "We focus on managing chronic conditions. Dealing with long-term ailments like arthritis and chronic pain can be tough. Seeing [a physiotherapist Uluwatu residents already trust](https://flexandflow.fit/uluwatu-bali/physiotherapy/) can make that pain far more manageable over time.",
       },
       {
         type: "paragraph",
@@ -1313,7 +1313,7 @@ export const posts: Post[] = [
       },
       {
         type: "paragraph",
-        text: "Our skilled physiotherapists treat a variety of conditions, from musculoskeletal issues to nerve-related concerns, helping you regain strength and mobility without the need for travel. Enjoy professional care in the comfort of your home, tailored to your schedule.",
+        text: "Our skilled physiotherapists treat a variety of conditions, from musculoskeletal issues to nerve-related concerns, helping you regain strength and mobility without the need for travel. If it’s lighter muscle relief you’re after rather than clinical treatment, [booking an outcall massage](https://flexandflow.fit/uluwatu-bali/outcall-home-service-massage/) brings that same at-home convenience.",
       },
       {
         type: "heading",
@@ -1499,7 +1499,7 @@ export const posts: Post[] = [
       },
       {
         type: "paragraph",
-        text: "Our treatments might include manual therapies, dry needling, or other advanced methods. These are chosen to fit your unique recovery goals. We help with a variety of issues, from sports injuries and post-surgery to chronic pain and care for the elderly.",
+        text: "Our treatments might include manual therapies, dry needling, or other advanced methods. These are chosen to fit your unique recovery goals. We help with a variety of issues, from sports injuries and post-surgery to chronic pain and care for the elderly. For athletes working through a sports injury, [adding a sports massage between sessions](https://flexandflow.fit/uluwatu-bali/sport-massage/) can speed up recovery.",
       },
       {
         type: "heading",
@@ -1527,7 +1527,7 @@ export const posts: Post[] = [
       },
       {
         type: "paragraph",
-        text: "Our posture correction sessions help align your body. This prevents injuries and boosts comfort. Our physical therapists also check your workspace to make sure it supports your health. We create exercise plans just for you. Our routines improve strength and flexibility. They’re tailored to meet your unique needs.",
+        text: "Our posture correction sessions help align your body. This prevents injuries and boosts comfort. Our physical therapists also check your workspace to make sure it supports your health. We create exercise plans just for you. Our routines improve strength and flexibility. They’re tailored to meet your unique needs. Some clients also try [assisted stretching for those tight spots exercise alone doesn’t quite reach](https://flexandflow.fit/uluwatu-bali/assisted-stretching/).",
       },
       {
         type: "paragraph",
@@ -1680,7 +1680,7 @@ export const posts: Post[] = [
       },
       {
         type: "paragraph",
-        text: "Stretching after exercise may help reduce muscle tightness and soreness, allowing your body to recover more comfortably between workouts.",
+        text: "Stretching after exercise may help reduce muscle tightness and soreness, allowing your body to recover more comfortably between workouts. Many people combine this with [a sports massage to ease sore muscles even faster](https://flexandflow.fit/uluwatu-bali/sport-massage/) after a tough training session.",
       },
       {
         type: "heading",
@@ -1723,6 +1723,11 @@ export const posts: Post[] = [
         text: "This is one of the most common forms of flexibility training and is best performed after exercise or during dedicated stretching sessions.",
       },
       {
+        type: "heading",
+        level: 4,
+        text: "Benefits",
+      },
+      {
         type: "columns",
         items: [
           "Improves overall flexibility",
@@ -1743,6 +1748,11 @@ export const posts: Post[] = [
       {
         type: "paragraph",
         text: "Unlike static stretching, these exercises keep your body moving and gently warm up your muscles.",
+      },
+      {
+        type: "heading",
+        level: 4,
+        text: "Benefits",
       },
       {
         type: "columns",
@@ -1767,6 +1777,11 @@ export const posts: Post[] = [
         text: "For example, lifting one leg and holding it in place using your hip muscles is considered an active stretch.",
       },
       {
+        type: "heading",
+        level: 4,
+        text: "Benefits",
+      },
+      {
         type: "columns",
         items: [
           "Builds flexibility and strength simultaneously",
@@ -1788,6 +1803,11 @@ export const posts: Post[] = [
         text: "This method allows muscles to relax while gradually increasing flexibility.",
       },
       {
+        type: "heading",
+        level: 4,
+        text: "Benefits",
+      },
+      {
         type: "columns",
         items: [
           "Achieves deeper stretches",
@@ -1807,6 +1827,11 @@ export const posts: Post[] = [
       {
         type: "paragraph",
         text: "This advanced technique is often used by athletes and physical therapists because it can produce significant improvements in range of motion.",
+      },
+      {
+        type: "heading",
+        level: 4,
+        text: "Benefits",
       },
       {
         type: "columns",
@@ -1839,6 +1864,11 @@ export const posts: Post[] = [
         text: "Hold for **30 to 60 seconds** before switching sides.",
       },
       {
+        type: "heading",
+        level: 4,
+        text: "Benefits",
+      },
+      {
         type: "columns",
         items: [
           "Improves hamstring flexibility",
@@ -1858,6 +1888,11 @@ export const posts: Post[] = [
       {
         type: "paragraph",
         text: "Hold for 30 to 60 seconds on each side.",
+      },
+      {
+        type: "heading",
+        level: 4,
+        text: "Benefits",
       },
       {
         type: "columns",
@@ -1881,6 +1916,11 @@ export const posts: Post[] = [
         text: "Hold for 30 to 60 seconds before changing legs.",
       },
       {
+        type: "heading",
+        level: 4,
+        text: "Benefits",
+      },
+      {
         type: "columns",
         items: [
           "Stretches the front of the thigh",
@@ -1902,6 +1942,11 @@ export const posts: Post[] = [
         text: "Hold for 30 to 60 seconds before switching arms.",
       },
       {
+        type: "heading",
+        level: 4,
+        text: "Benefits",
+      },
+      {
         type: "columns",
         items: [
           "Improves shoulder mobility",
@@ -1917,6 +1962,11 @@ export const posts: Post[] = [
       {
         type: "paragraph",
         text: "Start on your hands and knees. Slowly arch your back while lifting your head (Cow Pose), then round your spine while tucking your chin (Cat Pose). Repeat slowly with controlled breathing.",
+      },
+      {
+        type: "heading",
+        level: 4,
+        text: "Benefits",
       },
       {
         type: "columns",
@@ -2017,7 +2067,7 @@ export const posts: Post[] = [
       },
       {
         type: "paragraph",
-        text: "Whether your goal is reducing muscle tension after work, preparing for sports, preventing injuries, or simply moving with greater ease, our flexibility training provides a welcoming environment where you can improve at your own pace.",
+        text: "Whether your goal is reducing muscle tension after work, preparing for sports, preventing injuries, or simply moving with greater ease, our flexibility training provides a welcoming environment where you can improve at your own pace. For those who prefer to unwind at home, [a home service massage brings that same relief right to your door](https://flexandflow.fit/uluwatu-bali/outcall-home-service-massage/) without any extra travel.",
       },
       {
         type: "heading",

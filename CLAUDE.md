@@ -2,9 +2,18 @@
 
 # Project state — handoff
 
-Next.js 16 + Tailwind v4 rebuild of **flexandflow.fit** (a WordPress site the owner
-controls), a small wellness & recovery studio in Uluwatu, Bali. Product truth lives in
-`PRODUCT.md` at the repo root.
+Next.js 16 + Tailwind v4 rebuild of **flexandflow.fit**, a small wellness & recovery
+studio in Uluwatu, Bali. Product truth lives in `PRODUCT.md` at the repo root.
+
+**This app now serves the domain.** Checked 2026-08-31: `/`, `/services/`,
+`/price-list/`, `/about-us/`, `/blog/` and a service page all return Next markup with
+no `elementor` or `wp-content` in it. The WordPress original survives in git history
+and in the old Hostinger staging host, not at `flexandflow.fit`.
+
+**So "re-sync against the live site" is now circular.** Fetching a page from the domain
+returns this repo's own output, not a source to check it against. Two notes below were
+written while that comparison still meant something and say so by date; treat them as
+history, not as a method to repeat.
 
 Work has run in four phases. Phase 1 (pixel-cloning the WordPress site) is **done**.
 Phase 2 (a full UI redesign) is **in progress and unresolved** — read that section before
@@ -150,8 +159,8 @@ rejected. Both now sit on `.page-wrap`, so they share the page body's 1440px mea
 2. **Tailwind arbitrary breakpoint variants are unreliable here.** `max-[1280px]:hidden`,
    `min-[1281px]:order-none` etc. have silently failed even when `matchMedia` reports the
    query matches, and competing `max-[...]` rules lose to each other by emit order. Put
-   anything responsive that matters into `app/globals.css` as explicit `@media` blocks —
-   that is why `.hero-gap-top`, `.service-container`, `.service-copy`,
+   anything responsive that matters into `app/(main)/globals.css` as explicit `@media`
+   blocks — that is why `.hero-gap-top`, `.service-container`, `.service-copy`,
    `.site-header-inner`, `.header-wide-only` exist. Put show/hide classes on bare wrapper
    elements so no Tailwind `display` utility competes (utilities outrank components).
 
@@ -188,15 +197,15 @@ and can invert the tier hierarchy (Master appearing cheaper than Therapist). Fil
 duration and/or to services offering both tiers. Also **some `price` strings already
 carry an `Rp` prefix and some do not** — normalise to digits before formatting.
 
-**Re-synced against the live site on 2026-08-04.** Seven of the eight service pages
-matched. Two did not: **sport massage** and **lymphatic drainage** carried long-form
-bodies (deep-tissue comparison, aftercare sections, ten-item FAQs) that
-flexandflow.fit no longer serves — the live pages are the older, shorter versions.
-Both bodies were replaced with what the live site actually publishes, so **the removed
-copy is in git history, not a bug**; do not restore it without asking the owner. The
-same pass fixed three body links still pointing at the `green-hare-976010.hostingersite.com`
-staging host, and reordered the home grid to the live sequence (men's detox, trauma,
-stretching, sport, cupping, drainage).
+**Re-synced against the live WordPress site on 2026-08-04**, while the domain still
+served it. Seven of the eight service pages matched. Two did not: **sport massage**
+and **lymphatic drainage** carried long-form bodies (deep-tissue comparison, aftercare
+sections, ten-item FAQs) that flexandflow.fit no longer served — the live pages were
+the older, shorter versions. Both bodies were replaced with what the site published
+then, so **the removed copy is in git history, not a bug**; do not restore it without
+asking the owner. The same pass fixed three body links still pointing at the
+`green-hare-976010.hostingersite.com` staging host, and reordered the home grid to the
+live sequence (men's detox, trauma, stretching, sport, cupping, drainage).
 
 **There are nine services, and two of them are not on any menu.** `full-body-massage`
 was ported on 2026-08-18 — it is a live, indexable page listed in
@@ -215,22 +224,67 @@ pregnancy massage's cheaper tier has no `duration` of its own), `serviceMinutes`
 
 ---
 
+## Editing body copy
+
+Page bodies are `ContentBlock[]` in `lib/data/posts.ts` (blog) and
+`lib/data/services.ts` (treatments) — not HTML. `components/content/RichText.tsx`
+renders them, and `renderInline` understands exactly three inline markers:
+`[text](url)`, `**bold**`, `*italic*`.
+
+- **Raw `<a href="…">` does not work.** Nothing parses it, so it would print as literal
+  text — and inside a double-quoted TS string its own quotes close the string, so the
+  file stops compiling before it ever renders. This has already cost a debugging round.
+- **A link is internal only if it starts exactly `https://flexandflow.fit`.** That
+  prefix is stripped and the link becomes a `next/link`. Anything else renders as
+  `<a target="_blank" rel="noopener noreferrer">`. `flexandflow.id` 301s to `.fit`, so
+  copy written with it looks correct in a browser but ships as an external new-tab link
+  through a redirect — normalise the domain when copy arrives that way. `/appointment/`
+  is a deliberate exception and stays external.
+- **Inline markers only run on `paragraph`, `list`, `columns` and `faq` text.**
+  `heading` and `callout` render their text raw, so a link in either is dead markup.
+- **Blog post URLs come from the `category` field, not from a folder**: `"uluwatu-bali"`
+  → `/uluwatu-bali/<slug>/`, `"injury-guide"` → `/injury-guide/<slug>/`. Service pages
+  share the `/uluwatu-bali/` prefix; `lib/content.ts` resolves which collection a slug
+  belongs to.
+- **`seo` is a separate object from `title`.** Changing a heading without changing
+  `seo.title` leaves the old title in search results.
+- The copy uses typographic apostrophes (`’`) throughout. Google Docs exports straight
+  ones, so converting them back is part of pasting copy in.
+
+When copy arrives as a Google Doc, `export?format=txt` gives the prose and
+`export?format=html` is the only way to see which words carry which `href` — the text
+export drops links silently. Add `&tab=<tab-id>` for a doc whose URL names a tab.
+Diffing that export against the strings already in the data file is what tells you
+which paragraphs actually changed; four docs in a row differed by two sentences each,
+and eyeballing them would have missed it.
+
+---
+
 ## Outstanding
 
 - **Owner review of the redesigned site** is the next step. Ask for screenshots rather
   than iterating blind (gotcha 1).
-- **Meta re-synced against the live site on 2026-08-18.** All 27 indexable URLs now match
-  flexandflow.fit character for character on title, description and robots — including the
-  archives' and profiles' `noindex, follow` with no description at all, and the
+- **Meta re-synced against the live WordPress site on 2026-08-18**, while the domain
+  still served it. All 27 indexable URLs then matched flexandflow.fit character for
+  character on title, description and robots — including the archives' and profiles'
+  `noindex, follow` with no description at all, and the
   `max-image-preview:large, max-snippet:-1, max-video-preview:-1` that Yoast puts on every
   indexable page (dropping those would visibly shrink the search result). `trailingSlash:
   true` was turned on the same day so the served URLs match the indexed ones.
-  `SITE-STRUCTURE.md` records the rules; re-verify with the `curl` one-liner there rather
-  than by eye.
+  `SITE-STRUCTURE.md` records the rules. Its `curl` one-liner now reads this app back to
+  itself, so it still catches a regression you introduce — it no longer confirms parity
+  with what Google indexed. For that, compare against Search Console or git history.
+- **Article measure removed on 2026-08-31.** `.prose-flex :where(p)` carried
+  `max-width: 68ch`, which stopped paragraphs ~300px short of the featured image, the
+  headings and the lists in the same column; the owner read that as a broken layout
+  rather than as a measure. Paragraphs now fill the article column — 899px beside the
+  blog sidebar, 859px beside the service one, ≈102ch at 15px. That is past the
+  comfortable reading range, so if long articles start to feel heavy, `85ch` (≈750px)
+  is the middle ground. One line in `app/(main)/globals.css`.
 - **Button contrast — decision still open.** Filled surfaces site-wide now use
   `--color-primary-strong: #6d7932` (**4.76:1** with white at 15px) instead of
   `--color-primary` `#7f8c3a` (**3.67:1**, fails AA). The brand colour is untouched and
-  still owns every accent; reverting is one line in `app/globals.css`.
+  still owns every accent; reverting is one line in `app/(main)/globals.css`.
 - **No social proof.** Both reference sites lead on star ratings and named reviews; this
   site has none. Owner needs to supply a real Google rating and quotes. Do not invent them.
 - **`ContactForm` and `NewsletterForm` still post nowhere** — they acknowledge locally,
