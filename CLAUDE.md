@@ -132,14 +132,10 @@ and `Tiers.tsx` (both carried headings written for them rather than the studio's
 copy), and the theme's layout CSS — the 1810px container, the 74px photo title band,
 `--band-gap`, `.service-copy`, `.hero-panel`, and the decorative PNG masks.
 
-The four preview routes stay as history, none of them live, still on the old classes:
-
-| Route | Direction | Verdict |
-|---|---|---|
-| `/preview/a` | Quiet — minimal, no cards, big air | rejected, "too simple" |
-| `/preview/b` | Warm — rounded, casual, friendly triage | rejected, "too simple" |
-| `/preview/c` | Clear — structural, prices in the open | rejected, "too simple" |
-| `/preview/d` | Studio — the basis for the live page | superseded by `/` |
+The four preview routes were **deleted on 2026-09-01** (CMS-PLAN.md §10.4). All
+four had been rejected — `a` "Quiet", `b` "Warm" and `c` "Clear" as "too
+simple", `d` "Studio" superseded by the live `/` it became — and all four were
+still on Phase 1 classes. They are in git history if a direction needs revisiting.
 
 **Header and footer** apply to every page: 76px sticky header
 (`components/layout/Header.tsx`, uppercase tracked nav) and a deliberately small
@@ -468,6 +464,224 @@ migrations *have* been applied. Treat every code path as unverified.
   rather than from a tested call.
 
 ---
+
+## Phase 5 — the CMS (in progress)
+
+The owner wants to edit treatment pages and blog posts without opening the
+source code. **`CMS-PLAN.md` is the audit, the plan and the settled decisions;
+read it before touching any of this.** Its §1.3 is the finding the whole design
+rests on: `ContentBlock[]` is *already* a block model, so the CMS stores that
+same union as JSON and `components/content/RichText.tsx` stays the only
+renderer. Nothing about how a page draws changes.
+
+Phases 3–8 are listed in `CMS-PLAN.md` §9. **Phases 3–7 are built.** Phase 8
+(the owner's own walk-through) has not happened — see "What has not been
+checked" below.
+
+### The layout
+
+| Area | Where |
+|---|---|
+| Schema | `ContentDoc`, `ContentRevision`, `MediaAsset` in `prisma/schema.prisma` |
+| Block format | `types/index.ts` (`ContentBlock`), validated by `lib/cms/blocks.ts` |
+| Public reads | `lib/cms/read.ts` (cached, draft-aware) over `lib/cms/query.ts` |
+| Categories | `lib/cms/categories.ts` (rules), `category-store.ts`, `category-actions.ts` |
+| Row → domain | `lib/cms/shape.ts` — used by the site *and* by the import check |
+| Writes | `lib/cms/write.ts`, actions in `lib/cms/actions.ts` |
+| Panel reads | `lib/cms/admin.ts` |
+| Marker ↔ HTML | `lib/cms/inline.ts` |
+| Media | `lib/cms/media.ts`, `lib/cms/storage.ts`, `app/api/cms/media/` |
+| Preview | `app/api/cms/preview/`, `components/cms/PreviewBanner.tsx` |
+| Editor | `components/cms/**` |
+| Panel routes | `app/(admin)/admin/{treatments,blog}/**` |
+| Public routes | `app/(main)/[category]/` and `[category]/[slug]/` |
+
+### The routing, which changed
+
+`app/(main)/uluwatu-bali/` and `app/(main)/injury-guide/` **no longer exist**.
+Categories are rows in `ContentCategory`, so the studio can add one without a
+deploy — and a route folder per category cannot do that. Both are served by
+`app/(main)/[category]/` and `app/(main)/[category]/[slug]/` now.
+
+That is a dynamic segment at the root of the site, so:
+
+- **Static segments win.** `/services`, `/blog`, `/about-us`, `/price-list`,
+  `/contact-us`, `/therapist`, `/academy`, `/admin` and `/api` keep their own
+  folders and are never reachable through `[category]`. `npm run check:category`
+  walks every one of them and would catch it if that ever stopped being true.
+- **A category may not take one of those names.** `RESERVED_SLUGS` in
+  `lib/cms/categories.ts` refuses it — the category would not break the page,
+  it would be shadowed by it, and every post in it would 404 with nothing on
+  screen to explain why. Add a top-level route and add it to that list.
+- **An unknown category must 404**, not render an empty archive. A soft 404 on
+  every mistyped URL on the domain is the failure that would otherwise creep in.
+- **`uluwatu-bali` is `locked`.** Every treatment page is served from it, and
+  `lib/cms/read.ts` looks services up under that literal string — renaming it
+  would not move the nine treatment pages, it would delete them. Its label can
+  still change; its slug cannot.
+- **Renaming a category moves its documents in the same transaction**, and
+  rewrites the `canonicalPath` on their revisions. A canonical tag left
+  pointing at the old address tells Google to index a URL that now 404s.
+
+The two archives' WordPress-matched metadata moved onto the rows and was seeded
+**by the migration**, not by `prisma/seed.ts` — between a migration and a
+separate seed step, `/uluwatu-bali/` would 404, and that is where every
+treatment lives.
+
+### Things that will bite
+
+1. **Never call `lib/cms/read.ts`'s `list*`/`get*` from `generateStaticParams`.**
+   They read `draftMode()`, and Next fails the build outright with "used
+   `draftMode()` inside `generateStaticParams`" — that hook runs at build time
+   with no request. Use `publishedParams`, which deliberately does not. This
+   has already broken one build.
+
+2. **`lib/data/services.ts` and `lib/data/posts.ts` are no longer read by the
+   site.** They stay in git as the record of what WordPress published, as the
+   input to `prisma/seed.ts`, and as the independent thing
+   `npm run check:site` compares the live pages against. Editing them changes
+   nothing.
+
+3. **`npm run check:prices` now reads the CMS**, not that file. It had to: the
+   owner can edit marketing rates from the panel (CMS-PLAN.md §10.2), so a
+   check still pointed at the file would pass while the live page advertised
+   something else.
+
+4. **Two orderings, both real.** `sortOrder` is the reading order (sitemap,
+   "other treatments", blog listing); `gridOrder` is the different order
+   `/services` and `/price-list` use. Collapsing them reshuffles one page. A
+   null `gridOrder` means "not on the priced grid", which is how
+   `full-body-massage` and `facial-massage` stay live but off every menu.
+
+5. **`lib/cms/write.ts` uses `updateTag`, not `revalidateTag`.**
+   `revalidateTag(tag, "max")` serves the *stale* page to the next visitor, so
+   the owner publishes, opens the page, sees the old text and concludes it
+   failed. `updateTag` expires immediately — but may only be called from a
+   Server Action. Everything there is reached through `lib/cms/actions.ts`; a
+   route handler or cron job calling it would throw.
+
+6. **The inline format cannot nest bold and italic.** `***text***` matches
+   neither of `renderInline`'s patterns and would reach the page as literal
+   asterisks, so the editor makes the two mutually exclusive. `heading` and
+   `callout` render raw, so their mark controls are hidden entirely.
+
+7. **`npm run check:inline` is the guard on all of that.** It round-trips every
+   paragraph, list item, column and FAQ answer in the real content — 818
+   strings — through `markersToHtml` and back. Without it, opening a published
+   article and pressing save could rewrite an apostrophe or drop an href on a
+   live page and nobody would notice for weeks.
+
+8. **Moving a published page needs `content.publish`**, because it throws away
+   an indexed URL. That covers both halves of the address: the slug *and* the
+   category, since a post's `urlPrefix` is its category and changing it moves
+   the page just as surely. Nothing redirects automatically — the editor warns
+   with both addresses spelled out. Deleting a published page is refused
+   outright; unpublish first. All of it is enforced in the action, not the UI.
+
+   A treatment's prefix is **fixed at `uluwatu-bali`** and the editor shows it
+   as static text: `lib/cms/read.ts` looks treatments up there and nowhere
+   else, so one on another prefix would exist in the database and 404 on the
+   site. `saveContent` pins it regardless of what is posted.
+
+   `npm run check:move` covers the risky direction — a post moved *into*
+   `uluwatu-bali` lands in the treatments' namespace, where `resolveUluwatuSlug`
+   resolves services first. It runs on a throwaway draft, never publishes, and
+   also proves the unique index refuses a move onto a treatment's address.
+
+9. **Restart the dev server after `prisma generate`.** `lib/db.ts` caches the
+   client on `globalThis` so hot reloads do not exhaust Postgres connections —
+   which also means a running server keeps the *old* client forever. A schema
+   change shows up as `Cannot read properties of undefined (reading
+   'findMany')` or `Value 'X' not found in enum`, neither of which points at
+   the cause. This has cost time twice.
+
+10. **Uploads go to object storage, never `public/`.** `public/` is baked into
+   the build, so an upload written there on a deployed server vanishes at the
+   next deploy. The local-disk driver is for development only; production needs
+   the `MEDIA_S3_*` variables in `.env.example`.
+
+### What has not been checked
+
+The editor has **never been driven by a human**. Everything below it is
+verified — the schema, the import, the read layer, the round trip, the
+permission gates, the build — but nobody has opened `/admin/treatments/`,
+edited a block and pressed publish. Ask the owner to do exactly that before
+trusting it.
+
+Also unverified: the S3 driver in `lib/cms/storage.ts` has never run. The
+studio has no bucket yet, so every upload so far has gone to local disk.
+
+### What Phase 3 changed (roles — this affects code that predates the CMS)
+
+`AdminUser` gained `role` (`SUPER_ADMIN` | `EDITOR`), `extraPermissions`,
+`deletedAt` and `updatedAt`. Things that follow, and will bite otherwise:
+
+1. **"Signed in" is no longer enough anywhere.** Every page in `(admin)` now
+   calls `requirePermission(...)` and every action in `lib/admin/actions.ts`
+   goes through `actingAdmin(permission)` instead of `currentAdmin()`. An
+   editor with no `booking.manage` must not be able to cancel an appointment by
+   posting to an action whose form they were never shown. A new admin page or
+   action that only calls `requireAdmin()` is a hole.
+
+   **A denied page answers HTTP 200, not 307.** Every admin page has a
+   `loading.tsx`, so Next streams the skeleton before `requirePermission` runs;
+   once bytes are on the wire the status line cannot change, and the redirect
+   is delivered inside the stream as
+   `<meta id="__next-page-redirect" http-equiv="refresh">`. No data leaks — the
+   body is skeleton and redirect only — but any test that reads the status code
+   alone will report every refusal as a success. `check-access.ts` looks for
+   that marker and scans the body for leaks; a first draft of it that trusted
+   the status reported the content editor as having the customer list.
+
+2. **Nothing branches on the role — everything branches on `can()`.** That
+   indirection is what makes a third role one entry in `ROLE_PERMISSIONS`
+   (`lib/admin/permissions.ts`) with no call sites to change. Keep it that way.
+
+3. **`lib/admin/permissions.ts` is deliberately not `server-only`.** `AdminNav`
+   is a client component and filters its links with the same `hasPermission`
+   the server guards use, so the nav and the guards cannot disagree. It holds
+   no secrets and reaches nothing. The client check decides what is *drawn*;
+   a hidden link is not authorisation.
+
+4. **The migration backfills `SUPER_ADMIN` explicitly.** `EDITOR` is the right
+   default for new accounts and the wrong one for the rows that predate the
+   column — applying it to those would have demoted the owner and locked them
+   out of the page that grants the role back. `prisma/seed.ts` creates its
+   first admin as `SUPER_ADMIN` for the same reason.
+
+5. **Two guards refuse in the action, not just in the UI.** You cannot delete,
+   deactivate or demote *yourself*, and you cannot do any of those to the *last
+   active super admin*. Both end with somebody in a database console otherwise.
+   The rule is `wouldStrand()` in `lib/admin/permissions.ts` — pure, taking the
+   count as an argument, so it is checkable without a database.
+
+6. **Permissions are read from the row on every request, never from the JWT.**
+   Revoking one bites on the next page load rather than in eight hours.
+
+7. **`/admin/` renders for everyone**, because `requirePermission` sends people
+   there — an editor without `booking.manage` gets a placeholder instead of the
+   agenda, which is a list of customer names and phone numbers. That
+   placeholder becomes the CMS dashboard in Phase 7.
+
+8. **Three roles, and two of them are disjoint on purpose.** `EDITOR` runs the
+   website and cannot open a booking; `BOOKING_STAFF` runs the diary and cannot
+   change a word on the site. Neither can reach settings or admin accounts.
+   Crossing the line is possible — `booking.manage` is offered as a grant on the
+   editor form — but never by accident. `grantableFor(role)` is what the form
+   offers, so a checkbox for something the role already holds never appears.
+
+9. **Two check scripts, and they answer different questions.**
+   `npm run check:permissions` proves the permission *table* — role defaults,
+   grant resolution, the stranding guard, a round trip through a probe account.
+   `npm run check:access` proves the *gates*: it mints a session with the app's
+   own signing key (no password is typed or stored) and walks every admin URL
+   as each role, checking who gets in and scanning refused pages for leaked
+   data. A page that forgot its guard passes the first and fails the second.
+
+10. **`npm run admin:create`** makes an account from the command line, for the
+    ones that have to exist before anybody can sign in to make them. It never
+    prints the password — terminal output ends up in logs and transcripts — and
+    appends it to the gitignored `.admin-accounts.txt` instead.
 
 ## Phase 1 — completed clone fidelity work (superseded)
 

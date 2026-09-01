@@ -6,7 +6,7 @@ import PageHero from "@/components/ui/PageHero";
 import { BAND, LINK, WRAP } from "@/components/ui/tokens";
 import Link from "next/link";
 
-import { pricedServiceSlugs, serviceBySlug } from "@/lib/data/services";
+import { listPricedServices } from "@/lib/cms/read";
 import { contact } from "@/lib/site";
 
 const description =
@@ -24,10 +24,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ServicesPage() {
-  const services = pricedServiceSlugs
-    .map((slug) => serviceBySlug.get(slug))
-    .filter((service) => service !== undefined);
+export default async function ServicesPage() {
+  const services = await listPricedServices();
 
   return (
     <>

@@ -3,6 +3,7 @@ import { Amatic_SC, Andika } from "next/font/google";
 
 import { AdminNav } from "@/components/admin/AdminNav";
 import { currentAdmin } from "@/lib/admin/auth";
+import { ROLE_LABEL } from "@/lib/admin/permissions";
 import "./admin.css";
 
 /**
@@ -64,7 +65,12 @@ export default async function AdminRootLayout({
       <body className="min-h-full">
         {admin ? (
           <div className="admin-shell">
-            <AdminNav adminName={admin.name} adminEmail={admin.email} />
+            <AdminNav
+              adminName={admin.name}
+              adminEmail={admin.email}
+              adminRole={ROLE_LABEL[admin.role]}
+              permissions={admin.permissions}
+            />
             <main className="min-w-0 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
           </div>
         ) : (

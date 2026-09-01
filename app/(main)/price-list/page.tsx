@@ -6,15 +6,11 @@ import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
 import { PendingLink } from "@/components/ui/PendingLink";
 import { BAND, CARD, FOCUS, H2, WRAP } from "@/components/ui/tokens";
-import { pricedServiceSlugs, serviceBySlug } from "@/lib/data/services";
+import { listPricedServices } from "@/lib/cms/read";
 import { therapistBySlug } from "@/lib/data/therapists";
 import { therapistRates } from "@/lib/data/priceList";
 import { formatIdr } from "@/lib/pricing";
 import { externalBookingUrl } from "@/lib/site";
-
-const pricedServices = pricedServiceSlugs
-  .map((slug) => serviceBySlug.get(slug))
-  .filter((service) => service !== undefined);
 
 /** Title and description are WordPress's, verbatim — matched against the
  *  live `/price-list/` page on 2026-08-26, same rule as every other page. */
@@ -41,7 +37,12 @@ export const metadata: Metadata = {
  * established (`ServiceArticle`'s sticky aside, `TherapistCard`'s portrait)
  * rather than cloning the table.
  */
-export default function PriceListPage() {
+export default async function PriceListPage() {
+  /* Ordered by `gridOrder`, which is the WordPress grid order the hand-written
+     `pricedServiceSlugs` array used to carry — a different order from the
+     reading order the sitemap and the sidebar use. */
+  const pricedServices = await listPricedServices();
+
   return (
     <>
       <PageHero

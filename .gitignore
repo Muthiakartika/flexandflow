@@ -53,3 +53,12 @@ next-env.d.ts
 # multi-megabyte camera originals, and the web-ready crops derived from them
 # live in public/images/. Remove this line if you want them versioned.
 /source-photos
+
+# Uploads written by the CMS's local storage driver. Development only —
+# `public/` is baked into the build, so these do not survive a deploy and are
+# not the production path. See `lib/cms/storage.ts`.
+/public/uploads
+
+# One-off credential handovers written by `npm run admin:create`. Passwords in
+# plain text: read it, pass it on, delete it.
+.admin-accounts.txt

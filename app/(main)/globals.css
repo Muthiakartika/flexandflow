@@ -357,14 +357,23 @@
     max-width: none;
   }
 
-  .prose-flex :where(h2, h3, h4) {
+  /* All six levels, because the CMS offers all six. `h1` is included so a body
+     that uses one is still styled deliberately rather than falling back to the
+     browser default — the editor warns that the page title is already the
+     document's h1, but a page that ignores the warning should not also look
+     broken. */
+  .prose-flex :where(h1, h2, h3, h4, h5, h6) {
     font-weight: 700;
     line-height: 1.1;
     margin-block: 1.9em 0.6em;
   }
 
-  .prose-flex > :where(h2, h3, h4):first-child {
+  .prose-flex > :where(h1, h2, h3, h4, h5, h6):first-child {
     margin-block-start: 0;
+  }
+
+  .prose-flex :where(h1) {
+    font-size: clamp(1.75rem, 1.45rem + 1.4vw, 2.5rem);
   }
 
   .prose-flex :where(h2) {
@@ -377,6 +386,19 @@
 
   .prose-flex :where(h4) {
     font-size: 1.375rem;
+  }
+
+  .prose-flex :where(h5) {
+    font-size: 1.1875rem;
+  }
+
+  /* 17px against 15px body copy is not enough on its own to read as a heading,
+     so this one carries the difference in tracking and case instead of in
+     size. Below it there is nowhere left to go. */
+  .prose-flex :where(h6) {
+    font-size: 1.0625rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .prose-flex :where(a) {

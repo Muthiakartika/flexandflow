@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import BlogListing from "@/components/blog/BlogListing";
 import PageHero from "@/components/ui/PageHero";
-import { posts } from "@/lib/data/posts";
+import { listPosts } from "@/lib/cms/read";
 
 const description =
   "Explore our blog for expert tips on yoga, flexibility training, and Physical Therapy in Uluwatu to support your overall well-being.";
@@ -23,6 +23,8 @@ export const metadata: Metadata = {
 export default async function BlogPage(props: PageProps<"/blog">) {
   const { s } = await props.searchParams;
   const keyword = (Array.isArray(s) ? s[0] : s)?.toLowerCase().trim();
+
+  const posts = await listPosts();
 
   const filtered = keyword
     ? posts.filter((post) =>

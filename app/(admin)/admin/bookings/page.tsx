@@ -12,7 +12,7 @@ import {
   StatusChip,
   TableBox,
 } from "@/components/admin/primitives";
-import { requireAdmin } from "@/lib/admin/auth";
+import { requirePermission } from "@/lib/admin/auth";
 import {
   bookingExportHref,
   bookingFilterQuery,
@@ -51,7 +51,7 @@ export default async function AdminBookingsPage({
 }: {
   searchParams: Promise<SearchInput>;
 }) {
-  await requireAdmin();
+  await requirePermission("booking.manage");
 
   const filters = readBookingFilters(await searchParams);
   const [result, therapists] = await Promise.all([

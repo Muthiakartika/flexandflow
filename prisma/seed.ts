@@ -382,9 +382,15 @@ async function main(): Promise<void> {
     await prisma.adminUser.upsert({
       where: { email: adminEmail },
       /* The environment is the source of truth for this login, so a re-run
-         resets the password to whatever ADMIN_PASSWORD now says. */
+         resets the password to whatever ADMIN_PASSWORD now says.
+         `role` is deliberately absent from the update: promoting on every seed
+         run would undo a demotion somebody made on purpose in the panel. */
       update: { passwordHash, name, active: true },
-      create: { email: adminEmail, passwordHash, name },
+      /* SUPER_ADMIN explicitly, against the column's `EDITOR` default. This is
+         the *first* account on a fresh database, and an editor cannot grant
+         itself the role — seeding an installation nobody can administer would
+         leave a database console as the only way in. */
+      create: { email: adminEmail, passwordHash, name, role: "SUPER_ADMIN" },
     });
     admin = adminEmail;
   }

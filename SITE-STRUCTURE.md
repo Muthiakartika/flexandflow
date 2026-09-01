@@ -211,7 +211,15 @@ actually removes it. Same for `robots`.
 archives (`/uluwatu-bali/`, `/injury-guide/`) and the therapist profiles
 `noindex, follow`, and this app matches that. Do not "fix" it by removing the
 `robots` line; those pages are not supposed to compete with the service pages.
-The four `/preview/…` routes are noindex for the same reason.
+**Category archives are dynamic as of 2026-09-01.** `/uluwatu-bali/` and
+`/injury-guide/` were route folders; they are rows in `ContentCategory` now,
+served by `app/(main)/[category]/`, so the studio can add a category without a
+deploy. Their titles, descriptions and `noindex, follow` are unchanged — the
+migration copied them onto the rows verbatim. A category can never take the
+address of an existing page; see `RESERVED_SLUGS`.
+
+The four `/preview/…` routes were deleted on 2026-09-01 (they were noindex for
+the same reason while they existed).
 
 ---
 

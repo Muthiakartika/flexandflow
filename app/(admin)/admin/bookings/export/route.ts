@@ -16,7 +16,7 @@
  * Money columns are plain integers with no `IDR` and no thousands separators.
  * The point of the file is that somebody can total a column.
  */
-import { requireAdmin } from "@/lib/admin/auth";
+import { requirePermission } from "@/lib/admin/auth";
 import { csvResponse, toCsv, type CsvValue } from "@/lib/admin/csv";
 import { readBookingFilters } from "@/lib/admin/filters";
 import {
@@ -116,7 +116,7 @@ function filenameFor(filters: BookingFilters, today: string): string {
 }
 
 export async function GET(request: Request): Promise<Response> {
-  await requireAdmin();
+  await requirePermission("booking.manage");
 
   const filters = readBookingFilters(new URL(request.url).searchParams);
 

@@ -8,7 +8,6 @@
  * all. Every figure shown on the site goes through here so a card can never
  * advertise a rate that is not bookable as stated.
  */
-import { services } from "@/lib/data/services";
 import type { Service, TherapistTier } from "@/types";
 
 /** Digits only, so `"Rp 800,000"` and `"750,000"` compare like for like. */
@@ -63,8 +62,12 @@ export function ratesFor(service: Service): Rate[] {
  * sessions at services that offer both tiers — a global minimum pulls in
  * single-tier outliers like the 30-minute cupping session and states a price
  * nobody can actually book for an hour of work.
+ *
+ * Takes the services rather than importing them: this module is otherwise pure
+ * functions over one row at a time, and reading the CMS from inside it would
+ * make every caller of `priceAmount` depend on a database.
  */
-export function lowestHourlyRate(): number | null {
+export function lowestHourlyRate(services: Service[]): number | null {
   const amounts = services
     .filter((service) => service.tiers.length > 1)
     .flatMap((service) =>

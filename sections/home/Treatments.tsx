@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { serviceBySlug } from "@/lib/data/services";
+import { listServices } from "@/lib/cms/read";
 import { formatIdr, ratesFor, serviceMinutes } from "@/lib/pricing";
 import { BAND, CARD, FOCUS, H2, LINK, WRAP } from "@/components/ui/tokens";
 
@@ -21,9 +21,13 @@ const featured = [
  * healing's 90 show as themselves rather than being averaged into an hour, and
  * a Master-only treatment simply shows one row.
  */
-export default function Treatments() {
+export default async function Treatments() {
+  /* Read into a map first: `featured` is a hand-picked order that is not the
+     table's, so the six cards are looked up rather than sliced. */
+  const bySlug = new Map((await listServices()).map((s) => [s.slug, s]));
+
   const cards = featured
-    .map((slug) => serviceBySlug.get(slug))
+    .map((slug) => bySlug.get(slug))
     .filter((service) => service !== undefined)
     .map((service) => ({
       service,

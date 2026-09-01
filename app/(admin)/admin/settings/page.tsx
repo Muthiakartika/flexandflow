@@ -11,7 +11,7 @@ import {
 } from "@/components/admin/primitives";
 import { SettingsPanel } from "@/components/admin/SettingsPanel";
 import { refreshWahaAction } from "@/lib/admin/actions";
-import { requireAdmin } from "@/lib/admin/auth";
+import { requirePermission } from "@/lib/admin/auth";
 import { loadNotificationHealth } from "@/lib/admin/queries";
 import { formatStudioDate, formatStudioTime } from "@/lib/booking/time";
 import { env } from "@/lib/env";
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
  * needs to re-scan the right QR code.
  */
 export default async function AdminSettingsPage() {
-  await requireAdmin();
+  await requirePermission("settings.manage");
 
   const health = await wahaHealth().catch((error: unknown) => ({
     ok: false,

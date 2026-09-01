@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { PageHeading, Panel } from "@/components/admin/primitives";
 import { VariantRowForm } from "@/components/admin/VariantRowForm";
-import { requireAdmin } from "@/lib/admin/auth";
+import { requirePermission } from "@/lib/admin/auth";
 import { loadServices } from "@/lib/admin/queries";
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
  * caught people out here three separate times.
  */
 export default async function AdminServicesPage() {
-  await requireAdmin();
+  await requirePermission("booking.manage");
 
   const services = await loadServices();
 

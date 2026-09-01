@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { PageHeading, Panel } from "@/components/admin/primitives";
 import { ScheduleEditor } from "@/components/admin/ScheduleEditor";
 import { TimeOffEditor } from "@/components/admin/TimeOffEditor";
-import { requireAdmin } from "@/lib/admin/auth";
+import { requirePermission } from "@/lib/admin/auth";
 import { loadSchedule, loadTimeOffConflicts } from "@/lib/admin/queries";
 import { studioDateKey } from "@/lib/booking/time";
 
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
  * says nothing about why.
  */
 export default async function AdminSchedulePage() {
-  await requireAdmin();
+  await requirePermission("booking.manage");
 
   const now = new Date();
   const schedule = await loadSchedule(now);

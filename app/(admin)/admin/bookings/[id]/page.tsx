@@ -12,7 +12,7 @@ import {
   StatusChip,
   TableBox,
 } from "@/components/admin/primitives";
-import { requireAdmin } from "@/lib/admin/auth";
+import { requirePermission } from "@/lib/admin/auth";
 import { listTherapistOptions, loadBookingDetail } from "@/lib/admin/queries";
 import {
   formatDuration,
@@ -61,7 +61,7 @@ export default async function AdminBookingDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdmin();
+  await requirePermission("booking.manage");
 
   const { id } = await params;
   const [detail, therapists] = await Promise.all([

@@ -4,11 +4,6 @@ import Link from "next/link";
 import { CARD, FOCUS } from "@/components/ui/tokens";
 import type { Post } from "@/types";
 
-const categoryLabels: Record<Post["category"], string> = {
-  "uluwatu-bali": "Uluwatu Bali",
-  "injury-guide": "Injury Guide",
-};
-
 /**
  * Blog card, used by the listing and both category archives — the original had
  * two different cards for the same object, one with a hover-revealed "Read
@@ -52,7 +47,7 @@ export default function PostCard({ post }: { post: Post }) {
             href={`/${post.category}`}
             className={`page-label transition-colors duration-300 hover:text-primary ${FOCUS}`}
           >
-            {categoryLabels[post.category]}
+            {post.categoryLabel ?? post.category}
           </Link>
         </p>
 

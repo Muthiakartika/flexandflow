@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
 import { BAND, CARD, FOCUS, LINK, WRAP } from "@/components/ui/tokens";
-import { services } from "@/lib/data/services";
+import { listServices } from "@/lib/cms/read";
 import { formatIdr, priceAmount, serviceMinutes, tierMinutes } from "@/lib/pricing";
 import { externalBookingUrl, contact } from "@/lib/site";
 import RichText from "./RichText";
@@ -23,7 +23,7 @@ import type { Service } from "@/types";
  * to `visibility: hidden`; it stays in the DOM through `.heading-hidden` for
  * heading order, as on the original.
  */
-export default function ServiceArticle({ service }: { service: Service }) {
+export default async function ServiceArticle({ service }: { service: Service }) {
   const [firstBlock, ...restBlocks] = service.body;
   const hasBanner = Boolean(service.bannerImage);
   const bannerTitle =
@@ -45,7 +45,7 @@ export default function ServiceArticle({ service }: { service: Service }) {
         ];
   });
 
-  const others = services
+  const others = (await listServices())
     .filter((other) => other.slug !== service.slug)
     .slice(0, 5);
 

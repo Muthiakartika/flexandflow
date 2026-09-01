@@ -351,3 +351,385 @@
     border-right: 1px solid var(--color-line);
   }
 }
+
+/* ── CMS ──────────────────────────────────────────────────────────────────
+ *
+ * The content editor. Everything here is an explicit rule rather than a
+ * Tailwind arbitrary-breakpoint variant, for the reason CLAUDE.md gotcha 2
+ * records: those have silently failed in this project. The editor's two-pane
+ * split is the exact case that would break.
+ */
+
+/* One editable run of text. Looks like an input, contains a ProseMirror
+   document. The border moves to olive on focus so it reads as a field even
+   though it is a contenteditable div. */
+.cms-inline-shell {
+  position: relative;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+}
+
+.cms-inline-shell.is-focused {
+  border-color: var(--color-olive);
+}
+
+.cms-inline-input {
+  padding: 8px 10px;
+  font-family: var(--font-body);
+  /* 16px, like every other control: anything smaller makes iOS Safari zoom
+     the page on focus and never zoom back. */
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--color-ink);
+  outline: none;
+  min-height: 40px;
+}
+
+.cms-inline-input p {
+  margin: 0;
+}
+
+.cms-inline-input p + p {
+  margin-top: 0.6em;
+}
+
+.cms-inline-input a {
+  color: var(--color-olive-strong);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Only when the field is empty and unfocused; a placeholder that stays visible
+   behind a caret reads as text somebody already typed. */
+.cms-inline-input p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--color-faint);
+  pointer-events: none;
+}
+
+.cms-inline-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 4px 4px 0;
+}
+
+.cms-tool {
+  min-width: 28px;
+  padding: 2px 7px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.cms-tool:hover {
+  background-color: var(--color-cream);
+}
+
+.cms-tool.is-on {
+  background-color: var(--color-olive-strong);
+  border-color: var(--color-olive-strong);
+  color: #ffffff;
+}
+
+/* ── Blocks ─────────────────────────────────────────────────────────────── */
+
+.cms-block {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-panel);
+}
+
+.cms-block-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px 6px 12px;
+  border-bottom: 1px solid var(--color-line);
+  background-color: var(--color-cream);
+  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+}
+
+.cms-block-kind {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.cms-icon-btn {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  background-color: var(--color-surface);
+  font-size: 13px;
+  line-height: 1;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.cms-icon-btn:hover:not(:disabled) {
+  border-color: var(--color-olive);
+  color: var(--color-olive-strong);
+}
+
+.cms-icon-btn.is-danger:hover:not(:disabled) {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.cms-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* The thin "add a block here" affordance between every pair of blocks. Quiet
+   until hovered, because there is one of these after every block and a row of
+   loud buttons would out-shout the content they sit between. */
+.cms-add-row {
+  display: block;
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px dashed var(--color-line);
+  border-radius: 8px;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-faint);
+  cursor: pointer;
+}
+
+.cms-add-row:hover {
+  border-color: var(--color-olive);
+  color: var(--color-olive-strong);
+}
+
+.cms-add-menu {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 6px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+}
+
+@media (min-width: 640px) {
+  .cms-add-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.cms-add-option {
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cms-add-option:hover {
+  background-color: var(--color-cream);
+  border-color: var(--color-line);
+}
+
+.cms-chip {
+  padding: 3px 9px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background-color: var(--color-surface);
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.cms-chip.is-on {
+  background-color: var(--color-olive-strong);
+  border-color: var(--color-olive-strong);
+  color: #ffffff;
+}
+
+/* ── Media picker ───────────────────────────────────────────────────────── */
+
+.cms-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background-color: color-mix(in oklab, var(--color-ink) 45%, transparent);
+}
+
+.cms-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(920px, 100%);
+  max-height: min(680px, 90dvh);
+  overflow: hidden;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-panel);
+}
+
+.cms-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── The editor's two panes ─────────────────────────────────────────────── */
+
+.cms-editor {
+  display: grid;
+  gap: 12px;
+}
+
+/* Stacked on a laptop screen and below; the preview only earns its column when
+   there is room for both without either becoming unusable. */
+@media (min-width: 1180px) {
+  .cms-editor {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
+    align-items: start;
+  }
+
+  .cms-editor-side {
+    position: sticky;
+    top: 16px;
+  }
+}
+
+.cms-preview-frame {
+  display: block;
+  width: 100%;
+  height: 520px;
+  border: 0;
+  background-color: var(--color-cream);
+}
+
+/* ── The login page ───────────────────────────────────────────────────────
+ *
+ * One screen, two halves: the studio's photography under an olive wash, and
+ * the form. The split is an explicit `@media` block rather than a Tailwind
+ * arbitrary breakpoint variant, for the reason CLAUDE.md gotcha 2 records —
+ * those have silently failed in this project, and a layout that collapses to
+ * one column is exactly the kind of failure nobody notices on a laptop.
+ */
+
+.admin-login {
+  display: grid;
+  min-height: 100dvh;
+  background-color: var(--color-cream);
+}
+
+/* Hidden by default and shown at width, not the other way round — so the
+   smaller screen is the one that needs no rule, and the photograph below is
+   declared only inside the media query. That is the whole point: a hidden
+   element still downloads an eager `<img>`, so a phone would pay for a picture
+   it never paints. A background in an unmatched media query is never fetched
+   at all. */
+.admin-login-visual {
+  display: none;
+}
+
+.admin-login-form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+/* The lockup above the form. Only ever visible when the panel beside it is
+   not, so the two can never both be on screen. */
+.admin-login-compact-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+@media (min-width: 900px) {
+  .admin-login {
+    grid-template-columns: minmax(0, 46fr) minmax(0, 54fr);
+  }
+
+  .admin-login-visual {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    min-height: 100dvh;
+    /* Behind the photograph, so the panel is brand-coloured rather than blank
+       for the moment before it arrives — and stays sensible if it 404s. */
+    background-color: var(--color-olive-strong);
+    background-image: url("/photos/studio.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  .admin-login-compact-brand {
+    display: none;
+  }
+
+  .admin-login-form {
+    padding: 40px 48px;
+  }
+}
+
+/* The brand wash. `multiply` keeps the photograph's own shape and shadow
+   instead of flattening it to a coloured sheet, which is what a plain
+   semi-transparent fill does. */
+.admin-login-wash {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-olive);
+  mix-blend-mode: multiply;
+  opacity: 0.82;
+}
+
+/* Under the strapline only. This is what actually guarantees the contrast:
+   the wash alone leaves white type sitting on olive at 3.67:1, which fails
+   even the large-text threshold once a bright patch of photograph shows
+   through it. */
+.admin-login-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.62) 0%,
+    rgba(0, 0, 0, 0.28) 34%,
+    rgba(0, 0, 0, 0) 62%
+  );
+}
+
+.admin-login-brand {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  z-index: 1;
+}
+
+.admin-login-strap {
+  position: absolute;
+  right: 40px;
+  bottom: 44px;
+  left: 40px;
+  z-index: 1;
+}

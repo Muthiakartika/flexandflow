@@ -7,11 +7,6 @@ import { BAND, FOCUS, WRAP } from "@/components/ui/tokens";
 import RichText from "./RichText";
 import type { Post } from "@/types";
 
-const categoryLabels: Record<Post["category"], string> = {
-  "uluwatu-bali": "Uluwatu Bali",
-  "injury-guide": "Injury Guide",
-};
-
 /** Single blog post: featured image, body, prev/next, and the sidebar. */
 export default function PostArticle({
   post,
@@ -26,9 +21,9 @@ export default function PostArticle({
     <>
       <PageHero
         title={post.title}
-        eyebrow={`${post.date} · ${categoryLabels[post.category]}`}
+        eyebrow={`${post.date} · ${post.categoryLabel ?? post.category}`}
         crumbs={[
-          { label: categoryLabels[post.category], href: `/${post.category}` },
+          { label: post.categoryLabel ?? post.category, href: `/${post.category}` },
           { label: post.title },
         ]}
       />

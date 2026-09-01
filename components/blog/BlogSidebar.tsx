@@ -1,14 +1,12 @@
 import Link from "next/link";
 
 import { BTN_SOLID, CARD, FOCUS } from "@/components/ui/tokens";
-import { posts } from "@/lib/data/posts";
+import { listCategories } from "@/lib/cms/category-store";
+import { listPosts } from "@/lib/cms/read";
 import { contact } from "@/lib/site";
 import SearchForm from "./SearchForm";
 
-export const blogCategories = [
-  { slug: "injury-guide", label: "Injury Guide" },
-  { slug: "uluwatu-bali", label: "Uluwatu Bali" },
-] as const;
+
 
 /**
  * Sidebar for the blog listing and single posts: search, categories, and the
@@ -16,7 +14,14 @@ export const blogCategories = [
  * book. The theme's decorative vertical stock photo is gone; it filled the
  * column without saying anything.
  */
-export default function BlogSidebar() {
+export default async function BlogSidebar() {
+  /* Read together: the sidebar shows every category with a count beside it, so
+     one without the other is half a list. */
+  const [posts, blogCategories] = await Promise.all([
+    listPosts(),
+    listCategories(),
+  ]);
+
   return (
     <aside className="flex flex-col gap-3 lg:sticky lg:top-[92px] lg:h-fit">
       <section className={`${CARD} p-5`}>

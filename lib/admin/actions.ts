@@ -5,11 +5,15 @@
  *
  * Three rules, none of them optional:
  *
- * 1. **Each action re-checks the session.** A server action is a public HTTP
- *    endpoint that happens to be reachable by a form. `proxy.ts` does not
- *    reliably cover it — the Next docs are explicit that a matcher change or
- *    a refactor can silently drop that coverage — and a page that only renders
- *    behind a login is not authorisation. The check is here or it is nowhere.
+ * 1. **Each action re-checks the session and the permission.** A server action
+ *    is a public HTTP endpoint that happens to be reachable by a form.
+ *    `proxy.ts` does not reliably cover it — the Next docs are explicit that a
+ *    matcher change or a refactor can silently drop that coverage — and a page
+ *    that only renders behind a login is not authorisation. The check is here
+ *    or it is nowhere. Since roles arrived, "signed in" is no longer enough on
+ *    its own: everything below goes through `actingAdmin(permission)`, because
+ *    an editor who has no booking access must not be able to cancel somebody's
+ *    appointment by posting to an action whose form they were never shown.
  * 2. **Everything is validated with the Zod schemas in `lib/booking/schema.ts`.**
  *    `FormData` is strings all the way down and arrives from whatever posted
  *    it, which is not necessarily the form.
@@ -30,7 +34,7 @@ import { redirect } from "next/navigation";
 
 import { BookingStatus, PaymentStatus } from "@/generated/prisma/enums";
 import { IDLE, type ActionState } from "@/lib/admin/action-state";
-import { currentAdmin, verifyCredentials } from "@/lib/admin/auth";
+import { actingAdmin, currentAdmin, verifyCredentials } from "@/lib/admin/auth";
 import { createSessionToken, setSessionCookie } from "@/lib/admin/session";
 import {
   adminBookingStatusSchema,
@@ -93,6 +97,25 @@ const NO_SESSION: ActionState = {
   ...IDLE,
   message: "Your session has expired. Sign in again to make this change.",
 };
+
+const NOT_ALLOWED: ActionState = {
+  ...IDLE,
+  message: "Your account does not include this. Ask a super admin for access.",
+};
+
+/**
+ * Why the action refused.
+ *
+ * Signed out and signed-in-but-not-allowed are different problems with
+ * different fixes, and telling somebody to sign in again when their account
+ * simply lacks the permission sends them round a loop that cannot end. Only
+ * reached once `actingAdmin` has already said no, so the second lookup costs
+ * nothing on the path that succeeds — and `currentAdmin` is request-cached
+ * anyway.
+ */
+async function refusal(): Promise<ActionState> {
+  return (await currentAdmin()) ? NOT_ALLOWED : NO_SESSION;
+}
 
 function failed(message: string, fields?: Record<string, string>): ActionState {
   return { ok: false, message, fields };
@@ -207,8 +230,8 @@ export async function setBookingStatusAction(
   _previous: ActionState,
   form: FormData,
 ): Promise<ActionState> {
-  const admin = await currentAdmin();
-  if (!admin) return NO_SESSION;
+  const admin = await actingAdmin("booking.manage");
+  if (!admin) return await refusal();
 
   const bookingId = text(form, "bookingId");
   if (!bookingId) return failed("No booking was named.");
@@ -269,8 +292,8 @@ export async function rescheduleBookingAction(
   _previous: ActionState,
   form: FormData,
 ): Promise<ActionState> {
-  const admin = await currentAdmin();
-  if (!admin) return NO_SESSION;
+  const admin = await actingAdmin("booking.manage");
+  if (!admin) return await refusal();
 
   const bookingId = text(form, "bookingId");
   if (!bookingId) return failed("No booking was named.");
@@ -341,8 +364,8 @@ export async function deleteBookingAction(
   _previous: ActionState,
   form: FormData,
 ): Promise<ActionState> {
-  const admin = await currentAdmin();
-  if (!admin) return NO_SESSION;
+  const admin = await actingAdmin("booking.manage");
+  if (!admin) return await refusal();
 
   const bookingId = text(form, "bookingId");
   if (!bookingId) return failed("No booking was named.");
@@ -426,8 +449,8 @@ export async function recordRefundAction(
   _previous: ActionState,
   form: FormData,
 ): Promise<ActionState> {
-  const admin = await currentAdmin();
-  if (!admin) return NO_SESSION;
+  const admin = await actingAdmin("booking.manage");
+  if (!admin) return await refusal();
 
   const parsed = refundSchema.safeParse({
     paymentId: text(form, "paymentId"),
@@ -523,8 +546,8 @@ export async function addWorkingHourAction(
   _previous: ActionState,
   form: FormData,
 ): Promise<ActionState> {
-  const admin = await currentAdmin();
-  if (!admin) return NO_SESSION;
+  const admin = await actingAdmin("booking.manage");
+  if (!admin) return await refusal();
 
   const startMinute = parseMinuteOfDay(text(form, "start"));
   const endMinute = parseMinuteOfDay(text(form, "end"));
@@ -571,8 +594,8 @@ export async function deleteWorkingHourAction(
   _previous: ActionState,
   form: FormData,
 ): Promise<ActionState> {
-  const admin = await currentAdmin();
-  if (!admin) return NO_SESSION;
+  const admin = await actingAdmin("booking.manage");
+  if (!admin) return await refusal();
 
   const id = text(form, "id");
   if (!id) return failed("No working-hour block was named.");
@@ -604,8 +627,8 @@ export async function addTimeOffAction(
   _previous: ActionState,
   form: FormData,
 ): Promise<ActionState> {
-  const admin = await currentAdmin();
-  if (!admin) return NO_SESSION;
+  const admin = await actingAdmin("booking.manage");
+  if (!admin) return await refusal();
 
   const fromDate = text(form, "fromDate");
   const fromTime = text(form, "fromTime") || "00:00";
@@ -674,8 +697,8 @@ export async function deleteTimeOffAction(
   _previous: ActionState,
   form: FormData,
 ): Promise<ActionState> {
-  const admin = await currentAdmin();
-  if (!admin) return NO_SESSION;
+  const admin = await actingAdmin("booking.manage");
+  if (!admin) return await refusal();
 
   const id = text(form, "id");
   if (!id) return failed("No time off was named.");
@@ -708,8 +731,8 @@ export async function updateVariantAction(
   _previous: ActionState,
   form: FormData,
 ): Promise<ActionState> {
-  const admin = await currentAdmin();
-  if (!admin) return NO_SESSION;
+  const admin = await actingAdmin("booking.manage");
+  if (!admin) return await refusal();
 
   const parsed = variantUpdateSchema.safeParse({
     id: text(form, "id"),
@@ -779,6 +802,10 @@ export async function updateVariantAction(
  * code and wants to know whether it took.
  */
 export async function refreshWahaAction(): Promise<void> {
+  /* Writes nothing, but still a public endpoint: without this, anyone who
+     knew the action id could drop the panel's cached renders in a loop. */
+  if (!(await actingAdmin("settings.manage"))) return;
+
   revalidatePath("/admin/settings");
   revalidatePath("/admin");
 }
@@ -787,8 +814,8 @@ export async function sendTestMessageAction(
   _previous: ActionState,
   form: FormData,
 ): Promise<ActionState> {
-  const admin = await currentAdmin();
-  if (!admin) return NO_SESSION;
+  const admin = await actingAdmin("settings.manage");
+  if (!admin) return await refusal();
 
   const email = text(form, "email");
   const phoneE164 = text(form, "phoneE164");
@@ -839,8 +866,8 @@ export async function dispatchPendingAction(
   _form: FormData,
 ): Promise<ActionState> {
   /* eslint-enable @typescript-eslint/no-unused-vars */
-  const admin = await currentAdmin();
-  if (!admin) return NO_SESSION;
+  const admin = await actingAdmin("settings.manage");
+  if (!admin) return await refusal();
 
   try {
     const result = await dispatchPending();

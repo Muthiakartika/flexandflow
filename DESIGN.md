@@ -148,4 +148,5 @@ generating all 32 pages.
 - **The contact form and the newsletter have no backend.** Both acknowledge locally and
   post nowhere, as the brief specified. The booking form is the exception: it is fully
   wired, and its own rules are in `BOOKING-PLAN.md`.
-- `/preview/a`–`/preview/d` remain as history, on the old classes, `noindex`.
+- `/preview/a`–`/preview/d` were deleted on 2026-09-01; they were rejected,
+  superseded by the live page, and still on Phase 1 classes. In git history.

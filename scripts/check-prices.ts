@@ -2,14 +2,20 @@
  * Checks that the booking catalogue and the marketing pages quote the same
  * price. Run with `npm run check:prices`; it exits non-zero on any difference.
  *
- * There are now two places a price can be wrong. `lib/data/services.ts` feeds
- * the service pages and `ServiceVariant` feeds the wizard, and BOOKING-PLAN.md
- * §2.1 accepts that split because the old booking flow sold variants the price
- * list never carried. What it does not accept is the two drifting apart: this
- * repo has published a wrong price three times already (CLAUDE.md, "Data
- * hazards"), and a customer who reads Rp750,000 on the service page and is
- * charged Rp800,000 at checkout has been misled by the site, not by an edge
- * case.
+ * There are two places a price can be wrong. The **published CMS content**
+ * feeds the service pages and `ServiceVariant` feeds the wizard, and
+ * BOOKING-PLAN.md §2.1 accepts that split because the old booking flow sold
+ * variants the price list never carried. What it does not accept is the two
+ * drifting apart: this repo has published a wrong price three times already
+ * (CLAUDE.md, "Data hazards"), and a customer who reads Rp750,000 on the
+ * service page and is charged Rp800,000 at checkout has been misled by the
+ * site, not by an edge case.
+ *
+ * It reads the CMS, not `lib/data/services.ts`. That file stopped being what
+ * the site serves the day the content was imported (CMS-PLAN.md §8), and the
+ * owner can now edit rates from the panel — so a check still pointed at the
+ * file would pass happily while the live page advertised something else. This
+ * is the fourth-time guard; it has to look at what is actually published.
  *
  * Only (tier, duration) pairs that exist on both sides are compared. Variants
  * that exist only in the database are the deliberate additions from the seed's
@@ -28,8 +34,10 @@ import ws from "ws";
 
 import { PrismaClient } from "@/generated/prisma/client";
 import { TIER_LABEL, type Tier } from "@/lib/booking/types";
-import { services } from "@/lib/data/services";
+import { joinPublished } from "@/lib/cms/query";
+import { toService } from "@/lib/cms/shape";
 import { formatIdr, priceAmount, tierMinutes } from "@/lib/pricing";
+import type { Service } from "@/types";
 
 /* Node has no global WebSocket before v22, and Neon's driver needs one. */
 neonConfig.webSocketConstructor = ws as unknown as typeof WebSocket;
@@ -46,8 +54,14 @@ const TIER_BY_LABEL = new Map<string, Tier>(
   (Object.keys(TIER_LABEL) as Tier[]).map((tier) => [TIER_LABEL[tier], tier]),
 );
 
-/** One row per (tier, duration) the marketing data actually resolves. */
-function advertised(slug: string): Map<string, number> {
+/** Every published treatment, read exactly as the site reads it. */
+async function publishedServices(): Promise<Service[]> {
+  const rows = await joinPublished(prisma, { kind: "SERVICE" }, "sortOrder");
+  return rows.map(toService);
+}
+
+/** One row per (tier, duration) the published content actually resolves. */
+function advertised(services: Service[], slug: string): Map<string, number> {
   const service = services.find((row) => row.slug === slug);
   const rates = new Map<string, number>();
   if (!service) return rates;
@@ -75,6 +89,15 @@ function describe(tier: Tier, minutes: number): string {
 }
 
 async function main(): Promise<number> {
+  const services = await publishedServices();
+
+  if (services.length === 0) {
+    console.log(
+      "No published treatments in the CMS — has `npx tsx scripts/cms-import.ts` run?",
+    );
+    return 0;
+  }
+
   const rows = await prisma.service.findMany({
     /* Only what can be charged. A deactivated variant is not on sale, so its
        price disagreeing with the site is not a difference anyone can meet. */
@@ -95,7 +118,7 @@ async function main(): Promise<number> {
   for (const service of rows) {
     if (!services.some((row) => row.slug === service.slug)) continue;
 
-    const rates = advertised(service.slug);
+    const rates = advertised(services, service.slug);
     const seen = new Set<string>();
 
     for (const variant of service.variants) {
@@ -143,7 +166,7 @@ async function main(): Promise<number> {
 
   console.log(
     `Compared ${compared} priced variant${compared === 1 ? "" : "s"} against ` +
-      `lib/data/services.ts.`,
+      `the ${services.length} published treatments in the CMS.`,
   );
 
   report("Price differences", mismatches);

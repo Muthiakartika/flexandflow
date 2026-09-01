@@ -12,7 +12,8 @@ import {
   TableBox,
 } from "@/components/admin/primitives";
 import { WahaBanner } from "@/components/admin/WahaBanner";
-import { requireAdmin } from "@/lib/admin/auth";
+import ContentOverview from "@/components/cms/ContentOverview";
+import { can, requireAdmin } from "@/lib/admin/auth";
 import { dayExportHref } from "@/lib/admin/filters";
 import { loadAgenda } from "@/lib/admin/queries";
 import {
@@ -79,8 +80,51 @@ function Money({
  * money for next Tuesday.
  */
 
+/**
+ * What `/admin/` shows to somebody who cannot see bookings.
+ *
+ * This route is the panel's home and the place `requirePermission` sends
+ * anyone who reaches a section they do not have, so it must render for every
+ * admin — but the agenda below it is a list of customer names, phone numbers
+ * and what they paid, which a content editor has no reason to read.
+ */
+async function ContentOnlyHome({
+  name,
+  showContent,
+}: {
+  name: string;
+  showContent: boolean;
+}) {
+  return (
+    <>
+      <PageHeading title={`Hello, ${name}`} lede="Flex & Flow admin" />
+      {showContent ? (
+        <Suspense fallback={null}>
+          <ContentOverview />
+        </Suspense>
+      ) : (
+        <Panel title="Your sections">
+          <p className="text-[14px] text-muted">
+            Your account does not include bookings or website content. Use the
+            sidebar to reach the sections you do have.
+          </p>
+        </Panel>
+      )}
+    </>
+  );
+}
+
 export default async function AdminAgendaPage() {
-  await requireAdmin();
+  const admin = await requireAdmin();
+
+  if (!can(admin, "booking.manage")) {
+    return (
+      <ContentOnlyHome
+        name={admin.name}
+        showContent={can(admin, "content.view")}
+      />
+    );
+  }
 
   const agenda = await loadAgenda();
   const today = studioDayStart(agenda.date);

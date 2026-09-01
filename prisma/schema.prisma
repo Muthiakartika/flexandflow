@@ -403,6 +403,232 @@ model Payment {
   @@index([status, expiresAt])
 }
 
+// ── CMS ────────────────────────────────────────────────────────────────────
+// See CMS-PLAN.md §3. The body format is deliberately unchanged from
+// `types/index.ts`: `ContentBlock[]` was already a block model, so the CMS
+// stores that same union as JSON and `components/content/RichText.tsx` stays
+// the only renderer on the public site.
+
+enum ContentKind {
+  SERVICE
+  POST
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+}
+
+/// A URL prefix, and the archive page that sits at it.
+///
+/// `/uluwatu-bali/` and `/injury-guide/` used to be two hand-written route
+/// folders. They are rows now, served by `app/(main)/[category]/`, so the
+/// studio can add a third without a deploy — which is what a CMS that owns its
+/// own URLs has to be able to do.
+///
+/// Static route segments beat dynamic ones in Next, so `/services`, `/blog`,
+/// `/about-us`, `/admin` and the rest keep their own files and are never
+/// reachable through this. A category whose slug collides with one of them is
+/// refused at write time; see `RESERVED_SLUGS` in `lib/cms/categories.ts`.
+model ContentCategory {
+  id   String @id @default(cuid())
+  /// The URL segment. `/uluwatu-bali/…`
+  slug String @unique
+
+  /// What the archive page and the breadcrumbs call it.
+  label String
+  /// The visible sentence under the archive's title. Page copy, not metadata.
+  lead  String?
+
+  /// Yoast marks these archives `noindex, follow` and this app matches that.
+  /// `seoDescription` is deliberately nullable: the injury-guide archive on
+  /// WordPress emits no meta description at all, and inventing one would
+  /// change what the archive says about itself.
+  seoTitle       String
+  seoDescription String?
+
+  /// Cannot be renamed or removed from the panel.
+  ///
+  /// True for `uluwatu-bali`, which is where every treatment page lives —
+  /// `lib/cms/read.ts` looks services up under that exact prefix, so renaming
+  /// it would take all nine treatment pages off the internet at once.
+  locked Boolean @default(false)
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+/// One editable page — a treatment or a blog post.
+///
+/// One table for both, because they share a URL namespace:
+/// `/uluwatu-bali/<slug>/` serves either, and `lib/content.ts` resolves which.
+/// Slug uniqueness therefore has to hold *across* the pair — two tables with a
+/// unique index each would happily allow a service and a post to claim the
+/// same path, and one of them would become permanently unreachable.
+model ContentDoc {
+  id   String      @id @default(cuid())
+  kind ContentKind
+
+  slug String
+  /// The path segment this is served under: "uluwatu-bali" for every service
+  /// and for posts in that category, "injury-guide" for the rest. A post's URL
+  /// comes from this, not from a folder.
+  urlPrefix String
+
+  status ContentStatus @default(DRAFT)
+
+  /// Which revision the public site serves. Null means nothing is published —
+  /// the page 404s and drops out of the sitemap.
+  ///
+  /// An integer rather than a foreign key on purpose. A `publishedRevisionId`
+  /// pointing at `ContentRevision`, which points back here, is a circular
+  /// reference that makes deleting a document an ordering puzzle for Postgres.
+  /// The version number carries the same meaning with none of that.
+  publishedVersion Int?
+  publishedAt      DateTime?
+
+  /// Reading order within the kind. Drives the sitemap, the "other treatments"
+  /// sidebar and the blog listing — everything that used the plain order of
+  /// the arrays in `lib/data/`.
+  sortOrder Int @default(0)
+
+  /// Position on `/services` and `/price-list`, which are ordered differently
+  /// from the array — the WordPress grid led with the men's detox massage, not
+  /// with assisted stretching.
+  ///
+  /// Two orderings because the site genuinely has two, and collapsing them
+  /// would silently reshuffle one of the pages. Null means "not on the priced
+  /// grid": posts, and the two services with no published rates
+  /// (`full-body-massage`, `facial-massage`) which are deliberately off every
+  /// menu while staying live and indexable.
+  gridOrder Int?
+
+  revisions ContentRevision[]
+
+  createdById String?
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([urlPrefix, slug])
+  @@index([kind, status, sortOrder])
+}
+
+/// One saved version of a document's content.
+///
+/// Append-only. The **draft** is the highest `version` for the document; the
+/// **published** one is whichever `version` matches `ContentDoc.publishedVersion`.
+/// That is what lets an editor work on a page without touching the live one,
+/// with no branching in the reader and revision history for free.
+model ContentRevision {
+  id    String     @id @default(cuid())
+  docId String
+  doc   ContentDoc @relation(fields: [docId], references: [id], onDelete: Cascade)
+
+  /// 1, 2, 3… per document. Allocated by `nextVersion` in `lib/cms/write.ts`.
+  version Int
+
+  title   String
+  excerpt String
+
+  /// Root-relative path (`/images/…`) or an absolute media URL. Optional
+  /// because `Post.image` is — some ported posts have no featured image.
+  image       String?
+  /// Intrinsic size. `next/image` needs both, and the blog listing's packing
+  /// reads them; an image inserted without them shifts the layout.
+  imageWidth  Int?
+  imageHeight Int?
+  /// Two services carry an extra banner whose heading the theme hides.
+  bannerImage String?
+
+  /// `ContentBlock[]`, validated against `lib/cms/blocks.ts` on every write so
+  /// a malformed block can never reach the renderer.
+  body Json
+
+  /// Yoast-ported metadata. Separate from `title` on purpose: changing a
+  /// heading must not silently change the search result.
+  seoTitle       String
+  seoDescription String
+  seoOgImage     String?
+  canonicalPath  String
+
+  /// Service only. `TherapistTier[]`. Prices stay editable here per the
+  /// owner's decision (CMS-PLAN.md §10.2), which is why `npm run check:prices`
+  /// remains the guard against `ServiceVariant`.
+  tiers Json?
+  /// Service only. The display label, e.g. "Duration : 1 hr".
+  durationLabel String?
+
+  /// Post only. The published date *as text*, e.g. "June 22, 2026" — that is
+  /// what the original printed and what the ported copy contains, and parsing
+  /// it into a `DateTime` would invent a timezone the source never had.
+  displayDate String?
+
+  /// Null once the author's account is hard-deleted; the byline falls back to
+  /// the studio. Soft delete keeps the name (see `AdminUser.deletedAt`).
+  authorId  String?
+  createdAt DateTime @default(now())
+
+  @@unique([docId, version])
+  @@index([docId, createdAt])
+}
+
+/// Every uploaded or imported image, once.
+model MediaAsset {
+  id String @id @default(cuid())
+
+  /// Root-relative for the files already shipped under `public/`, absolute for
+  /// uploads. Always resolved against the configured public base rather than
+  /// the bucket's own hostname, so changing storage provider moves no URL.
+  url String @unique
+
+  /// SHA-256 of the bytes. Uploading the same file twice returns the existing
+  /// row instead of storing it again — the brief asks for exactly that.
+  checksum String @unique
+
+  filename String
+  mimeType String
+  bytes    Int
+  width    Int?
+  height   Int?
+  /// Default alt text. A block may override it for its own use.
+  alt      String @default("")
+
+  /// True for the files that shipped with the repo under `public/`. They are
+  /// referenced by ported copy and cannot be deleted from the library — the
+  /// file would still be in the build, and the row is what makes it pickable.
+  builtIn Boolean @default(false)
+
+  uploadedById String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+/// What an admin may do, before per-user grants are applied.
+///
+/// Nothing in this codebase branches on the role itself — it branches on
+/// `can()` — so adding one is an entry in `ROLE_PERMISSIONS`
+/// (`lib/admin/permissions.ts`) and a value here, with no call site to change.
+/// `BOOKING_STAFF` was added that way and needed nothing else.
+///
+/// The three do not overlap by design: `EDITOR` cannot see a customer's phone
+/// number and `BOOKING_STAFF` cannot change a word on the website. Anything
+/// beyond a role's defaults is granted per person through
+/// `AdminUser.extraPermissions`.
+enum AdminRole {
+  SUPER_ADMIN
+  /// Website content: treatments and blog posts. No access to bookings.
+  EDITOR
+  /// The diary: bookings, schedule and the prices the wizard charges. No
+  /// access to website content.
+  BOOKING_STAFF
+}
+
 model AdminUser {
   id           String    @id @default(cuid())
   email        String    @unique
@@ -411,6 +637,28 @@ model AdminUser {
   active       Boolean   @default(true)
   createdAt    DateTime  @default(now())
   lastLoginAt  DateTime?
+
+  /// New accounts are editors. The migration that added this column sets every
+  /// row that already existed to SUPER_ADMIN explicitly — letting the default
+  /// apply would have demoted the owner's own account and locked them out of
+  /// the page that grants the role back.
+  role AdminRole @default(EDITOR)
+
+  /// Capabilities granted on top of the role's defaults, e.g. giving one
+  /// editor `content.publish` without making them a super admin. The brief
+  /// asks for exactly this ("kecuali diberikan permission secara khusus").
+  /// Unknown strings are ignored rather than trusted — see `permissionsFor`.
+  extraPermissions String[] @default([])
+
+  /// Soft delete. An account that authored a revision cannot be removed
+  /// outright or the author of published content stops resolving; those are
+  /// struck through here instead. Accounts that never wrote anything are
+  /// deleted for real.
+  deletedAt DateTime?
+
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([deletedAt, active])
 }
 
 model AuditLog {

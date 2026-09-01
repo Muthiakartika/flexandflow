@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { listServices } from "@/lib/cms/read";
 import { therapists } from "@/lib/data/therapists";
 import { formatIdr, lowestHourlyRate } from "@/lib/pricing";
 import { assets, contact, workingHours } from "@/lib/site";
@@ -14,8 +15,8 @@ import { BTN_GHOST, BTN_SOLID, FOCUS, WRAP } from "@/components/ui/tokens";
  * Everything factual on this screen is read from the real data: the rate comes
  * from `lowestHourlyRate()`, the hours from `workingHours`.
  */
-export default function Hero() {
-  const from = lowestHourlyRate();
+export default async function Hero() {
+  const from = lowestHourlyRate(await listServices());
 
   const facts = [
     { term: "Sessions", detail: "60 minutes", meta: "One to one" },

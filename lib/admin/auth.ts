@@ -13,6 +13,12 @@ import { compare } from "bcryptjs";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import {
+  hasPermission,
+  permissionsFor,
+  type AdminRoleValue,
+  type Permission,
+} from "@/lib/admin/permissions";
 import { readSessionCookie } from "@/lib/admin/session";
 import { prisma } from "@/lib/db";
 
@@ -20,6 +26,15 @@ export type AdminIdentity = {
   id: string;
   email: string;
   name: string;
+  role: AdminRoleValue;
+  /**
+   * The role's defaults plus this account's own grants, already resolved.
+   *
+   * Resolved here rather than at each call site so there is one answer to
+   * "what may this person do", and so it can be handed to a client component
+   * as plain strings without that component needing the role table.
+   */
+  permissions: Permission[];
 };
 
 /**
@@ -46,14 +61,24 @@ export async function verifyCredentials(
   const hash = user?.passwordHash ?? DUMMY_HASH;
   const matches = await compare(password, hash);
 
-  if (!user || !user.active || !matches) return null;
+  /* `deletedAt` is checked alongside `active` everywhere an account is read.
+     A soft-deleted row keeps its email — that is what makes the unique index
+     still meaningful and the audit trail still resolvable — so without this it
+     would remain a working login. */
+  if (!user || !user.active || user.deletedAt || !matches) return null;
 
   await prisma.adminUser.update({
     where: { id: user.id },
     data: { lastLoginAt: new Date() },
   });
 
-  return { id: user.id, email: user.email, name: user.name };
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    permissions: permissionsFor(user.role, user.extraPermissions),
+  };
 }
 
 /**
@@ -75,12 +100,30 @@ export const currentAdmin = cache(
 
     const user = await prisma.adminUser.findUnique({
       where: { id: session.adminId },
-      select: { id: true, email: true, name: true, active: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        active: true,
+        deletedAt: true,
+        role: true,
+        extraPermissions: true,
+      },
     });
 
-    if (!user || !user.active) return null;
+    if (!user || !user.active || user.deletedAt) return null;
 
-    return { id: user.id, email: user.email, name: user.name };
+    /* Permissions are read from the row on every request, never from the JWT.
+       A token that outlived a revocation is exactly the failure this file
+       exists to avoid: taking `content.publish` away from someone has to bite
+       on their next page load, not in eight hours when their session lapses. */
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      permissions: permissionsFor(user.role, user.extraPermissions),
+    };
   },
 );
 
@@ -89,4 +132,46 @@ export async function requireAdmin(): Promise<AdminIdentity> {
   const admin = await currentAdmin();
   if (!admin) redirect("/admin/login/");
   return admin;
+}
+
+export function can(
+  admin: AdminIdentity | null,
+  permission: Permission,
+): boolean {
+  return admin ? hasPermission(admin.permissions, permission) : false;
+}
+
+/**
+ * For server components that belong to one capability.
+ *
+ * Signed out goes to the login; signed in but not allowed goes to the panel's
+ * home rather than to a 403. There is no useful page to show someone who
+ * followed a link to a section they do not have, and a bare "Forbidden" in a
+ * two-person studio reads as a bug rather than as a policy.
+ */
+export async function requirePermission(
+  permission: Permission,
+): Promise<AdminIdentity> {
+  const admin = await requireAdmin();
+  if (!can(admin, permission)) redirect("/admin/");
+  return admin;
+}
+
+/**
+ * For server actions.
+ *
+ * Returns the admin or `null`, and never redirects: a redirect thrown out of
+ * an action a `useActionState` form is awaiting produces a navigation the form
+ * cannot explain, where a returned error state can say what happened. The
+ * caller turns `null` into that message.
+ *
+ * Every action calls this. `proxy.ts` does not reliably cover server actions —
+ * they are public HTTP endpoints that happen to be reachable by a form — and a
+ * form that only renders behind a permission check is not authorisation.
+ */
+export async function actingAdmin(
+  permission: Permission,
+): Promise<AdminIdentity | null> {
+  const admin = await currentAdmin();
+  return admin && can(admin, permission) ? admin : null;
 }
