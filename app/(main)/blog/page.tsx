@@ -19,18 +19,18 @@ export const metadata: Metadata = {
   },
 };
 
-/** Keyword search filters the listing client-side via the `?s=` query. */
-export default async function BlogPage(props: PageProps<"/blog">) {
-  const { s } = await props.searchParams;
-  const keyword = (Array.isArray(s) ? s[0] : s)?.toLowerCase().trim();
-
+/**
+ * Keyword search filters the listing client-side via the `?s=` query.
+ *
+ * The filtering genuinely happens in the browser now — reading `searchParams`
+ * here is a dynamic API and it was the only thing keeping this page out of the
+ * static build, re-rendering it for every visitor to serve a listing that is
+ * the same for all of them. `BlogListing`'s `searchable` flag hands the query
+ * to a client component behind a `<Suspense>` boundary instead. Nothing about
+ * the URL or the search box changed.
+ */
+export default async function BlogPage() {
   const posts = await listPosts();
-
-  const filtered = keyword
-    ? posts.filter((post) =>
-        `${post.title} ${post.excerpt}`.toLowerCase().includes(keyword),
-      )
-    : posts;
 
   return (
     <>
@@ -40,12 +40,9 @@ export default async function BlogPage(props: PageProps<"/blog">) {
         lead={description}
       />
       <BlogListing
-        posts={filtered}
+        posts={posts}
         page={1}
-        hrefFor={(page) => (page === 1 ? "/blog" : `/blog/page/${page}`)}
-        emptyMessage={
-          keyword ? `No posts match “${keyword}”.` : "No posts found."
-        }
+        searchable
       />
     </>
   );

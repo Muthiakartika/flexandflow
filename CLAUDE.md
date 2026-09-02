@@ -256,10 +256,51 @@ and eyeballing them would have missed it.
 
 ---
 
+## Image optimization & caching — read `IMAGE-QUOTA.md`
+
+Applied 2026-09-02. `images` in `next.config.ts` was on Next's defaults, which is
+where the Vercel quota exposure was; it now pins `minimumCacheTTL` to 31 days (the
+default 4 hours re-bills a variant ~180 times a month), caps `deviceSizes` at 1920,
+and trims `imageSizes`. `vercel.json` pins functions to `sin1` — Neon is on
+`ap-southeast-1` and the Vercel default is Washington DC. Three things follow that
+will bite otherwise:
+
+1. **`npm run images:optimize` never changes a file extension**, and the WebP
+   conversion the runbook describes is deliberately not done. Every path under
+   `public/images` and `public/photos` is stored in Postgres — 68 `MediaAsset` rows
+   plus the `ContentRevision` blocks of published articles — so a rename takes the
+   photography off live pages. It was measured before being rejected: WebP reaches
+   8.36 MB against the 8.49 MB in-place re-encode already achieved. Always follow
+   with **`npm run images:sync`**, which repairs the `checksum` / `bytes` /
+   `width` / `height` the rewrite invalidated.
+
+2. **`sharp` is pinned to `0.34.5`, not `^0.35.4`** — the exact version Next 16.2.12
+   bundles. With two versions installed, npm hoists a `@img/sharp-win32-x64` that
+   Next's own copy then loads, every transform throws inside the server, and Next's
+   `catch` **silently serves the unoptimized original**. No HTTP error, no log the
+   app writes; the only symptom is `/_next/image` returning the source byte count and
+   never `Content-Type: image/webp`. Both copies work fine when required from a plain
+   Node script, which is what makes it slow to find. Re-run `IMAGE-QUOTA.md` §6 after
+   any `sharp` or `next` upgrade.
+
+3. **The Cloudflare half is not done** and is dashboard work on the studio's account.
+   It matters more than it sounds: this site serves a 28.9 kB WebP to a modern
+   `Accept` header and a 41.5 kB JPEG to `*/*`, and Cloudflare honours only
+   `Vary: Accept-Encoding` — so whichever a crawler asks for first is served to
+   everybody. `IMAGE-QUOTA.md` §5 has the two rules and their required order.
+
+`/blog` was the one marketing page still rendering per request; its `?s=` filter
+moved to the client behind `<Suspense>` and it is `○ (Static)` now. The URL and the
+search box are unchanged.
+
 ## Outstanding
 
 - **Owner review of the redesigned site** is the next step. Ask for screenshots rather
   than iterating blind (gotcha 1).
+- **The 70 rewritten photographs have not been looked at by a human.** They were
+  re-encoded at mozjpeg 80 and capped at 1920px wide; aspect ratios are unchanged and
+  every page was checked for broken images numerically, but nobody has compared a
+  before and after by eye. Ask the owner (gotcha 1).
 - **Meta re-synced against the live WordPress site on 2026-08-18**, while the domain
   still served it. All 27 indexable URLs then matched flexandflow.fit character for
   character on title, description and robots — including the archives' and profiles'

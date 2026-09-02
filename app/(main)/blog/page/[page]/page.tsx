@@ -61,7 +61,6 @@ export default async function BlogPaginatedPage(
       <BlogListing
         posts={posts}
         page={current}
-        hrefFor={(target) => (target === 1 ? "/blog" : `/blog/page/${target}`)}
       />
     </>
   );
