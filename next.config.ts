@@ -88,6 +88,39 @@ const nextConfig: NextConfig = {
    */
   images: {
     /**
+     * ── OPTIMIZER OFF — 2026-09-02 ──────────────────────────────────────
+     *
+     * Vercel's Image Optimization quota is **exhausted** for this billing
+     * period. `/_next/image` answers `402 Payment Required` with
+     * `x-vercel-error: OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED` for any
+     * variant not already in its cache — measured 2026-09-02: 158 of the
+     * site's 191 variants were 402, i.e. most photographs on the live site
+     * were rendering as broken images.
+     *
+     * `unoptimized` serves the files in `public/` directly: **zero
+     * transformations, zero image cache reads, zero cache writes**, and every
+     * `402` gone on the next deploy. It is the runbook's own answer for
+     * exactly this state (§02), and it only works because §01 ran first — the
+     * sources were re-encoded and capped at 1920px, from 15.76 MB to 8.49 MB,
+     * so shipping them as-is is now reasonable rather than reckless.
+     *
+     * What it costs: no responsive `srcset`, so a phone downloads the same
+     * file as a desktop, and no WebP conversion — the browser gets the JPEG or
+     * PNG on disk.
+     *
+     * **To turn the optimizer back on, delete this one line.** Everything
+     * below is still correct and still tuned; it takes effect again the moment
+     * this is removed. Do that once the quota resets (Vercel dashboard →
+     * Usage → Image Optimization) or the plan is upgraded, and re-run the
+     * checks in IMAGE-QUOTA.md §6.
+     *
+     * Note this **overrides the `unoptimized` prop on individual components** —
+     * the config wins, and the relationship cannot be inverted. The CMS
+     * editor's previews already pass that prop, so they are unaffected.
+     */
+    unoptimized: true,
+
+    /**
      * Next's default is 14400 — four hours. That means every variant can go
      * STALE six times a day, and each staleness is a fresh cache write *and* a
      * fresh transformation: a single image sitting untouched could bill ~180

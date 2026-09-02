@@ -258,6 +258,14 @@ and eyeballing them would have missed it.
 
 ## Image optimization & caching — read `IMAGE-QUOTA.md`
 
+**The Vercel image optimizer is switched off** (`images.unoptimized: true`,
+2026-09-02). The quota ran out mid-month and `/_next/image` was answering `402`
+for 158 of the site's 191 variants, so most photographs were broken on the live
+site. Turning it back on is deleting that one line — but read the box at the top
+of `IMAGE-QUOTA.md` first, because re-running `npm run images:optimize` changes
+every source file's content hash and invalidates the whole variant cache at
+once, which is part of how the quota was exhausted in the first place.
+
 Applied 2026-09-02. `images` in `next.config.ts` was on Next's defaults, which is
 where the Vercel quota exposure was; it now pins `minimumCacheTTL` to 31 days (the
 default 4 hours re-bills a variant ~180 times a month), caps `deviceSizes` at 1920,

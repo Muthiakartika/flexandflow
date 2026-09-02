@@ -7,6 +7,44 @@ against the worst failure mode here.
 
 ---
 
+> ## ⚠ THE OPTIMIZER IS CURRENTLY OFF
+>
+> `images.unoptimized: true` was set on **2026-09-02** because Vercel's Image
+> Optimization quota ran out mid-month. `/_next/image` was answering
+> **`402 Payment Required`** (`x-vercel-error:
+> OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED`) for anything not already cached —
+> **158 of the site's 191 variants**, so most photographs were rendering as
+> broken images on the live site.
+>
+> With `unoptimized`, `next/image` emits the file in `public/` directly: no
+> `/_next/image`, therefore **no transformations, no image cache reads, no
+> cache writes, and no 402 possible**. Verified in the build: the pages emit
+> zero `/_next/image` URLs.
+>
+> **Why this is acceptable here:** §2 already shrank the sources to 8.49 MB and
+> capped them at 1920px, and Cloudflare already caches `/images/**` at the edge
+> (measured: MISS → HIT), so repeat visitors are served from the edge and
+> Vercel barely sees the traffic.
+>
+> **What it costs:** no responsive `srcset` and no WebP conversion. Measured
+> per page: **3.0 MB on `/`**, 1.6 MB on `/about-us/`, 523 kB average across
+> the 23 sitemap pages — roughly 4–5× what the optimizer was delivering.
+>
+> **To turn it back on: delete the one `unoptimized: true` line** in
+> `next.config.ts`. Everything else in that block is still tuned and takes
+> effect again immediately. Do it once the quota resets (dashboard → Usage →
+> Image Optimization) or the plan is upgraded, and re-run §6.
+>
+> **Before turning it back on, know what exhausted the quota.** Two candidates,
+> and they compound: the pre-existing 4-hour `minimumCacheTTL` (now 31 days),
+> which re-billed every variant up to six times a day; and re-encoding all 70
+> source files in §2, which changes their content hashes and therefore
+> invalidated every cached variant at once, forcing a full re-transform of the
+> site. The second is a one-off, but it is the reason not to re-run
+> `images:optimize` casually while the quota is tight.
+
+---
+
 ## 0. Which meter is actually the problem
 
 Three meters share the word "image" on the Vercel usage page and they respond
@@ -188,15 +226,64 @@ Also check, in the same session:
 - **Speed → Optimization → Content Optimization**: turn **Rocket Loader off**.
   It reorders script execution and breaks React hydration.
 
-**Never enable "Cache Everything" for the HTML.** App Router distinguishes a
-full HTML response from an RSC payload using `Vary: rsc,
-next-router-state-tree, next-router-prefetch, …`, which Cloudflare ignores —
-visitors get blank pages or raw payload text, and only some of them, which
-makes it very hard to trace. Leaving HTML to Vercel is also what keeps the
-CMS honest: `updateTag` purges Vercel, not Cloudflare, so HTML cached at
-Cloudflare would keep serving old prices until its own TTL expired.
+**The HTML is cached at Cloudflare, and on Next 16 that is safe — but only
+because of one thing.** The runbook warns that App Router separates a full HTML
+response from an RSC payload with `Vary: rsc, next-router-state-tree, …`, which
+Cloudflare ignores, so a cached RSC payload can be served to a browser asking
+for a page. Next 16 defends against exactly this **without** relying on `Vary`:
+every RSC and prefetch request carries a `?_rsc=<hash>` search parameter, a
+hash of the relevant request headers, which gives each variant its own cache
+key (`node_modules/next/dist/docs/01-app/02-guides/cdn-caching.md`).
+
+Measured on the live zone 2026-09-02: a distinct query string always answers
+`cf-cache-status: MISS` and a repeated one answers `HIT`, so Cloudflare **is**
+keying on the query string, `_rsc` does its job, and all 23 sitemap URLs return
+`text/html`. The collision is only reachable by hand-crafting a request that
+sends the `rsc` header *without* `_rsc`, which no real client does.
+
+Two things therefore must not change, or the protection disappears:
+
+- **Never set Cloudflare to ignore the query string** in the cache key (an
+  option on Cache Rules and the old "Cache Level: Ignore Query String"). That
+  strips `_rsc`, and then HTML and RSC payloads collide for real.
+- **Never let the CDN strip the `rsc` request header.**
+
+Note this is *not* protection the images get: `/_next/image` varies on `Accept`
+and has no equivalent discriminator in its query string, which is why rule 1
+above is still needed.
+
+Cloudflare holding the HTML is also why `lib/cms/purge.ts` exists — `updateTag`
+purges Vercel, not Cloudflare, so a publish must drop the edge copy too. That
+integration is already wired.
 
 ---
+
+## 5b. Measured on the live site, 2026-09-02 (after deploy)
+
+Crawled all 23 sitemap URLs and collected every `/_next/image` URL they emit:
+
+| | |
+|---|---|
+| Distinct source images | 33 |
+| **Unique variants (`url` + `w` + `q`)** | **191** |
+| Widths in play | 64 96 128 256 384 640 828 1080 1920 — the configured set, nothing else |
+| Qualities in play | 75 only |
+
+191 is the ceiling on transformations, and with a 31-day TTL each bills roughly
+once a month: **under 4% of the 5,000/month Hobby allowance.** There is no case
+for `unoptimized: true` here — a 1920px source that is ~200 kB on disk goes out
+as a 20–40 kB WebP, so the optimizer is paying for itself several times over at
+a rounding error's worth of quota.
+
+Confirmed live: `x-nextjs-prerender: 1`, `x-vercel-cache: HIT`/`PRERENDER`,
+`x-vercel-id: sin1::…` (one region segment — static, no function invoked), and
+the deployed build output carries `minimumCacheTTL: 2678400`.
+
+The `max-age=7200` visible on HTML and image responses is **Cloudflare's Browser
+Cache TTL** (2 hours), not Vercel's — `/_next/static/` still comes through with
+`max-age=31536000, immutable`, so nothing is rewriting headers globally. It
+governs the reader's browser only; Vercel's own image cache still runs on the
+31 days above. Already documented in `lib/cms/purge.ts`.
 
 ## 6. Verifying after deploy
 
