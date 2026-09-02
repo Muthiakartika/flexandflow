@@ -1,0 +1,119 @@
+# Clear Cloudflare's edge cache after a production deploy.
+#
+# `flexandflow.fit` is proxied through Cloudflare, and the site's HTML goes out
+# `cache-control: public, max-age=7200`. Vercel finishing a deployment changes
+# what the origin serves; it does nothing to the copy Cloudflare is already
+# handing to visitors. Without this workflow a deploy takes up to two hours to
+# become visible, at a different moment in every colo — which reads from the
+# outside as "the deploy didn't work".
+#
+# It calls Cloudflare directly rather than going through the app's own
+# `/api/cache/purge/`, on purpose: a purge should not depend on the deployment
+# that just landed being healthy. The route exists for the other callers —
+# a Vercel webhook, or the CMS after a publish.
+#
+# WHAT MAKES THIS FIRE: Vercel's GitHub integration reports each deployment
+# back to GitHub as a Deployment, and GitHub turns that into a
+# `deployment_status` event. There is no polling and no waiting — `success`
+# means the deployment is live and serving. If Vercel is ever disconnected from
+# GitHub and deploys move to the CLI, this event stops arriving and the
+# workflow goes quiet without failing; the "Run workflow" button and
+# `npm run cache:purge` are the fallbacks.
+#
+# SETUP, once, on whichever repository Vercel deploys from:
+#   Settings → Secrets and variables → Actions
+#     Secrets   → CLOUDFLARE_API_TOKEN   (Zone → Cache Purge → Purge, this zone)
+#     Variables → CLOUDFLARE_ZONE_ID     (dashboard overview sidebar)
+#
+# The zone ID goes in Variables rather than Secrets deliberately: it is not a
+# secret, and Actions masks secret values in logs — so a zone ID kept there
+# prints as *** exactly when you are trying to work out which zone was purged.
+# Secrets are still read as a fallback, for a zone ID put in the wrong tab.
+
+name: Purge Cloudflare cache
+
+on:
+  deployment_status:
+  # For when the cache needs clearing without a deploy behind it — a page rule
+  # changed, or a deployment landed while the token was misconfigured.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A rapid second deploy supersedes the first: purging twice is harmless but
+# pointless, and the later purge covers the earlier one's changes.
+concurrency:
+  group: purge-cache
+  cancel-in-progress: true
+
+jobs:
+  purge:
+    name: Purge everything
+    # Only production, and only once it is actually live. `deployment_status`
+    # fires for `pending`, `in_progress`, `failure` and `error` too, and for
+    # every preview branch — purging the production cache because a preview
+    # built successfully would be wrong and would happen constantly.
+    #
+    # GitHub compares strings case-insensitively, so this matches Vercel's
+    # "Production". `startsWith` rather than `==` because Vercel has labelled
+    # the environment with the project name appended before now.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       startsWith(github.event.deployment_status.environment, 'production'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Purge the zone
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID || secrets.CLOUDFLARE_ZONE_ID }}
+          DEPLOYMENT_URL: ${{ github.event.deployment_status.environment_url }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is not set. Add it under Settings → Secrets and variables → Actions → Secrets."
+            exit 1
+          fi
+          if [ -z "$CLOUDFLARE_ZONE_ID" ]; then
+            echo "::error::CLOUDFLARE_ZONE_ID is not set. Add it under Settings → Secrets and variables → Actions → Variables."
+            exit 1
+          fi
+
+          if [ -n "${DEPLOYMENT_URL:-}" ]; then
+            echo "Deployment live at $DEPLOYMENT_URL"
+          fi
+          echo "Purging zone $CLOUDFLARE_ZONE_ID"
+
+          # No --fail: Cloudflare answers HTTP 200 with `"success": false` for
+          # most refusals — a token without the purge permission, a zone the
+          # token cannot see. curl would call that a success and the step would
+          # go green having purged nothing. The body is the only thing worth
+          # believing, so capture it and check it.
+          response=$(curl --silent --show-error --max-time 30 \
+            --request POST \
+            --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            --header "Content-Type: application/json" \
+            --data '{"purge_everything":true}' \
+            "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache")
+
+          echo "$response" | jq .
+
+          if [ "$(echo "$response" | jq -r '.success')" != "true" ]; then
+            echo "::error::Cloudflare refused the purge: $(echo "$response" | jq -c '.errors')"
+            exit 1
+          fi
+
+          echo "Cache purged."
+
+      - name: Check the edge came back cold
+        # Informational only. A visitor arriving between the purge and this
+        # request re-warms the cache and turns this back to HIT, which is not a
+        # failure — so this reports and never fails the run.
+        continue-on-error: true
+        run: |
+          curl --silent --show-error --max-time 30 --head https://flexandflow.fit/ \
+            | grep -iE '^(cf-cache-status|age|x-vercel-cache):' \
+            || echo "No cache headers in the response."

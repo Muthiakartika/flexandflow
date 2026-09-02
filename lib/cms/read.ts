@@ -55,6 +55,30 @@ export const CMS_TAG = {
   post: (slug: string) => `cms:post:${slug}`,
 } as const;
 
+/**
+ * The one page file that renders every treatment and every blog post.
+ *
+ * Lives here beside `CMS_TAG` because it is the same kind of thing: an
+ * identifier the writers pass to Next to invalidate what this module cached.
+ *
+ * `revalidatePath` matches on the **route file structure, not the URL** — the
+ * bundled docs are explicit, and give `/(main)/blog/[slug]` as an example.
+ * Since the CMS moved categories into a dynamic segment, `[category]/[slug]`
+ * is the only such file, so this is the only pattern that matches anything.
+ *
+ * It replaces `/uluwatu-bali/[slug]` and `` `/${category}/[slug]` ``, which
+ * named `app/uluwatu-bali/[slug]/page.tsx` and friends — files that stopped
+ * existing when categories became rows, leaving those calls matching no page.
+ * The symptom hid well: the edited page itself refreshed, because a literal
+ * path like `/uluwatu-bali/cupping-therapy` still resolves, while its siblings
+ * kept the old title in their sidebars until something else rebuilt them.
+ *
+ * One pattern covers every category, so a treatment change now invalidates the
+ * blog posts too. Broader than before, deliberately — `revalidateFor` already
+ * prefers a few extra regenerations to a stale price.
+ */
+export const ARTICLE_ROUTE = "/[category]/[slug]";
+
 export type { PostCategory };
 
 /**

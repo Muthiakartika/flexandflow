@@ -23,7 +23,8 @@
     "check:access": "tsx scripts/check-access.ts",
     "check:move": "tsx scripts/check-move.ts",
     "check:category": "tsx scripts/check-category.ts",
-    "admin:create": "tsx scripts/create-admin.ts"
+    "admin:create": "tsx scripts/create-admin.ts",
+    "cache:purge": "tsx scripts/purge-cache.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1123.0",

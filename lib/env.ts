@@ -135,6 +135,20 @@ const schema = z.object({
   // ── Anti-spam (optional; skipped entirely when unset) ──────────────────
   TURNSTILE_SECRET_KEY: secret().optional(),
 
+  // ── Cloudflare (cache purge) ───────────────────────────────────────────
+  /**
+   * Optional as a pair, and for the same reason payments are: a zone with no
+   * token, or a token with no zone, cannot purge anything, and an endpoint
+   * that answers 200 without having made a request tells a deploy pipeline the
+   * cache was cleared when it was not.
+   *
+   * The zone ID is not a secret — it is in the dashboard sidebar and identifies
+   * nothing on its own — but it lives here so both halves are validated in one
+   * place. The token is: it can empty this zone's cache, and nothing else.
+   */
+  CLOUDFLARE_ZONE_ID: secret().optional(),
+  CLOUDFLARE_API_TOKEN: secret().optional(),
+
   // ── Public ─────────────────────────────────────────────────────────────
   NEXT_PUBLIC_SITE_URL: z
     .string()
@@ -200,4 +214,16 @@ export function paymentsEnabled(): boolean {
  */
 export function cardPaymentsEnabled(): boolean {
   return paymentsEnabled() && Boolean(env().NEXT_PUBLIC_XENDIT_PUBLIC_KEY);
+}
+
+/**
+ * Whether `/api/cache/purge/` can do anything.
+ *
+ * Both halves or neither. False makes that route 404 rather than pretend, so a
+ * deployment configured without Cloudflare credentials reports a failed purge
+ * instead of a silent one.
+ */
+export function cachePurgeEnabled(): boolean {
+  const { CLOUDFLARE_ZONE_ID, CLOUDFLARE_API_TOKEN } = env();
+  return Boolean(CLOUDFLARE_ZONE_ID && CLOUDFLARE_API_TOKEN);
 }

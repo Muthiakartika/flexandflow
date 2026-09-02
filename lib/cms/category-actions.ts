@@ -12,7 +12,8 @@ import { revalidatePath, updateTag } from "next/cache";
 import { actingAdmin, currentAdmin } from "@/lib/admin/auth";
 import { slugProblem } from "@/lib/cms/categories";
 import { CATEGORY_TAG, categoryUsage } from "@/lib/cms/category-store";
-import { CMS_TAG } from "@/lib/cms/read";
+import { purgeEdgeEverything } from "@/lib/cms/purge";
+import { ARTICLE_ROUTE, CMS_TAG } from "@/lib/cms/read";
 import { prisma } from "@/lib/db";
 import type { CmsResult } from "@/lib/cms/actions";
 
@@ -59,13 +60,19 @@ function revalidateCategories(slugs: string[]): void {
 
   for (const slug of slugs) {
     revalidatePath(`/${slug}`);
-    revalidatePath(`/${slug}/[slug]`, "page");
   }
+  /* Once, not per slug: there is a single `[category]/[slug]` page file and it
+     renders all of them, so repeating it would just repeat the same call. */
+  revalidatePath(ARTICLE_ROUTE, "page");
 
   revalidatePath("/blog");
   revalidatePath("/blog/page/[page]", "page");
   revalidatePath("/sitemap.xml");
   revalidatePath("/admin/blog");
+
+  /* And the CDN, after Next — a rename leaves the edge holding every post at
+     its old address, which is the one address the database no longer has. */
+  purgeEdgeEverything(`category change: ${slugs.join(", ")}`);
 }
 
 type CategoryInput = {

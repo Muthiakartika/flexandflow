@@ -27,7 +27,8 @@ import "server-only";
 import { revalidatePath, updateTag } from "next/cache";
 
 import { parseBlocks } from "@/lib/cms/blocks";
-import { CMS_TAG } from "@/lib/cms/read";
+import { purgeEdgeFor } from "@/lib/cms/purge";
+import { ARTICLE_ROUTE, CMS_TAG } from "@/lib/cms/read";
 import { prisma } from "@/lib/db";
 import type { ContentBlock } from "@/types";
 
@@ -71,19 +72,24 @@ function revalidateFor(doc: DocIdentity): void {
     revalidatePath("/services");
     revalidatePath("/price-list");
     /* Every other treatment page carries this one in its sidebar. */
-    revalidatePath("/uluwatu-bali/[slug]", "page");
+    revalidatePath(ARTICLE_ROUTE, "page");
   } else {
     updateTag(CMS_TAG.posts);
     updateTag(CMS_TAG.post(doc.slug));
     revalidatePath("/blog");
     revalidatePath("/blog/page/[page]", "page");
     revalidatePath(`/${doc.urlPrefix}`);
-    revalidatePath(`/${doc.urlPrefix}/[slug]`, "page");
+    revalidatePath(ARTICLE_ROUTE, "page");
   }
 
   revalidatePath(`/${doc.urlPrefix}/${doc.slug}`);
   /* Publishing adds a URL and unpublishing removes one. */
   revalidatePath("/sitemap.xml");
+
+  /* Then, and only then, the CDN in front of all of it. Ordering matters:
+     purging Cloudflare before Next knows the page changed just refetches the
+     stale render and caches it again. See `lib/cms/purge.ts`. */
+  purgeEdgeFor(doc);
 }
 
 async function identity(docId: string): Promise<DocIdentity | null> {
