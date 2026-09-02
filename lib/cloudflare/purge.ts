@@ -156,6 +156,55 @@ async function post(
 }
 
 /**
+ * The zone's own domain, asked of Cloudflare and remembered per process.
+ *
+ * Exists because purge-by-URL will happily accept a URL for a host it does not
+ * serve and answer `success: true`, so a wrong origin produces a purge that
+ * reports 200 and drops nothing. That happened on the first live call: the
+ * deployment's site URL was still `…vercel.app`, every path resolved against
+ * it, and the endpoint cheerfully confirmed a purge of a hostname Cloudflare
+ * has never cached.
+ *
+ * `null` when the token cannot read the zone. `.env.example` asks for a
+ * purge-only token, and a token without `Zone → Zone → Read` is a perfectly
+ * reasonable thing to hold — so this degrades to no check rather than refusing
+ * to work.
+ */
+const zoneNames = new Map<string, string | null>();
+
+async function zoneName(
+  credentials: CloudflareCredentials,
+): Promise<string | null> {
+  const cached = zoneNames.get(credentials.zoneId);
+  if (cached !== undefined) return cached;
+
+  let name: string | null = null;
+  try {
+    const response = await fetch(`${API_BASE}/zones/${credentials.zoneId}`, {
+      headers: { authorization: `Bearer ${credentials.apiToken}` },
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    const payload = (await response.json()) as {
+      success?: boolean;
+      result?: { name?: string } | null;
+    };
+    if (response.ok && payload.success === true && payload.result?.name) {
+      name = payload.result.name.toLowerCase();
+    }
+  } catch {
+    /* Unreadable for any reason means no check, never a failed purge. */
+  }
+
+  zoneNames.set(credentials.zoneId, name);
+  return name;
+}
+
+/** Whether `host` is the zone apex or something beneath it. */
+function withinZone(host: string, zone: string): boolean {
+  return host === zone || host.endsWith(`.${zone}`);
+}
+
+/**
  * Drop every cached object in the zone.
  *
  * This is the right hammer after a deploy. It costs little to refill — Next's
@@ -185,6 +234,26 @@ export async function purgeUrls(
 ): Promise<PurgeResult> {
   if (urls.length === 0) {
     throw new CloudflarePurgeError("No URLs to purge.");
+  }
+
+  /* Refuse a URL Cloudflare does not serve, rather than let it answer 200 for
+     a purge that drops nothing. The origin those URLs were built from is the
+     thing at fault — on a deployment that is almost always
+     `NEXT_PUBLIC_SITE_URL`, still holding a `…vercel.app` hostname or a
+     staging domain. Naming both sides is what makes that a two-minute fix
+     instead of an afternoon. */
+  const zone = await zoneName(credentials);
+  if (zone) {
+    const strays = urls.filter(
+      (url) => !withinZone(new URL(url).hostname.toLowerCase(), zone),
+    );
+    if (strays.length > 0) {
+      throw new CloudflarePurgeError(
+        `${strays.length} of ${urls.length} URL(s) are not in the "${zone}" zone, ` +
+          `so purging them would report success and drop nothing. Check the site ` +
+          `URL these were built from. First offender: ${strays[0]}`,
+      );
+    }
   }
 
   /* Sequential rather than `Promise.all`: the chunks share a per-zone rate
