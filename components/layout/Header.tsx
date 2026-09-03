@@ -44,7 +44,7 @@ export default function Header() {
             {/* 9px on tighter tracking keeps the longer second line close to
                 the width of the name above it. */}
             <span className="mt-1 block font-body text-[9px] leading-none font-bold tracking-[0.14em] text-subtle uppercase">
-              Wellness Studio
+             Body Work and Movement
             </span>
           </span>
         </Link>
