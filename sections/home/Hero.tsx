@@ -42,7 +42,7 @@ export default async function Hero() {
           </p>
 
           <h1 className="mt-4 max-w-[16ch] text-[clamp(2.125rem,1.45rem+2.8vw,3.5rem)] leading-[1.02] font-bold text-balance">
-            Private Bodywork &amp; Movement Studio in Uluwatu, Bali
+            Private Bodywork &amp; Movement Studio in Uluwatu
           </h1>
 
           <p className="mt-4 max-w-[52ch] font-body text-[clamp(0.9375rem,0.9rem+0.2vw,1.0625rem)] leading-[1.7] text-body-text/80">

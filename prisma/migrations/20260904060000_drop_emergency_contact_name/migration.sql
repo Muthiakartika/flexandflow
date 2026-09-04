@@ -1,0 +1,14 @@
+-- Owner request, 2026-09-04: remove Emergency Contact Name for good.
+--
+-- 20260904040000_remove_emergency_contact_name archived it instead, on the
+-- reasoning that two existing submissions hold an answer under this key and
+-- archiving keeps both the answer readable and its Google Sheet column. The
+-- owner has since decided that data is not worth a permanently empty column:
+-- the only two rows in IntakeSubmission are their own tests, and no client has
+-- ever submitted this form.
+--
+-- What this costs, stated plainly: those two submissions keep the answer
+-- inside `IntakeSubmission.data` as JSON, but nothing will render it any more,
+-- because a stored answer is only ever shown through the field definition that
+-- names it. Recovering it means reading the JSON by hand.
+DELETE FROM "IntakeFormField" WHERE "fieldKey" = 'emergencyContactName';

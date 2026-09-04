@@ -47,6 +47,25 @@ const list = z
       .filter(Boolean),
   );
 
+/**
+ * The same list, in E.164, with Indonesia's trunk prefix converted.
+ *
+ * Everyone here writes their own number as `08…`, and that is what gets pasted
+ * into a dashboard field. WAHA builds a chatId by stripping non-digits
+ * (`lib/notifications/whatsapp.ts`), so `082145572144` would be sent to
+ * `082145572144@c.us` — a number that does not exist, one `numberExists` check
+ * answering false, and a job marked DEAD with nobody receiving anything and no
+ * error anywhere a person looks. Converting it here is what stops a correctly
+ * typed number failing silently.
+ *
+ * An entry already starting `+` is passed through untouched, so E.164 is never
+ * rewritten. `0…` is assumed Indonesian, which every number this studio
+ * notifies is.
+ */
+const phoneList = list.transform((entries) =>
+  entries.map((entry) => (entry.startsWith("0") ? `+62${entry.slice(1)}` : entry)),
+);
+
 const schema = z.object({
   // ── Database ───────────────────────────────────────────────────────────
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
@@ -72,7 +91,16 @@ const schema = z.object({
   WAHA_API_KEY: secret().pipe(z.string().min(1)),
   WAHA_SESSION: z.string().default("default"),
   /** E.164, comma separated. Who gets the "new booking" WhatsApp. */
-  ADMIN_WHATSAPP_NUMBERS: list,
+  ADMIN_WHATSAPP_NUMBERS: phoneList,
+  /**
+   * Extra numbers for the **intake form only** — a new client consent form,
+   * never a booking. Merged with `ADMIN_WHATSAPP_NUMBERS` in
+   * `lib/intake/notifications.ts`, so somebody who should see intake forms
+   * without also being sent every appointment belongs here and nowhere else.
+   * Adding them to `ADMIN_WHATSAPP_NUMBERS` instead would subscribe them to
+   * the booking queue too, which is the mistake this variable exists to avoid.
+   */
+  INTAKE_WHATSAPP_NUMBERS: phoneList,
 
   // ── Booking rules ──────────────────────────────────────────────────────
   BOOKING_TIMEZONE: z.string().default("Asia/Makassar"),

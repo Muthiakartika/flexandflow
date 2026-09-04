@@ -18,19 +18,17 @@
  * in `prisma/seed.ts`, which drops any non-custom row whose `fieldKey` is no
  * longer in this array.
  *
- * Two judgment calls worth flagging to the owner rather than silently baking
- * in:
- * - "Activity Restrictions Acknowledgement" and "Client Disclosure &
- *   Consent" are CHECKBOX_GROUP rows validated the same as every other
- *   checkbox group here — at least one option selected, not "every option
- *   must be checked". JotForm's own default checkbox-list behaviour is the
- *   same "at least one", so this is very likely a faithful port rather than
- *   a weaker one, but it was not possible to confirm the original widget's
- *   exact client-side rule from the rendered page alone.
- * - "Client full name" in the Signature block duplicates "Full Name" in
- *   Client Details — the live form asks again immediately before signing,
- *   and this keeps that re-confirmation rather than assuming it was
- *   redundant.
+ * Trimmed again on 2026-09-04, after the owner reviewed the built form and
+ * asked for "a friendly more minimalistic approach":
+ * - The two health checkbox lists became one (see `HEALTH_CONDITIONS`).
+ * - The six consent tick boxes became two (see `AFTERCARE_ACKNOWLEDGEMENT`).
+ * - The digital signature, the repeated "Client full name" and the signature
+ *   date are gone; the name is only asked once now, at the top.
+ *
+ * Five rows left the form in that pass. They are not deleted from this array
+ * and quietly forgotten — `prisma/migrations/20260904050000_intake_simplify`
+ * removes their definitions outright, which is only safe because no client
+ * has submitted this form yet.
  */
 import type { IntakeFieldKind, IntakeSectionKey } from "@/lib/intake/types";
 import { CORE_FIELD_KEYS } from "@/lib/intake/schema";
@@ -54,33 +52,37 @@ const TREATMENTS = [
   "Other",
 ];
 
-const CURRENT_HEALTH_SCREENING = [
+/**
+ * One list where the JotForm had two — "Current Health Screening" and
+ * "Medical History", merged at the owner's request on 2026-09-04 ("we should
+ * try move this into one"). They overlapped heavily: cancer was in both, and
+ * so were blood clots / clotting disorder, heart / cardiovascular condition.
+ * Twenty-four boxes across two questions became nineteen across one.
+ *
+ * The merge loses the *now vs. previously* distinction the two questions drew
+ * between them, which is clinically real — a client treated for cancer ten
+ * years ago is not the same as one in treatment today. The details box below
+ * asks for timing to put that back, rather than the form silently dropping it.
+ */
+const HEALTH_CONDITIONS = [
   "Cancer",
-  "Blood clots",
-  "Heart condition",
+  "Blood clots or clotting disorder",
+  "Heart or cardiovascular condition",
   "High blood pressure",
+  "Circulatory disorder",
+  "Lymphatic condition",
   "Diabetes",
   "Autoimmune condition",
-  "Pregnant or trying to conceive",
-  "Recent surgery",
-  "Infection or fever",
-  "Open wounds or skin irritation",
-  "Others",
-  "None of the above",
-];
-
-const MEDICAL_HISTORY = [
-  "Cancer",
-  "Blood clotting disorder",
-  "Cardiovascular condition",
-  "Lymphatic condition",
-  "Circulatory disorder",
   "Respiratory condition",
   "Neurological condition",
   "Digestive disorder",
   "Hormonal condition",
   "Musculoskeletal condition",
-  "Others",
+  "Pregnant or trying to conceive",
+  "Recent surgery",
+  "Infection or fever",
+  "Open wounds or skin irritation",
+  "Other",
   "None of the above",
 ];
 
@@ -109,16 +111,25 @@ const LYMPHATIC_SCREENING = [
   "Other",
 ];
 
-const ACTIVITY_RESTRICTIONS_STATEMENTS = [
-  "I acknowledge that I will follow any activity restrictions provided by my practitioner before and after treatment.",
-  "I understand that it is my responsibility to inform my practitioner if I experience pain, discomfort, dizziness, swelling, or any unusual reaction during or after treatment.",
+/**
+ * Six tick boxes became two on 2026-09-04, at the owner's request
+ * ("normally a confirmation would be just 1 or 2 tick that ticks all info").
+ * Each statement below is one whole group rather than two groups of several,
+ * and that structure is load-bearing: a required CHECKBOX_GROUP validates as
+ * "at least one option selected" (`schemaForField`), so two statements in one
+ * group could be half-agreed to. One statement per group means both have to
+ * be ticked, which is what a consent record needs.
+ *
+ * They stay two rather than one because they affirm different things — that
+ * what the client wrote is true, and that they agree to be treated. Collapsing
+ * those into a single box would make a disclosure and a consent indivisible.
+ */
+const AFTERCARE_ACKNOWLEDGEMENT = [
+  "I have read the notes above, will follow the activity restrictions before and after treatment, and will tell my practitioner straight away if I feel pain, dizziness, swelling or any unusual reaction.",
 ];
 
-const CLIENT_DISCLOSURE_STATEMENTS = [
-  "I confirm that I have read and understand the client disclosure information provided in this form.",
-  "I confirm that I have disclosed all relevant health information, conditions, medications, allergies, and concerns to the best of my knowledge.",
-  "I agree that the information I have provided is true and complete to the best of my knowledge.",
-  "I consent to receive the treatment or service described in this form.",
+const DISCLOSURE_AND_CONSENT = [
+  "Everything I have entered here is true and complete, including any health conditions, medications and allergies — and I consent to receive the treatment described.",
 ];
 
 const FILL_IF_RECEIVED_BEFORE = "Fill it if you have received the treatment before";
@@ -218,38 +229,28 @@ export const SEED_INTAKE_FIELDS: SeedIntakeField[] = [
   },
 
   // ── Health Screening ──────────────────────────────────────────────────
+  /* Keeps the `currentHealthScreening` key even though it now covers medical
+     history too. The key is internal, and reusing it means the merged question
+     inherits this row's `sortOrder` — so it stays first in the section instead
+     of being appended after every follow-up question, which is where a new key
+     would land (`prisma/seed.ts` assigns new rows `max + 1`). */
   {
     sectionKey: "HEALTH_SCREENING",
     fieldKey: "currentHealthScreening",
     kind: "CHECKBOX_GROUP",
-    label:
-      "Current Health Screening — do you currently have or have you recently " +
-      "experienced any of the following?",
+    label: "Do you have, or have you had, any of the following?",
+    helpText: "Tick anything that applies, now or in the past.",
     required: true,
-    options: CURRENT_HEALTH_SCREENING,
+    options: HEALTH_CONDITIONS,
   },
   {
     sectionKey: "HEALTH_SCREENING",
     fieldKey: "currentHealthScreeningDetails",
     kind: "TEXTAREA",
-    label: "Current Health Screening Details",
-    helpText: "Fill it if you have health screening details",
-    required: false,
-  },
-  {
-    sectionKey: "HEALTH_SCREENING",
-    fieldKey: "medicalHistory",
-    kind: "CHECKBOX_GROUP",
-    label: "Medical History",
-    required: true,
-    options: MEDICAL_HISTORY,
-  },
-  {
-    sectionKey: "HEALTH_SCREENING",
-    fieldKey: "medicalHistoryDetails",
-    kind: "TEXTAREA",
-    label: "Medical History Details",
-    helpText: "Fill it if you have medical history details",
+    label: "Tell us a little more",
+    helpText:
+      "Roughly when, and anything else your therapist should know. This is " +
+      "where the timing the merged question no longer asks for belongs.",
     required: false,
   },
   {
@@ -374,37 +375,24 @@ export const SEED_INTAKE_FIELDS: SeedIntakeField[] = [
     sectionKey: "CONSENT",
     fieldKey: "activityRestrictionsAcknowledgement",
     kind: "CHECKBOX_GROUP",
-    label: "Activity Restrictions Acknowledgement",
+    label: "Before & after treatment",
     required: true,
-    options: ACTIVITY_RESTRICTIONS_STATEMENTS,
+    options: AFTERCARE_ACKNOWLEDGEMENT,
   },
   {
     sectionKey: "CONSENT",
     fieldKey: "clientDisclosureConsent",
     kind: "CHECKBOX_GROUP",
-    label: "Client Disclosure & Consent",
+    label: "Disclosure & consent",
     required: true,
-    options: CLIENT_DISCLOSURE_STATEMENTS,
+    options: DISCLOSURE_AND_CONSENT,
   },
-  {
-    sectionKey: "CONSENT",
-    fieldKey: "signatureFullName",
-    kind: "NAME",
-    label: "Client full name",
-    required: true,
-  },
-  {
-    sectionKey: "CONSENT",
-    fieldKey: "signature",
-    kind: "SIGNATURE",
-    label: "Digital signature",
-    required: true,
-  },
-  {
-    sectionKey: "CONSENT",
-    fieldKey: "signatureDate",
-    kind: "DATE",
-    label: "Date",
-    required: true,
-  },
+  /* The signature, the repeated full name and the signature date were removed
+     on 2026-09-04 at the owner's request: "they dont need digital sign, also
+     these details are already filled at the top". The name is asked once, in
+     Client Details; the date the form was signed is `IntakeSubmission.createdAt`.
+     What now records consent is the two ticks above, together with that
+     timestamp and `IntakeSubmission.ipAddress`. `signatureUrl` stays a column
+     on the model and is simply written empty — see `app/api/intake/route.ts`,
+     which only demands a signature while a SIGNATURE field exists. */
 ];

@@ -54,6 +54,52 @@ field asli tidak bisa dihapus atau builder belum diuji klik penuh.
 
 Catatan mobile lebih lengkap: `MOBILE-QA.md`.
 
+### Penyederhanaan setelah review owner (2026-09-04, sore)
+
+Owner meninjau form jadi dan minta bentuk yang lebih ringkas. Migrasi
+`20260904050000_intake_simplify` menerapkannya; `lib/intake/seed-fields.ts`
+disamakan supaya database baru ikut benar.
+
+- **Dua daftar kesehatan digabung jadi satu.** "Current Health Screening" dan
+  "Medical History" tumpang tindih (cancer ada di keduanya, begitu juga blood
+  clots / clotting disorder dan heart / cardiovascular). 24 kotak di dua
+  pertanyaan → 19 di satu pertanyaan, memakai kembali fieldKey
+  `currentHealthScreening` supaya `sortOrder`-nya diwarisi dan tetap di atas.
+  **Yang hilang: pembedaan "sekarang" vs "pernah".** Itu nyata secara klinis,
+  jadi kotak detail di bawahnya sekarang meminta perkiraan waktu.
+- **Enam tick consent jadi dua.** Satu pernyataan per CHECKBOX_GROUP, bukan
+  dua grup berisi banyak pernyataan — ini penting: grup wajib divalidasi
+  sebagai "minimal satu opsi dipilih", jadi beberapa pernyataan dalam satu
+  grup bisa disetujui separuh. Tetap dua, bukan satu, karena "yang saya isi
+  benar" dan "saya setuju dirawat" adalah dua pernyataan berbeda.
+- **Tanda tangan digital, "Client full name" dan "Date" dihapus.** Nama sudah
+  diminta di atas; tanggal tanda tangan adalah `createdAt`. Bukti persetujuan
+  sekarang: dua tick + `createdAt` + `ipAddress`. `signatureUrl` tetap ada
+  sebagai kolom dan ditulis kosong — route hanya mewajibkan tanda tangan
+  selama ada field SIGNATURE.
+- Lima definisi field **dihapus permanen**, bukan diarsipkan (kebalikan dari
+  perlakuan `emergencyContactName`). Alasannya ada di komentar migrasi: belum
+  ada satu pun submission klien, dan lima kolom mati di sheet yang baru
+  dibersihkan lebih merugikan daripada kehilangan definisi.
+- Terverifikasi: 28 field aktif, tanpa SIGNATURE; submit tanpa bagian
+  signature → 201, `signatureUrl` tersimpan `""`; WhatsApp terkirim ke dua
+  nomor; sheet tersinkron dan header turun ke 27 kolom. `npm run check:intake`
+  40/40 lulus, typecheck dan lint bersih.
+- `public/intake-signatures/` dan `public/intake-uploads/` masuk `.gitignore`.
+  Enam tanda tangan tes sempat untracked di sana, satu `git add .` dari
+  ter-commit.
+
+**Emergency Contact Name juga dihapus permanen** atas permintaan owner
+(`20260904060000_drop_emergency_contact_name`), membatalkan keputusan arsip di
+`20260904040000`. Konsekuensinya: dua submission tes lama tetap menyimpan
+jawabannya di `IntakeSubmission.data`, tapi tidak akan pernah ditampilkan lagi
+— jawaban hanya bisa dirender lewat definisi field yang menamainya.
+
+Setelah itu tidak ada lagi field terarsip: 28 definisi, semuanya aktif, dan
+sheet berisi **26 kolom** tanpa satu pun kolom mati. Header ditulis ulang
+memakai `buildSheetHeaderRow` yang sama dengan yang dipakai app, bukan diketik
+manual.
+
 Rencana untuk memindahkan form "Client Intake and Consent" dari JotForm
 (`form.jotform.com/262441853736058`) ke dalam app Next.js ini — konten field
 bisa diedit SUPER_ADMIN dari panel, tiap submission masuk ke Google Sheet

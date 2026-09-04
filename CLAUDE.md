@@ -755,22 +755,32 @@ WordPress/BookingPress, untouched by this phase).
 
 ### Status, in short
 
-Data model, seed, the public form (all 34 fields, conditional field reveal,
-a country-code phone field, image uploads), the booking gate, Google Sheets
-sync and WhatsApp notifications are **built and verified working** — a real
-submission was completed end to end in a browser (201 Created, real WhatsApp
-sent, correct E.164 data, redirect to booking confirmed by tab origin
-change), and the owner confirmed the Sheet receives rows.
+Data model, seed, the public form (conditional field reveal, a country-code
+phone field, image uploads), the booking gate, Google Sheets sync and WhatsApp
+notifications are **built and verified working** — real submissions completed
+end to end (201 Created, real WhatsApp delivered, correct E.164 data, redirect
+to booking confirmed by tab origin change), and the Sheet receives rows.
 
-A SUPER_ADMIN field-builder was added on top of that (add a custom field of
-any kind — dropdown/radio/checkbox/text/phone/date/signature/image/textarea —
-from `/admin/intake/`, delete only the ones added this way). Its backend is
-written and typechecks/lints clean; its public rendering was confirmed by
-direct DOM inspection; one of its two dropdowns was proven to work through a
-real browser click. **A full click-through — add one custom field, see it on
-the public form, delete it again — has not been completed.** `INTAKE-PLAN.md`
-has the detail on exactly what blocked that (a browser-pane coordinate
-instability in this environment, not a code defect) and what to try next.
+A SUPER_ADMIN field-builder sits on top of that: add a field of any kind from
+`/admin/intake/`, edit it, remove it, restore it. Removing **archives** rather
+than deletes, so historical answers stay readable and the field keeps its
+Google Sheet column. `npm run check:intake` covers that round trip against the
+real actions (40 tests, external boundaries mocked).
+
+**The form is 28 fields as of 2026-09-04**, after the owner reviewed the built
+version and asked for something more minimal: the two health checkbox lists
+merged into one, the six consent ticks became two, and the digital signature,
+the repeated "Client full name" and the signature date were removed. Consent is
+now recorded by two ticks plus `createdAt` and `ipAddress`. Two things to know
+before changing any of it, both in `INTAKE-PLAN.md`:
+
+- **A required CHECKBOX_GROUP validates as "at least one option selected".**
+  The two consent rows therefore hold exactly one statement each — several
+  statements in one group could be half-agreed to.
+- **`prisma/seed.ts` never overwrites `label`, `helpText`, `required` or
+  `options` on a row that already exists**, because those are what the admin
+  panel edits. Changing them for a field already in the database takes a
+  migration; `20260904050000_intake_simplify` is the worked example.
 
 ### Two real bugs this phase's own build had introduced
 

@@ -59,6 +59,14 @@ next-env.d.ts
 # not the production path. See `lib/cms/storage.ts`.
 /public/uploads
 
+# The same driver, reached through the intake form: signatures
+# (`lib/intake/signature.ts`) and IMAGE-field uploads (`lib/intake/uploads.ts`).
+# Six test signatures were sitting untracked here on 2026-09-04, one `git add .`
+# away from being committed — a client's signature is the last thing that
+# should end up in version control by accident.
+/public/intake-signatures
+/public/intake-uploads
+
 # One-off credential handovers written by `npm run admin:create`. Passwords in
 # plain text: read it, pass it on, delete it.
 .admin-accounts.txt

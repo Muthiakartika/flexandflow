@@ -20,6 +20,7 @@ import {
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import { sendEmail, sendWhatsAppText, type DeliveryResult } from "@/lib/notifications";
+import { intakeSheetUrl } from "@/lib/intake/sheets";
 
 /** Same published schedule as the booking queue: 1m, 5m, 15m, 1h, 6h. */
 const BACKOFF_MS = [60_000, 5 * 60_000, 15 * 60_000, 60 * 60_000, 6 * 60 * 60_000];
@@ -34,24 +35,63 @@ type SubmissionSummary = {
   clientWhatsapp: string;
 };
 
+/**
+ * The message itself.
+ *
+ * The closing line points at the Google Sheet, because that is where the
+ * studio actually reads submissions — the admin panel is only named when no
+ * sheet is configured, so the notice never sends someone to a link that
+ * cannot exist (`intakeSheetUrl` returns null in exactly that case).
+ *
+ * The row may land in the sheet a moment after this message does:
+ * `app/api/intake/route.ts` dispatches notifications before it syncs, so a
+ * WhatsApp read the instant it arrives can beat the append by a second or
+ * two. That order is deliberate — a slow or broken Sheets call must never
+ * delay telling the studio somebody walked in.
+ */
 function adminNewSubmissionMessage(submission: SubmissionSummary): string {
-  return [
+  const sheet = intakeSheetUrl();
+
+  const lines = [
     `*New intake form submitted* — ${submission.reference}`,
     ``,
     `Client: ${submission.clientName}`,
-    submission.clientWhatsapp ? `WhatsApp: ${submission.clientWhatsapp}` : ``,
-    ``,
-    `See the full form and signature in the admin panel.`,
-  ]
-    .filter((line) => line !== undefined)
-    .join("\n");
+  ];
+
+  if (submission.clientWhatsapp) {
+    lines.push(`WhatsApp: ${submission.clientWhatsapp}`);
+  }
+
+  lines.push(``);
+  lines.push(
+    sheet
+      ? `See the full form in this sheet: ${sheet}`
+      : `See the full form and signature in the admin panel.`,
+  );
+
+  return lines.join("\n");
 }
 
 // ── Writing jobs ──────────────────────────────────────────────────────────
 
-/** Studio admin/staff — the same numbers the booking system already notifies. */
+/**
+ * Who hears about a new intake form.
+ *
+ * `ADMIN_WHATSAPP_NUMBERS` is shared with the booking system — everyone on it
+ * already receives every appointment. `INTAKE_WHATSAPP_NUMBERS` is this form's
+ * own list, for somebody who should see a consent form arrive without also
+ * being sent the diary.
+ *
+ * Deduplicated because a number on both lists is one person: `createMany`'s
+ * `skipDuplicates` and the unique index on
+ * `(submissionId, channel, kind, target)` would catch it, but a duplicate
+ * target is better not written than caught.
+ */
 function adminWhatsAppTargets(): string[] {
-  return env().ADMIN_WHATSAPP_NUMBERS;
+  const config = env();
+  return [
+    ...new Set([...config.ADMIN_WHATSAPP_NUMBERS, ...config.INTAKE_WHATSAPP_NUMBERS]),
+  ];
 }
 
 export async function queueIntakeSubmissionCreated(submissionId: string): Promise<void> {

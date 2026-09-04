@@ -27,11 +27,13 @@ export const CONDITIONAL_FIELDS: Record<string, ConditionalRule> = {
   lastTreatmentDate: { when: "receivedTreatmentBefore", show: isYes },
   adverseReactionBefore: { when: "receivedTreatmentBefore", show: isYes },
   adverseReactionDetails: { when: "adverseReactionBefore", show: isYes },
+  /* `currentHealthScreening` now covers medical history too — the two lists
+     were merged on 2026-09-04 and `medicalHistoryDetails` went with the
+     question that fed it. */
   currentHealthScreeningDetails: {
     when: "currentHealthScreening",
     show: hasRealSelection,
   },
-  medicalHistoryDetails: { when: "medicalHistory", show: hasRealSelection },
   medicationDetails: { when: "takesMedications", show: isYes },
   professionalCareDetails: { when: "underProfessionalCare", show: isYes },
   avoidTreatmentDetails: { when: "advisedToAvoidTreatment", show: isYes },

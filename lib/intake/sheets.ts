@@ -52,6 +52,20 @@ function drive() {
 export type SheetResult = { ok: true } | { ok: false; error: string };
 
 /**
+ * The sheet's own address, for putting in front of a person rather than an
+ * API — the "new submission" WhatsApp links to it.
+ *
+ * `null` when Sheets is not configured, which callers must actually handle:
+ * the notification falls back to naming the admin panel instead, because a
+ * link to `/spreadsheets/d/undefined/edit` is worse than no link at all.
+ */
+export function intakeSheetUrl(): string | null {
+  const { GOOGLE_SHEET_ID } = env();
+  if (!sheetsEnabled() || !GOOGLE_SHEET_ID) return null;
+  return `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/edit`;
+}
+
+/**
  * Appends one data row. When `headerRow` is given, the sheet's first row is
  * refreshed to include new fields and edited labels. Archived definitions
  * retain their column positions so existing answer rows stay aligned.
