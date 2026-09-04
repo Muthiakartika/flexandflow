@@ -9,9 +9,10 @@
  * at `bookingUrl` — reschedule links and anything mid-flow use that, through
  * `next/link` like any other internal route. But every marketing "Book now" /
  * "Book Appointment" / "Book with <therapist>" CTA points visitors at
- * `externalBookingUrl` instead: a separate booking.flexandflow.fit
- * deployment, absolute like `wordpressUrls` and opened the same way — new
- * tab, no client-side router. See `BOOKING-PLAN.md`.
+ * `/intake` instead: the client intake & consent form (INTAKE-PLAN.md), which
+ * every visitor must complete before booking. On success it redirects to
+ * `externalBookingUrl` — a separate booking.flexandflow.fit deployment,
+ * absolute like `wordpressUrls`. See `BOOKING-PLAN.md`.
  */
 
 import { ACADEMY_ENABLED } from "./flags";
@@ -31,8 +32,8 @@ export const siteConfig = {
  * The booking flow — staff, service, date and time, details, summary.
  *
  * Internal. Reschedule links and anything already mid-flow use this directly;
- * the site's marketing CTAs currently point at `externalBookingUrl` instead
- * (see below) rather than here. The trailing slash is not decoration:
+ * the site's marketing CTAs currently point at `/intake` instead (see below)
+ * rather than here. The trailing slash is not decoration:
  * `trailingSlash: true` in `next.config.ts` matches the shape WordPress
  * published and Google indexed, and a link without one answers a 308 before
  * it resolves.
@@ -44,13 +45,16 @@ export const siteConfig = {
 export const bookingUrl = "/appointment/";
 
 /**
- * Where every marketing "Book now" / "Book Appointment" / "Book with
- * <therapist>" CTA points — a separate booking.flexandflow.fit deployment,
- * not a page in this app. Treat it like `wordpressUrls`: absolute, external,
- * new tab. It's a WordPress booking plugin and reads no query string, so
- * every CTA uses this same bare URL — there is no per-therapist variant, and
- * "Book with Ginny" doesn't preselect anything on arrival. `bookingUrl` above
- * still matters: the wizard's own reschedule links stay on it.
+ * Where the client intake & consent form (`/intake`) sends a visitor once
+ * they have completed it — a separate booking.flexandflow.fit deployment,
+ * not a page in this app. Treat it like `wordpressUrls`: absolute, external.
+ * It's a WordPress booking plugin and reads no query string, so every CTA
+ * that reaches it via `/intake` ends up at this same bare URL — there is no
+ * per-therapist variant, and "Book with Ginny" doesn't preselect anything on
+ * arrival. `bookingUrl` above still matters: the wizard's own reschedule
+ * links stay on it. No marketing CTA links here directly any more — every one
+ * of them points at `/intake` first; see `components/intake/IntakeForm.tsx`
+ * for the redirect on success, and INTAKE-PLAN.md for why.
  */
 export const externalBookingUrl = "https://booking.flexandflow.fit/";
 

@@ -35,12 +35,12 @@ export const H3 = "font-display text-[26px] leading-[1.1] font-bold";
 export const CARD = "rounded-[10px] border border-secondary/10 bg-white";
 
 export const BTN_SOLID =
-  "inline-flex items-center justify-center gap-2 rounded-[10px] " +
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] " +
   "bg-primary-strong px-6 py-3 font-body text-[15px] leading-none text-white " +
   `transition-colors duration-300 hover:bg-secondary ${FOCUS}`;
 
 export const BTN_GHOST =
-  "inline-flex items-center justify-center gap-2 rounded-[10px] " +
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] " +
   "border border-secondary/20 px-6 py-3 font-body text-[15px] leading-none " +
   `transition-colors duration-300 hover:border-primary hover:text-primary ${FOCUS}`;
 

@@ -19,6 +19,8 @@
 import { fail, ok, serverError } from "@/lib/api/respond";
 import { isAuthorisedCron } from "@/lib/booking/tokens";
 import { sweepExpiredHolds } from "@/lib/booking/transitions";
+import { dispatchPendingIntake } from "@/lib/intake/notifications";
+import { retryPendingSheetSyncs } from "@/lib/intake/sync";
 import { dispatchPending } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
@@ -51,7 +53,16 @@ async function run(request: Request): Promise<Response> {
      */
     const holds = await sweepExpiredHolds();
 
-    return ok({ ...(await dispatchPending()), expiredHolds: holds.expired });
+    /* Same crank, two more jobs on it: the intake form's own notification
+       queue (a deliberate parallel to the booking one — see
+       lib/intake/notifications.ts) and its Google Sheet sync retry. Neither
+       touches booking's dispatchPending(). */
+    return ok({
+      ...(await dispatchPending()),
+      intake: await dispatchPendingIntake(),
+      sheetSync: await retryPendingSheetSyncs(),
+      expiredHolds: holds.expired,
+    });
   } catch (error) {
     console.error("[cron] dispatch failed", error);
     return serverError("Dispatch failed.");

@@ -1,7 +1,7 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import { BAND, BTN_GHOST, H2, WRAP } from "@/components/ui/tokens";
-import { externalBookingUrl } from "@/lib/site";
 
 /* The studio's own list of what every session is aimed at, in source order. */
 const points = [
@@ -13,7 +13,7 @@ const points = [
 ];
 
 /**
- * "Complete Wellness" — the range statement. Copy leads on the left this time,
+ * "What We Do" — the range statement. Copy leads on the left this time,
  * reversing the previous band so the page alternates rather than repeating a
  * photo-then-text rhythm all the way down. The photo sits on a small olive
  * offset instead of the theme's scalloped mask: the same brand green, used as
@@ -25,11 +25,12 @@ export default function CompleteWellness() {
       <div className={`${WRAP} ${BAND}`}>
         <div className="grid items-center gap-[clamp(2rem,3.6vw,3.5rem)] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
           <div>
-            <h2 className={`${H2} text-primary`}>Complete Wellness</h2>
+            <h2 className={`${H2} text-primary`}>What We Do</h2>
             <p className="mt-3 max-w-[54ch] font-body text-[15px] leading-[1.7] text-body-text/80">
-              We provide assisted stretching, sports massage, lymphatic
-              drainage, pregnancy massage, trauma release massage, and cupping
-              therapy. Every session focuses on relieving pain, improving
+              We offer assisted stretching, sports massage, lymphatic drainage,
+              pregnancy massage, trauma release bodywork, and cupping therapy,
+              with the same therapist working with you from start to finish.
+              Every session focuses on relieving pain, improving
               mobility, restoring balance, and supporting overall well-being.
             </p>
 
@@ -39,14 +40,9 @@ export default function CompleteWellness() {
               ))}
             </ul>
 
-            <a
-              href={externalBookingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${BTN_GHOST} mt-7`}
-            >
+            <Link href="/intake" className={`${BTN_GHOST} mt-7`}>
               Book Appointment
-            </a>
+            </Link>
           </div>
 
           <div className="relative">

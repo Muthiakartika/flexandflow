@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 
 import useIsActive from "./useIsActive";
 import { ButtonLink } from "@/components/ui/Button";
-import { externalBookingUrl, contact, type NavItem } from "@/lib/site";
+import { contact, type NavItem } from "@/lib/site";
 
 /**
  * Drawer navigation for viewports below 1281px, standing in for the theme's
@@ -235,9 +235,10 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
           </ul>
         </nav>
 
-        {/* Absolute: booking.flexandflow.fit is a separate deployment, so
-            `external` opens it in a new tab, same as the WordPress price list. */}
-        <ButtonLink href={externalBookingUrl} external className="mt-8 w-full">
+        {/* Internal now: every booking CTA on the site sends visitors through
+            the client intake & consent form first, which redirects to the
+            external booking site itself once they have completed it. */}
+        <ButtonLink href="/intake" className="mt-8 w-full">
           Book Appointment
         </ButtonLink>
 

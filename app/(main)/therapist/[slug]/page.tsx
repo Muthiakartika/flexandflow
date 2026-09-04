@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
 import { BAND, CARD, FOCUS, H3, WRAP } from "@/components/ui/tokens";
 import { therapistBySlug, therapists } from "@/lib/data/therapists";
-import { externalBookingUrl, contact, workingHours } from "@/lib/site";
+import { contact, workingHours } from "@/lib/site";
 
 export function generateStaticParams() {
   return therapists.map((therapist) => ({ slug: therapist.slug }));
@@ -56,10 +57,12 @@ export default async function TherapistPage(
   if (!therapist) notFound();
 
   /* booking.flexandflow.fit — a WordPress plugin that reads no query string,
-     so there's no per-therapist link to build. The studio's phone number
-     stays under the button in the aside for anyone who would rather just ask
-     a question first. */
-  const bookingHref = externalBookingUrl;
+     so there's no per-therapist link to build even now that this goes through
+     the intake form first; every visitor lands on the same booking page
+     regardless of which therapist's "Book with" button sent them there. The
+     studio's phone number stays under the button in the aside for anyone who
+     would rather just ask a question first. */
+  const bookingHref = "/intake";
 
   return (
     <>
@@ -71,7 +74,7 @@ export default async function TherapistPage(
           { label: therapist.name },
         ]}
         actions={
-          <ButtonLink href={bookingHref} external variant="solid">
+          <ButtonLink href={bookingHref} variant="solid">
             Book with {therapist.name}
           </ButtonLink>
         }
@@ -147,14 +150,12 @@ export default async function TherapistPage(
                 </p>
               ))}
 
-              <a
+              <Link
                 href={bookingHref}
-                target="_blank"
-                rel="noopener noreferrer"
                 className={`mt-5 flex w-full items-center justify-center rounded-[10px] bg-primary-strong px-5 py-3 font-body text-[14px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
               >
                 Book with {therapist.name}
-              </a>
+              </Link>
 
               <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
                 <a

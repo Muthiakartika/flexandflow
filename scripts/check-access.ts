@@ -170,6 +170,7 @@ const MATRIX: { path: string; label: string; booking: boolean; content: boolean 
   { path: "/admin/settings/", label: "studio settings", booking: false, content: false },
   { path: "/admin/team/", label: "admin accounts", booking: false, content: false },
   { path: "/admin/team/new/", label: "add an admin", booking: false, content: false },
+  { path: "/admin/intake/", label: "intake form editor", booking: false, content: false },
 ];
 
 async function main(): Promise<void> {

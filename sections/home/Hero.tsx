@@ -42,13 +42,13 @@ export default async function Hero() {
           </p>
 
           <h1 className="mt-4 max-w-[16ch] text-[clamp(2.125rem,1.45rem+2.8vw,3.5rem)] leading-[1.02] font-bold text-balance">
-            Wellness &amp; Recovery Studio in Uluwatu, Bali
+            Private Bodywork &amp; Movement Studio in Uluwatu, Bali
           </h1>
 
           <p className="mt-4 max-w-[52ch] font-body text-[clamp(0.9375rem,0.9rem+0.2vw,1.0625rem)] leading-[1.7] text-body-text/80">
-            Welcome to Flex &amp; Flow, we are a small wellness centre based in
+            Welcome to Flex &amp; Flow, we offer bodywork and movement studio in
             Uluwatu focused on deep release therapeutic bodywork, recovery, and
-            long-term wellness.
+            long-term wellness
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">

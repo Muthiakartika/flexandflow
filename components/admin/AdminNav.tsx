@@ -51,6 +51,8 @@ const LINKS: readonly {
     permission: "booking.manage",
   },
 
+  { href: "/admin/intake/", label: "Intake form", permission: "intake.manage" },
+
   { href: "/admin/team/", label: "Admins", permission: "admin.manage" },
   { href: "/admin/profile/", label: "My profile" },
   { href: "/admin/settings/", label: "Settings", permission: "settings.manage" },

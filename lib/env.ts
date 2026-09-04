@@ -135,6 +135,25 @@ const schema = z.object({
   // ── Anti-spam (optional; skipped entirely when unset) ──────────────────
   TURNSTILE_SECRET_KEY: secret().optional(),
 
+  // ── Google (Sheets export for the intake form) ─────────────────────────
+  /**
+   * Optional as a trio, same reasoning as Xendit and Cloudflare below: a
+   * half-configured deployment must fail closed (skip the Sheets append,
+   * still save the submission) rather than crash or half-send.
+   */
+  GOOGLE_SERVICE_ACCOUNT_EMAIL: z.email().optional(),
+  /**
+   * Dashboards mangle a multi-line PEM the same way they mangle every other
+   * secret here — see `secret()` above — but a private key also arrives with
+   * literal `\n` sequences instead of real newlines, which `secret()` alone
+   * does not fix. Unescaped once here so every caller gets an already-usable
+   * key.
+   */
+  GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: secret()
+    .optional()
+    .transform((value) => value?.replace(/\\n/g, "\n")),
+  GOOGLE_SHEET_ID: secret().optional(),
+
   // ── Cloudflare (cache purge) ───────────────────────────────────────────
   /**
    * Optional as a pair, and for the same reason payments are: a zone with no
@@ -226,4 +245,25 @@ export function cardPaymentsEnabled(): boolean {
 export function cachePurgeEnabled(): boolean {
   const { CLOUDFLARE_ZONE_ID, CLOUDFLARE_API_TOKEN } = env();
   return Boolean(CLOUDFLARE_ZONE_ID && CLOUDFLARE_API_TOKEN);
+}
+
+/**
+ * Whether the intake form can append to the studio's Google Sheet.
+ *
+ * All three or none: a service account with no target sheet, or a sheet id
+ * with no credentials, cannot append anything. False makes the sync step
+ * skip silently (logged, `IntakeSubmission.sheetSyncError` set) rather than
+ * throw — the submission itself must never be blocked by this.
+ */
+export function sheetsEnabled(): boolean {
+  const {
+    GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
+    GOOGLE_SHEET_ID,
+  } = env();
+  return Boolean(
+    GOOGLE_SERVICE_ACCOUNT_EMAIL &&
+      GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY &&
+      GOOGLE_SHEET_ID,
+  );
 }

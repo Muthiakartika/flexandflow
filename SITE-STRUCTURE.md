@@ -41,9 +41,10 @@ layouts, and it is what keeps the two stylesheets off the same page.
 | Footer layout, columns, payment marks | [components/layout/Footer.tsx](components/layout/Footer.tsx) |
 | The footer's own link list | [components/layout/Footer.tsx](components/layout/Footer.tsx) → the `nav` array at the top (separate from the header's) |
 | Footer intro paragraph, address, phone, e‑mail, opening hours, socials | [lib/site.ts](lib/site.ts) → `footerIntro`, `contact`, `workingHours` |
-| Where header and footer are mounted onto every page | [app/(main)/layout.tsx](app/(main)/layout.tsx) |
+| Where header and footer are mounted onto every page except `/intake` | [app/(main)/layout.tsx](app/(main)/layout.tsx) → [components/layout/SiteChrome.tsx](components/layout/SiteChrome.tsx) decides per route |
 | Colours, fonts, spacing tokens | [app/(main)/globals.css](app/(main)/globals.css) |
-| Where every marketing "Book now" / "Book Appointment" / "Book with Ginny" / "Book with Yuni" button points | [lib/site.ts](lib/site.ts) → `externalBookingUrl` — booking.flexandflow.fit, a WordPress booking plugin, opened in a new tab. It reads no query string, so there is no per-therapist link. |
+| Where every marketing "Book now" / "Book Appointment" / "Book with Ginny" / "Book with Yuni" button points | `/intake` — the client intake & consent form every visitor must complete first (INTAKE-PLAN.md). No memory of a prior visit: every booking attempt is gated again. |
+| Where `/intake` sends a visitor once the form is submitted | [lib/site.ts](lib/site.ts) → `externalBookingUrl` — booking.flexandflow.fit, a WordPress booking plugin. It reads no query string, so there is no per-therapist link. |
 | The wizard's own internal links (reschedule) | [lib/site.ts](lib/site.ts) → `bookingUrl` — `/appointment/` inside this app |
 | The booking wizard itself (staff → service → date → details → summary) | [components/booking/](components/booking) |
 | Prices and durations customers can actually book | the database, edited at `/admin/services` — **not** `lib/data/services.ts` |

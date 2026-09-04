@@ -335,6 +335,7 @@
      from the one it followed. Headings now bind to the text underneath them. */
   .prose-flex > * {
     margin-block: 0 1.15em;
+    overflow-wrap: anywhere;
   }
 
   .prose-flex > :last-child {
@@ -1380,6 +1381,34 @@ button.booking-step-body {
     50% {
       opacity: 0.35;
     }
+  }
+}
+
+/* Keep both country and number readable on narrow phones. */
+.intake-phone-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+@media (min-width: 640px) {
+  .intake-phone-fields {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+}
+@media (max-width: 639px) {
+  /* iOS zooms focused inputs below 16px; this also covers contact/booking. */
+  :is(main, footer) input:not([type="checkbox"]):not([type="radio"]),
+  :is(main, footer) textarea,
+  :is(main, footer) select,
+  :is(main, footer) button[role="combobox"] {
+    font-size: 16px;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .intake-form label:has(input[type="checkbox"]),
+  .intake-form label:has(input[type="radio"]),
+  .intake-form button {
+    min-height: 44px;
   }
 }
 

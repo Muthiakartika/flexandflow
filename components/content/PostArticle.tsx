@@ -29,8 +29,8 @@ export default function PostArticle({
       />
 
       <section className={`${WRAP} ${BAND}`}>
-        <div className="grid gap-[clamp(1.75rem,3vw,3rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,280px)]">
-          <article>
+        <div className="grid grid-cols-1 gap-[clamp(1.75rem,3vw,3rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,280px)]">
+          <article className="min-w-0">
             {post.image ? (
               <Image
                 src={post.image}

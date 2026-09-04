@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { Amatic_SC, Andika } from "next/font/google";
 
 import PreviewBanner from "@/components/cms/PreviewBanner";
-import Footer from "@/components/layout/Footer";
-import Header from "@/components/layout/Header";
 import ScrollToTop from "@/components/layout/ScrollToTop";
+import SiteChrome from "@/components/layout/SiteChrome";
 import { siteConfig } from "@/lib/site";
 
 import "./globals.css";
@@ -88,9 +87,7 @@ MOTION: one moving strip of treatment names. Nothing on this page ships at opaci
         {/* Above the header, and the only thing in this layout that knows the
             CMS exists. Renders nothing unless the draft cookie is set. */}
         <PreviewBanner />
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <SiteChrome>{children}</SiteChrome>
         <ScrollToTop />
       </body>
     </html>

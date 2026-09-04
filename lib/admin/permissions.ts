@@ -34,6 +34,13 @@ export const PERMISSIONS = [
 
   /* Admin accounts. */
   "admin.manage",
+
+  /* The client intake & consent form. Split in two, like content.view vs the
+     mutating content permissions: editing field content is one decision,
+     seeing what a client actually wrote (health/consent answers) is a
+     different, more sensitive one. Both default to SUPER_ADMIN only. */
+  "intake.manage",
+  "intake.view",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -163,6 +170,8 @@ export const PERMISSION_LABEL: Record<Permission, string> = {
   "booking.manage": "Manage bookings and schedule",
   "settings.manage": "Change studio settings",
   "admin.manage": "Manage admin accounts",
+  "intake.manage": "Edit the intake form",
+  "intake.view": "View intake submissions",
 };
 
 export const ROLE_LABEL: Record<AdminRoleValue, string> = {

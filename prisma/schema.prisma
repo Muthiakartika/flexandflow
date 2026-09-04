@@ -674,3 +674,187 @@ model AuditLog {
   @@index([entity, entityId])
   @@index([createdAt])
 }
+
+// ── Client intake & consent form ────────────────────────────────────────
+// Replaces the external JotForm at https://form.jotform.com/262441853736058.
+// Field *content* (label, help text, options, required) is edited from the
+// admin panel by SUPER_ADMIN only; the *shape* (kind, section, fieldKey) is
+// fixed at seed time and not admin-editable — see INTAKE-PLAN.md.
+
+enum IntakeSectionKey {
+  CLIENT_DETAILS
+  APPOINTMENT_HISTORY
+  HEALTH_SCREENING
+  LYMPHATIC_SCREENING
+  CONSENT
+}
+
+enum IntakeFieldKind {
+  TEXT
+  /// Compound: first / last. (No middle name — dropped 2026-09-03.)
+  NAME
+  /// Unused since `currentAddress` collapsed to TEXT on 2026-09-03 — kept
+  /// defined rather than removed, since dropping an enum value Postgres has
+  /// ever stored needs recreating the type. Nothing seeds this any more.
+  ADDRESS
+  DATE
+  DROPDOWN
+  /// Single choice, radio-button UI — unlike DROPDOWN, every option is
+  /// visible at once. Same answer shape as DROPDOWN otherwise.
+  RADIO
+  YES_NO
+  CHECKBOX_GROUP
+  TEXTAREA
+  /// E.164 phone number, entered through a country picker + national number
+  /// — see `components/intake/PhoneField.tsx`. Not a plain TEXT field: the
+  /// country selector is what the kind buys you.
+  PHONE
+  /// One uploaded image, stored the way a signature is — never `public/`.
+  /// Answer is the stored URL, not a data: URI.
+  IMAGE
+  SIGNATURE
+  /// Static notice text. Not an input — nothing to answer.
+  INFO
+}
+
+enum IntakeNotificationKind {
+  /// Studio admin/staff, on submission. The only kind today — kept as an enum
+  /// so a second kind later (e.g. a client-facing acknowledgement) is a value
+  /// and a template, not a redesign. See NotificationKind for this history on
+  /// the booking side.
+  ADMIN_NEW_SUBMISSION
+}
+
+/// One editable row of the public intake form.
+///
+/// For a seeded row (`isCustom: false`) the admin editor only ever writes
+/// label/helpText/required/options — fieldKey/kind/sectionKey came from
+/// `lib/intake/seed-fields.ts` and are rendered read-only, which is what
+/// keeps the original JotForm structure stable without a "locked" flag like
+/// ContentCategory needs. A custom row (`isCustom: true`) is fully
+/// SUPER_ADMIN-owned instead: created through the panel with a
+/// system-generated `fieldKey`, and the only kind of row the panel will ever
+/// delete — see `lib/intake/actions.ts`.
+model IntakeFormField {
+  id String @id @default(cuid())
+
+  sectionKey IntakeSectionKey
+  /// Reading order across the whole form, not just within the section.
+  sortOrder  Int              @default(0)
+  /// Stable key. Never edited from the panel — see the model comment.
+  /// IntakeSubmission.data is keyed by this.
+  fieldKey   String           @unique
+
+  kind IntakeFieldKind
+
+  label    String
+  /// The grey caption under a field, e.g. "Only if you have received
+  /// treatment with us before." Most fields with this caption are also
+  /// conditionally hidden until their trigger answer is "Yes" — see
+  /// `lib/intake/conditional.ts`, which is presentation logic keyed by
+  /// `fieldKey` and not stored here. For INFO rows this is the notice body
+  /// and may run to several paragraphs.
+  helpText String?
+  required Boolean @default(false)
+  /// DROPDOWN, RADIO and CHECKBOX_GROUP only; empty for every other kind.
+  options  String[] @default([])
+
+  /// False for every row `lib/intake/seed-fields.ts` describes — those are
+  /// the form's fixed shape. True only for a row a SUPER_ADMIN added through
+  /// `/admin/intake/`. This is what lets `prisma/seed.ts` safely delete a row
+  /// that has fallen out of the seed array (a field removed from the source
+  /// form) without ever touching one the studio built themselves.
+  isCustom Boolean @default(false)
+  /// Removed from the public form; retained for historical submissions and sheet columns.
+  archived Boolean @default(false)
+
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sectionKey, sortOrder])
+}
+
+/// One completed form. Not re-validated against the *current* field list on
+/// read — a field renamed or removed later must not make an old submission
+/// unreadable.
+model IntakeSubmission {
+  id        String @id @default(cuid())
+  /// Short human-quotable code, same shape as Booking.reference — see
+  /// lib/intake/reference.ts.
+  reference String @unique
+
+  /// Every non-SIGNATURE, non-INFO answer, keyed by IntakeFormField.fieldKey.
+  data Json
+
+  /// intake-signatures/<uuid>.png, on the same storage driver the CMS media
+  /// library uses (lib/cms/storage.ts) — never public/. Not a MediaAsset row:
+  /// this is one-time evidentiary content, not reusable media.
+  signatureUrl String
+
+  /// Denormalised off `data` at write time, from three fixed fieldKeys, so
+  /// the admin list can sort/search without decoding JSON per row.
+  clientName     String
+  clientEmail    String?
+  clientWhatsapp String
+
+  ipAddress String?
+
+  /// Google Sheets append status. A null sheetSyncedAt with sheetSyncAttempts
+  /// under the retry ceiling means the cron will still try; at the ceiling it
+  /// is given up on.
+  sheetSyncedAt     DateTime?
+  sheetSyncAttempts Int       @default(0)
+  sheetSyncError    String?
+
+  notifications IntakeNotificationJob[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([clientWhatsapp])
+}
+
+/// Outbound queue for intake submissions. A structural mirror of
+/// NotificationJob (same claim/backoff/retry shape), kept as its own table
+/// rather than reusing that one: NotificationJob.bookingId is a required FK
+/// with cascade delete and a unique index built around it — retrofitting it
+/// to point at a booking OR a submission risks the live, verified booking
+/// pipeline for no real benefit.
+model IntakeNotificationJob {
+  id           String           @id @default(cuid())
+  submissionId String
+  submission   IntakeSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  channel NotificationChannel
+  kind    IntakeNotificationKind
+  target  String
+
+  status    JobStatus @default(PENDING)
+  attempts  Int       @default(0)
+  lastError String?
+
+  scheduledAt DateTime  @default(now())
+  sentAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([submissionId, channel, kind, target])
+  @@index([status, scheduledAt])
+}
+
+/// The two Gmail addresses SUPER_ADMIN gives share access to the studio's
+/// intake Google Sheet ("2 penerima ke 1 sheet"). A singleton row rather than
+/// a table: there is exactly one Sheet and exactly one pair of recipients —
+/// the fixed id is what makes a second row impossible by construction.
+model IntakeSettings {
+  id String @id @default("singleton")
+
+  shareEmail1 String?
+  shareEmail2 String?
+
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+}

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import DesktopNav from "./DesktopNav";
 import MobileNav from "./MobileNav";
-import { externalBookingUrl, primaryNav, siteConfig } from "@/lib/site";
+import { primaryNav, siteConfig } from "@/lib/site";
 
 /**
  * Site header, rebuilt for the studio look: a slim sticky bar rather than the
@@ -12,7 +12,9 @@ import { externalBookingUrl, primaryNav, siteConfig } from "@/lib/site";
  * on every scroll position — the pattern both reference studios use.
  *
  * That action used to open WhatsApp, because there was nowhere on this site to
- * send anyone. There is now: it goes to the booking flow, which is why it is a
+ * send anyone. There is now: it goes to `/intake` first — every booking CTA on
+ * the site does, since a visitor has to complete the client intake & consent
+ * form before reaching the external booking site — which is why it is a
  * `Link` and no longer opens a new tab. WhatsApp is still one tap away from the
  * closing band and the mobile drawer for people who would rather just message.
  */
@@ -52,26 +54,22 @@ export default function Header() {
         <div className="ml-auto flex items-center gap-7 max-[1180px]:hidden">
           <DesktopNav items={primaryNav} />
 
-          <a
-            href={externalBookingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/intake"
             className="inline-flex items-center rounded-[10px] bg-primary-strong px-6 py-3 font-body text-[13px] tracking-[0.12em] text-white uppercase transition-colors duration-300 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             Book now
-          </a>
+          </Link>
         </div>
 
         {/* Below 1181px the nav collapses to the drawer, with the action kept. */}
         <div className="ml-auto flex items-center gap-3 min-[1181px]:hidden">
-          <a
-            href={externalBookingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/intake"
             className="inline-flex items-center rounded-[10px] bg-primary-strong px-5 py-2.5 font-body text-[12px] tracking-[0.12em] text-white uppercase transition-colors duration-300 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary max-[380px]:hidden"
           >
             Book
-          </a>
+          </Link>
           <MobileNav items={primaryNav} />
         </div>
       </div>

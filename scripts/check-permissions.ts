@@ -120,6 +120,20 @@ async function main(): Promise<void> {
   );
 
   check(
+    "neither role can edit or view the intake form by default",
+    !permissionsFor("EDITOR").includes("intake.manage") &&
+      !permissionsFor("EDITOR").includes("intake.view") &&
+      !permissionsFor("BOOKING_STAFF").includes("intake.manage") &&
+      !permissionsFor("BOOKING_STAFF").includes("intake.view"),
+  );
+
+  check(
+    "a super admin holds intake.manage and intake.view",
+    permissionsFor("SUPER_ADMIN").includes("intake.manage") &&
+      permissionsFor("SUPER_ADMIN").includes("intake.view"),
+  );
+
+  check(
     "a granted permission is added",
     permissionsFor("EDITOR", ["content.publish"]).includes("content.publish"),
   );

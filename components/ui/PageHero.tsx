@@ -49,7 +49,7 @@ export default function PageHero({
             {crumbs.map((crumb, i) => {
               const isLast = i === crumbs.length - 1;
               return (
-                <li key={crumb.label} className="flex items-center gap-2">
+                <li key={crumb.label} className="flex min-w-0 max-w-full items-center gap-2">
                   <span aria-hidden className="page-label">
                     /
                   </span>
@@ -63,7 +63,7 @@ export default function PageHero({
                   ) : (
                     <span
                       aria-current={isLast ? "page" : undefined}
-                      className="page-label max-w-[46ch] truncate text-body-text"
+                      className="page-label min-w-0 max-w-[46ch] truncate text-body-text"
                     >
                       {crumb.label}
                     </span>

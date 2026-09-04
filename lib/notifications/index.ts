@@ -25,3 +25,16 @@ export {
 } from "@/lib/notifications/jobs";
 
 export type { DeliveryResult } from "@/lib/notifications/jobs";
+
+/**
+ * The raw senders, for `lib/intake/notifications.ts`.
+ *
+ * The intake form's notification queue is a deliberate parallel to this
+ * module (see INTAKE-PLAN.md) rather than an extension of `NotificationJob` —
+ * `bookingId` is a required FK there. It still sends real email and WhatsApp
+ * through the same SendGrid/WAHA transports, so those two are re-exported
+ * here rather than having `lib/intake` reach past this file into
+ * `email.ts`/`whatsapp.ts` directly.
+ */
+export { sendEmail } from "@/lib/notifications/email";
+export { sendWhatsAppText } from "@/lib/notifications/whatsapp";

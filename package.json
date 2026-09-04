@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "check:intake": "tsx --test scripts/check-intake.ts && node --test scripts/check-intake-server.cjs",
     "dev": "next dev -p 3008",
     "build": "prisma generate && next build",
     "start": "next start",
@@ -43,6 +44,7 @@
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
+    "googleapis": "^178.0.0",
     "jose": "^6.2.9",
     "libphonenumber-js": "^1.13.11",
     "lucide-react": "^1.33.0",

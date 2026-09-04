@@ -15,12 +15,17 @@ returns this repo's own output, not a source to check it against. Two notes belo
 written while that comparison still meant something and say so by date; treat them as
 history, not as a method to repeat.
 
-Work has run in four phases. Phase 1 (pixel-cloning the WordPress site) is **done**.
+Work has run in six phases. Phase 1 (pixel-cloning the WordPress site) is **done**.
 Phase 2 (a full UI redesign) is **in progress and unresolved** — read that section before
 changing anything. Phase 3 (the booking system) is **built and verified against a live
 Neon database, SendGrid and WAHA**; `BOOKING-PLAN.md` is its spec. Phase 4 (online
 payment through Xendit) is **built and unverifiable**: the studio has no Xendit account
-yet, so not one line of it has ever run. `PAYMENT-PLAN.md` is its spec.
+yet, so not one line of it has ever run. `PAYMENT-PLAN.md` is its spec. Phase 5 (a CMS
+so the owner can edit treatment pages and blog posts) is **in progress** — the editor has
+never been driven by a human yet; `CMS-PLAN.md` is its spec. Phase 6 (a native client
+intake & consent form, replacing an external JotForm) is **in progress** — built, verified
+end to end for a real submission, with one admin sub-feature (a custom-field builder) not
+yet fully click-tested; `INTAKE-PLAN.md` is its spec.
 
 ---
 
@@ -731,6 +736,65 @@ studio has no bucket yet, so every upload so far has gone to local disk.
     ones that have to exist before anybody can sign in to make them. It never
     prints the password — terminal output ends up in logs and transcripts — and
     appends it to the gitignored `.admin-accounts.txt` instead.
+
+## Phase 6 — Client Intake & Consent form (in progress)
+
+The studio sent every client to an external JotForm before a booking. It now
+lives natively in this app: SUPER_ADMIN-editable fields, submissions synced to
+a Google Sheet (service account, up to two Gmail addresses), and a WhatsApp
+notification to the studio through the same WAHA integration Phase 3 already
+verified. **`INTAKE-PLAN.md` is the spec, the as-built model, and the current
+status; read it before changing any of this** — it is more detailed than this
+section and is the file to update as this phase progresses.
+
+Every booking CTA site-wide now routes through `/intake` first — no memory,
+every attempt requires a fresh fill — with the site nav hidden on that page,
+redirecting on success to the external `booking.flexandflow.fit`
+([[booking-external-redirect]] in memory; the booking form itself is still
+WordPress/BookingPress, untouched by this phase).
+
+### Status, in short
+
+Data model, seed, the public form (all 34 fields, conditional field reveal,
+a country-code phone field, image uploads), the booking gate, Google Sheets
+sync and WhatsApp notifications are **built and verified working** — a real
+submission was completed end to end in a browser (201 Created, real WhatsApp
+sent, correct E.164 data, redirect to booking confirmed by tab origin
+change), and the owner confirmed the Sheet receives rows.
+
+A SUPER_ADMIN field-builder was added on top of that (add a custom field of
+any kind — dropdown/radio/checkbox/text/phone/date/signature/image/textarea —
+from `/admin/intake/`, delete only the ones added this way). Its backend is
+written and typechecks/lints clean; its public rendering was confirmed by
+direct DOM inspection; one of its two dropdowns was proven to work through a
+real browser click. **A full click-through — add one custom field, see it on
+the public form, delete it again — has not been completed.** `INTAKE-PLAN.md`
+has the detail on exactly what blocked that (a browser-pane coordinate
+instability in this environment, not a code defect) and what to try next.
+
+### Two real bugs this phase's own build had introduced
+
+1. `components/intake/SignaturePad.tsx`'s `canvas.setPointerCapture()` could
+   throw `NotFoundError` for an untracked pointer id, uncaught — silently
+   breaking the whole signature pad with no visible error. This is very
+   likely what the owner's original "can't submit" report was.
+2. A stale-closure race in the draft-autosave (`IntakeForm.tsx`): rapid state
+   changes could each save a stale `state.answers` snapshot, silently
+   dropping a change from the persisted draft. Fixed by moving the save into
+   a `useEffect` keyed on `state.answers`.
+
+Both are fixed. `INTAKE-PLAN.md` §6 has the two smaller ones (a Google env
+var name mismatch, and the seed script not syncing `kind` on existing rows).
+
+### A gotcha that isn't in this file's own environment notes yet
+
+**Under this project's `next dev` (Next 16, Turbopack), the persistent Data
+Cache lives at `.next/dev/cache/fetch-cache/`, not `.next/cache/fetch-cache/`**
+— the webpack-dev path this file's other `unstable_cache` notes assume.
+Deleting the wrong one is a silent no-op that looks exactly like a successful
+clear. This cost real time in this phase: the database and the running
+process were both already correct, and the page still rendered stale data
+until the *right* directory was deleted. See `INTAKE-PLAN.md` §7.
 
 ## Phase 1 — completed clone fidelity work (superseded)
 

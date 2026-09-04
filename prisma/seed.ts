@@ -32,6 +32,7 @@ import { PrismaClient } from "@/generated/prisma/client";
 import { TIER_LABEL, type Tier } from "@/lib/booking/types";
 import { services } from "@/lib/data/services";
 import { therapists } from "@/lib/data/therapists";
+import { SEED_INTAKE_FIELDS } from "@/lib/intake/seed-fields";
 import { priceAmount, tierMinutes } from "@/lib/pricing";
 import { contact } from "@/lib/site";
 import type { Service } from "@/types";
@@ -395,6 +396,64 @@ async function main(): Promise<void> {
     admin = adminEmail;
   }
 
+  // ── Intake form fields ───────────────────────────────────────────────
+  /* Never overwrites admin-editable content on an existing row — once
+     seeded, the database is the source of truth for label/helpText/
+     required/options, and a SUPER_ADMIN's edit in the panel must survive a
+     re-run of this script. `WorkingHour`'s "only fill in where nothing
+     exists" is the model here, not `ServiceVariant`'s, which deliberately
+     does overwrite because the marketing pages remain canonical for prices.
+     Section and kind still follow the seed structure. Existing sortOrder
+     and archived state are preserved so reseeding cannot shift historical
+     sheet columns or restore a field removed from the admin panel. */
+  let intakeFieldsCreated = 0;
+  let intakeFieldsExisting = 0;
+  const highestIntakeOrder = await prisma.intakeFormField.aggregate({ _max: { sortOrder: true } });
+  let nextIntakeOrder = (highestIntakeOrder._max.sortOrder ?? -1) + 1;
+
+  for (const field of SEED_INTAKE_FIELDS) {
+    const before = await prisma.intakeFormField.findUnique({
+      where: { fieldKey: field.fieldKey },
+      select: { id: true },
+    });
+
+    await prisma.intakeFormField.upsert({
+      where: { fieldKey: field.fieldKey },
+      /* kind is synced like sectionKey, not protected like
+         label/helpText/required/options below — the admin editor never
+         exposes it as an input (IntakeFieldRowForm shows it as a read-only
+         chip), so there is no admin edit here to protect. Without this, a
+         kind change made in seed-fields.ts (e.g. currentAddress ADDRESS →
+         TEXT, whatsappNumber TEXT → PHONE on 2026-09-03) would silently
+         never reach a database that already has the row. */
+      update: { sectionKey: field.sectionKey, kind: field.kind },
+      create: {
+        sectionKey: field.sectionKey,
+        fieldKey: field.fieldKey,
+        kind: field.kind,
+        label: field.label,
+        helpText: field.helpText ?? null,
+        required: field.required,
+        options: field.options ?? [],
+        sortOrder: nextIntakeOrder,
+      },
+    });
+
+    if (before) intakeFieldsExisting += 1;
+    else {
+      intakeFieldsCreated += 1;
+      nextIntakeOrder += 1;
+    }
+  }
+
+  /* Retire removed seed fields without dropping their historical columns.
+     Custom definitions are never retired by reseeding. */
+  const currentFieldKeys = SEED_INTAKE_FIELDS.map((field) => field.fieldKey);
+  const removed = await prisma.intakeFormField.updateMany({
+    where: { isCustom: false, fieldKey: { notIn: currentFieldKeys } },
+    data: { archived: true },
+  });
+
   // ── Summary ───────────────────────────────────────────────────────────
   const after = {
     categories: await prisma.serviceCategory.count(),
@@ -418,6 +477,10 @@ async function main(): Promise<void> {
   console.log(`  ${"links".padEnd(12)} ${String(linkCount).padStart(3)} written`);
   for (const schedule of schedules) console.log(`  hours        ${schedule}`);
   console.log(`  admin        ${admin}`);
+  console.log(
+    `  intake       ${intakeFieldsCreated} created, ${intakeFieldsExisting} kept as edited` +
+      (removed.count ? `, ${removed.count} removed (no longer in seed-fields.ts)` : ""),
+  );
 
   if (unresolved.length) {
     console.log("\nNot bookable — no price or no duration in the source data:");
