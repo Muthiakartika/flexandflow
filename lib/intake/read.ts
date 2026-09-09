@@ -58,7 +58,12 @@ async function loadFields(): Promise<PublicIntakeField[]> {
 
 /** Every intake field, in reading order — what the public form renders. */
 export async function listPublicIntakeFields(): Promise<PublicIntakeField[]> {
-  return unstable_cache(loadFields, ["intake", "fields", "active-v4"], {
+  /* The version suffix is bumped whenever something *outside* a Server
+     Action changes this data — a migration or a reseed — because those
+     cannot call `updateTag`. Bumping the key is the only invalidation that
+     also works in production, where nobody can delete a cache directory.
+     v5: 20260909000000_intake_treatment_options rewrote the treatment list. */
+  return unstable_cache(loadFields, ["intake", "fields", "active-v5"], {
     tags: [INTAKE_TAG.fields],
   })();
 }

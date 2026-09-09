@@ -43,13 +43,40 @@ export type SeedIntakeField = {
   options?: string[];
 };
 
+/**
+ * The studio's actual treatments, not generic categories. The JotForm asked
+ * for a "Massage / Bodywork / Facial / Stretch Therapy" bucket that matches
+ * nothing the client booked, and a therapist reading the intake needs to
+ * know which treatment is coming: a sport massage, a pregnancy massage and
+ * the men's lymphatic detox carry different contraindications.
+ *
+ * These are the seven `pricedServiceSlugs` in `lib/data/services.ts`, in
+ * that array's order — the WordPress grid order `/services` and
+ * `/price-list` both use — labelled with each service's own `title`
+ * verbatim, "Bali" and "Service" suffixes included, so the wording on the
+ * form matches the page the client booked from.
+ *
+ * Combo Stretching and Massage follows them rather than sitting inside that
+ * block, because it is not on the grid at all: it has no service page and
+ * exists only in `lib/data/priceList.ts`, which is where its label is taken
+ * from verbatim. It is on the form because it is bookable, and this field is
+ * required with no "Other" — leaving it out would make anyone who booked it
+ * pick a treatment they did not.
+ *
+ * Chosen by the owner on 2026-09-09 over a longer list. Deliberately absent:
+ * Full Body Relaxing Massage and Facial Massage, both live indexable pages
+ * with no published rate, on no menu or grid (CLAUDE.md); and the JotForm's
+ * "Other", so these eight are the only answers this field accepts.
+ */
 const TREATMENTS = [
-  "Massage",
-  "Bodywork",
+  "Lymphatic Detox Massage for Men",
+  "Trauma Healing Bali",
+  "Assisted Stretching Bali",
+  "Sport Massage",
+  "Cupping Therapy",
   "Lymphatic Drainage",
-  "Facial",
-  "Stretch Therapy",
-  "Other",
+  "Pregnancy Massage Service",
+  "Combo Stretching and Massage",
 ];
 
 /**
