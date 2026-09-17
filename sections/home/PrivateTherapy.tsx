@@ -11,7 +11,7 @@ const benefits = Object.keys(benefitLabels) as BenefitIconName[];
 
 /**
  * "One on One Private Therapy Available" — the mechanism section, shared by the
- * home and About pages, which differ only in the eyebrow.
+ * home and About pages, which differ in their eyebrow and body copy.
  *
  * The original stacked three photos into an Elementor collage with decorative
  * botanicals behind it. Here two frames overlap instead: the room, and the
@@ -20,8 +20,12 @@ const benefits = Object.keys(benefitLabels) as BenefitIconName[];
  */
 export default function PrivateTherapy({
   eyebrow = "Our Solution For Your Body Needs",
+  body = "Experience a custom-designed session tailored to your body’s needs. Our expert practitioner will guide you through gentle stretches, helping you move better and feel your best.",
 }: {
   eyebrow?: string;
+  /** Overridden on the About page. The default is the home page's own copy,
+   *  which the brief pins as verbatim — the two must be able to differ. */
+  body?: string;
 }) {
   return (
     <section className="page-band-line">
@@ -56,9 +60,7 @@ export default function PrivateTherapy({
               One on One Private Therapy Available
             </h2>
             <p className="mt-3 max-w-[52ch] font-body text-[15px] leading-[1.7] text-body-text/80">
-              Experience a custom-designed session tailored to your body&rsquo;s
-              needs. Our expert practitioner will guide you through gentle
-              stretches, helping you move better and feel your best.
+              {body}
             </p>
 
             <ul className="mt-6 grid gap-x-6 gap-y-4 sm:grid-cols-2">

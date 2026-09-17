@@ -115,7 +115,10 @@ export default async function TherapistPage(
               ))}
             </div>
 
-            <h2 className={`mt-8 ${H3}`}>Her Approach</h2>
+            {/* "My Approach", not "Her Approach": the bio above it is already
+                headed "About Me" and both practitioners' copy is written in
+                their own voice, so the third person was the odd one out. */}
+            <h2 className={`mt-8 ${H3}`}>My Approach</h2>
             <p className="mt-3 max-w-[68ch] font-body text-[15px] leading-[1.75] text-body-text/80">
               {therapist.approach}
             </p>

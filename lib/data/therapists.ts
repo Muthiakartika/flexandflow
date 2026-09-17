@@ -30,12 +30,12 @@ export const therapists: Therapist[] = [
     specializedIn:
       "Bodywork Therapy • Healing Massage • Sports Massage • Assisted Stretching • Lymphatic Drainage",
     about: [
-      "I am a specialist bodywork and healing therapist with a strong fitness background and Active IQ Level 2 & 3 certifications.",
-      "I combine movement and energy-based techniques to support deep physical and emotional release. My approach integrates trauma-informed healing massage, sports massage, assisted stretching, and lymphatic drainage.",
-      "My sessions are designed to be grounding, restorative, and tailored to each client’s unique needs.",
+      "I’m the founder of Flex&Flow, with a background in nursing, professional fitness training, and bodywork.",
+      "My approach developed through years of working with clients dealing with stiffness, restricted movement, muscular tension, demanding lifestyles, sports-related tightness, and recovery needs. It was also shaped by my own experience with injury and the frustration of not finding recovery work that paid enough attention to the details.",
+      "That experience changed the way I work with people. I take time to listen, pay close attention to what your body is telling me, and adjust my focus before deciding how to approach each session.",
     ],
     approach:
-      "Integrating fitness-based techniques with intuitive healing to support recovery, flexibility, and emotional release.",
+      "I combine assisted stretching, therapeutic massage, movement-based techniques, and recovery work, with each session guided by what I observe and what you tell me.",
     instagram: "https://www.instagram.com/ginnyasih?igsh=MW9saGJoZDExbGc5NA==",
     hours: "Monday to Friday : 08:00 - 17:00 hrs",
     seoTitle: "Ginny - Flex and Flow",

@@ -5,8 +5,9 @@ import { BAND, H2, LINK, WRAP } from "@/components/ui/tokens";
 import { therapists } from "@/lib/data/therapists";
 
 /**
- * "Meet My Team" — the studio's own heading, borrowed from the About page,
- * which runs the same cards under the same words.
+ * "Meet My Team" — the home page's own heading. The About page runs the same
+ * cards under "Meet the Team" and a paragraph of its own; the two bands are
+ * deliberately worded differently and should not be re-merged.
  */
 export default function Practitioners() {
   return (
