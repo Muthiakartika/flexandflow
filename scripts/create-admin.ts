@@ -15,9 +15,14 @@
  *   npx tsx scripts/create-admin.ts ... --grant content.publish --grant media.delete
  *   npx tsx scripts/create-admin.ts ... --password "one you chose"
  *
+ *   npx tsx scripts/create-admin.ts ... --reset-password   # new one, to the file
+ *
  * Roles: SUPER_ADMIN | EDITOR | BOOKING_STAFF. Re-running for an email that
  * already exists updates the role and grants and leaves the password alone,
- * so it cannot silently lock somebody out.
+ * so it cannot silently lock somebody out. To change it you have to ask:
+ * `--password` sets the one you pass, `--reset-password` generates one and
+ * appends it to the file. That is the way back in for a locked-out super
+ * admin, who cannot reach `/admin/team/` to reset it from the panel.
  */
 import { config } from "dotenv";
 
@@ -87,13 +92,17 @@ async function main(): Promise<void> {
   const name = arg("name")?.trim();
   const role = arg("role")?.trim().toUpperCase();
   const chosen = arg("password");
+  /* Either form asks for a reset on an account that already exists; on a new
+     one both are redundant, since a new account always gets a password. */
+  const resetting =
+    chosen !== undefined || process.argv.includes("--reset-password");
   const grants = args("grant").map((g) => g.trim());
 
   if (!email || !name || !role) {
     console.error(
       "Usage: npx tsx scripts/create-admin.ts --email <email> --name <name> " +
         "--role <SUPER_ADMIN|EDITOR|BOOKING_STAFF> [--grant <permission>]… " +
-        "[--password <password>]",
+        "[--password <password>] [--reset-password]",
     );
     process.exit(1);
   }
@@ -126,14 +135,53 @@ async function main(): Promise<void> {
   });
 
   if (existing) {
+    /* A reset is opt-in. Without `--password` or `--reset-password` the hash
+       is left alone, so re-running this to correct a role cannot lock anybody
+       out — which is the behaviour the usage text has always promised.
+
+       `--password` on an existing account used to be accepted and then
+       silently ignored, while the message below told you to use it. The one
+       account that most needs a reset is the last super admin, who cannot
+       reach `/admin/team/` to do it the other way, so the advice pointed at
+       two doors that were both shut. */
+    const reset = resetting ? (chosen ?? generatePassword()) : undefined;
+
+    /* The file is written BEFORE the hash is changed, and a failure here stops
+       the script. The other order loses a generated password to a full disk or
+       a read-only directory and leaves the account on a hash nobody holds —
+       which, for the last super admin, is a lock-out with no way back.
+
+       Same rule as a new account otherwise: a generated password goes to the
+       gitignored file, never to the terminal. One the caller chose goes to
+       neither, because they already have it. */
+    if (reset && !chosen) {
+      appendFileSync(
+        CREDENTIALS_FILE,
+        `${email}\n  name:     ${name}\n  role:     ${ROLE_LABEL[role]}\n` +
+          `  password: ${reset}  (reset ${new Date().toISOString().slice(0, 10)})\n\n`,
+        "utf8",
+      );
+    }
+
     await prisma.adminUser.update({
       where: { email },
-      data: { name, role, extraPermissions: extra, active: true, deletedAt: null },
+      data: {
+        name,
+        role,
+        extraPermissions: extra,
+        active: true,
+        deletedAt: null,
+        ...(reset ? { passwordHash: await bcrypt.hash(reset, BCRYPT_COST) } : {}),
+      },
     });
 
     console.log(
       `\nUpdated ${email} — ${ROLE_LABEL[role]}.\n` +
-        `Password left unchanged; use /admin/team/ or --password to set a new one.\n`,
+        (reset
+          ? chosen
+            ? "Password set to the one you passed.\n"
+            : `New password written to ${CREDENTIALS_FILE}. Read it, pass it on, delete it.\n`
+          : "Password left unchanged; pass --reset-password to set a new one.\n"),
     );
   } else {
     const password = chosen ?? generatePassword();
