@@ -35,7 +35,7 @@ export const therapistRates: TherapistRateCard[] = [
   {
     therapistSlug: "ginny",
     rows: [
-      { treatment: "Trauma Healing", minutes: 90, amount: 1_500_000 },
+      { treatment: "Trauma Healing", minutes: 90, amount: 1_800_000 },
       { treatment: "Sport Massage", minutes: 60, amount: 750_000 },
       { treatment: "Sport Massage", minutes: 90, amount: 1_000_000 },
       { treatment: "Assisted Stretching", minutes: 60, amount: 750_000 },
