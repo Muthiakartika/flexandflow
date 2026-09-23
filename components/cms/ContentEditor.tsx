@@ -12,6 +12,7 @@ import {
   unpublishContent,
   type CmsResult,
 } from "@/lib/cms/actions";
+import { BLOCK_LABEL, type BlockType } from "@/lib/cms/blocks";
 import { slugify } from "@/lib/cms/content-schema";
 import type { EditorDoc } from "@/lib/cms/admin";
 import type { ContentBlock, TherapistTier } from "@/types";
@@ -68,7 +69,12 @@ export function ContentEditor({
   const [durationLabel, setDurationLabel] = useState(doc.durationLabel ?? "");
   const [displayDate, setDisplayDate] = useState(doc.displayDate ?? "");
   const [tiers, setTiers] = useState<TherapistTier[]>(
-    Array.isArray(doc.tiers) ? (doc.tiers as TherapistTier[]) : [],
+    Array.isArray(doc.tiers)
+      ? (doc.tiers as TherapistTier[]).map((tier) => ({
+          ...tier,
+          price: stripCurrency(tier.price),
+        }))
+      : [],
   );
 
   const [result, setResult] = useState<CmsResult | null>(null);
@@ -132,6 +138,7 @@ export function ContentEditor({
   }
 
   const fields = result?.fields ?? {};
+  const problems = describeProblems(fields, blocks, tiers);
 
   return (
     <div className="cms-editor">
@@ -315,6 +322,7 @@ export function ContentEditor({
         {isService ? (
           <TierEditor
             tiers={tiers}
+            fields={fields}
             durationLabel={durationLabel}
             onTiers={edited(setTiers)}
             onDuration={edited(setDurationLabel)}
@@ -481,6 +489,17 @@ export function ContentEditor({
               {result.message}
             </p>
           ) : null}
+
+          {!result?.ok && problems.length > 0 ? (
+            <ul
+              role="alert"
+              className="mt-2 grid gap-1.5 rounded-[8px] bg-danger-soft px-3 py-2 text-[12px] text-danger"
+            >
+              {problems.map((problem) => (
+                <li key={problem}>{problem}</li>
+              ))}
+            </ul>
+          ) : null}
         </div>
 
         {canPublish && doc.status === "PUBLISHED" ? (
@@ -548,6 +567,72 @@ export function ContentEditor({
       />
     </div>
   );
+}
+
+/**
+ * Prices imported from WordPress carry an "Rp " prefix that the save schema
+ * refuses — the site adds the currency itself. Stripped on load so an
+ * untouched imported page can be saved as it is.
+ */
+function stripCurrency(price: string): string {
+  return price.replace(/^\s*(rp\.?|idr)\s*/i, "");
+}
+
+/** Where on the form each field lives, in the words the form itself uses. */
+const FIELD_LABEL: Record<string, string> = {
+  title: "Page title",
+  slug: "Web address",
+  urlPrefix: "Category",
+  excerpt: "Short description",
+  image: "Main picture",
+  bannerImage: "Banner picture",
+  seoTitle: "Search results → SEO title",
+  seoDescription: "Search results → SEO description",
+  durationLabel: "Rates → Session length",
+  displayDate: "Published date",
+};
+
+const TIER_FIELD: Record<string, string> = {
+  label: "Tier name",
+  price: "Price",
+  note: "Note",
+  duration: "Length for this tier",
+};
+
+/**
+ * Every refusal from the server, spelled out as "where → what".
+ *
+ * "Some fields need attention" alone left the writer hunting: an error on a
+ * rate row or on block 14 of the body has no field of its own at the top of
+ * the form, so nothing on screen said what was wrong.
+ */
+function describeProblems(
+  fields: Record<string, string>,
+  blocks: ContentBlock[],
+  tiers: TherapistTier[],
+): string[] {
+  return Object.entries(fields)
+    .filter(([, message]) => message)
+    .map(([path, message]) => {
+      const [head, index, key] = path.split(".");
+
+      if (head === "tiers" && index !== undefined) {
+        const tier = tiers[Number(index)];
+        const name = tier?.label ? ` (${tier.label})` : "";
+        const field = key ? ` → ${TIER_FIELD[key] ?? key}` : "";
+        return `Rates → rate ${Number(index) + 1}${name}${field}: ${message}`;
+      }
+
+      if (head === "body" && index !== undefined) {
+        const block = blocks[Number(index)];
+        const kind = block
+          ? (BLOCK_LABEL[block.type as BlockType] ?? block.type)
+          : "block";
+        return `Page content → block ${Number(index) + 1} (${kind}): ${message}`;
+      }
+
+      return `${FIELD_LABEL[head] ?? path}: ${message}`;
+    });
 }
 
 function FieldError({ message }: { message: string }) {
@@ -618,11 +703,13 @@ function ImageRow({
  */
 function TierEditor({
   tiers,
+  fields,
   durationLabel,
   onTiers,
   onDuration,
 }: {
   tiers: TherapistTier[];
+  fields: Record<string, string>;
   durationLabel: string;
   onTiers: (tiers: TherapistTier[]) => void;
   onDuration: (value: string) => void;
@@ -659,6 +746,7 @@ function TierEditor({
         className="admin-input max-w-[16rem]"
         placeholder="Duration : 1 hr"
       />
+      {fields.durationLabel ? <FieldError message={fields.durationLabel} /> : null}
 
       <div className="mt-4 grid gap-3">
         {tiers.length === 0 ? (
@@ -680,6 +768,9 @@ function TierEditor({
                   className="admin-input"
                   placeholder="Master Therapist"
                 />
+                {fields[`tiers.${index}.label`] ? (
+                  <FieldError message={fields[`tiers.${index}.label`]} />
+                ) : null}
               </div>
               <div>
                 <span className="admin-label">Price (digits only)</span>
@@ -694,6 +785,9 @@ function TierEditor({
                 <p className="mt-1 text-[12px] text-faint">
                   The site adds “IDR”. Do not type it.
                 </p>
+                {fields[`tiers.${index}.price`] ? (
+                  <FieldError message={fields[`tiers.${index}.price`]} />
+                ) : null}
               </div>
               <div>
                 <span className="admin-label">Note</span>
