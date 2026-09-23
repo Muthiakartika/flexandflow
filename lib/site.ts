@@ -269,14 +269,25 @@ export const footerIntro =
   "both body and mind.";
 
 /**
- * The footer's first sentence alone — still the studio's own words verbatim,
- * just without the second sentence, so the Identity column reads as a
- * complete thought at a height closer to Visit and Newsletter instead of
- * needing a `line-clamp` ellipsis that reads as cut off mid-thought.
+ * The footer's one-line intro, as the owner supplied it — kept to a single
+ * sentence so the Identity column reads as a complete thought at a height
+ * closer to Visit and Newsletter instead of needing a `line-clamp` ellipsis
+ * that reads as cut off mid-thought.
  */
 export const footerIntroShort =
-  "Flex & Flow offers personalised treatments designed to support recovery, " +
-  "relaxation, and overall wellbeing.";
+  "Flex & Flow offers personalised bodywork focused on recovery, movement, " +
+  "and relieving physical tension.";
+
+/**
+ * The line in the olive closing band above the footer (`BookClose`).
+ *
+ * Separate from `siteConfig.description` on purpose: that string is also the
+ * home page's meta description, and the owner's rewrite was for the band on
+ * the page, not for the search result.
+ */
+export const bookCloseLine =
+  "Flex & Flow focuses on bodywork, movement, and recovery, helping improve " +
+  "flexibility, ease discomfort, and support better mobility.";
 
 /** The two "Accepted Payments" marks shown in the footer. */
 export const paymentIcons = [

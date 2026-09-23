@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { contact, siteConfig } from "@/lib/site";
+import { bookCloseLine, contact, siteConfig } from "@/lib/site";
 import { BAND, WRAP } from "@/components/ui/tokens";
 
 /* On the olive region the shared olive focus ring would be invisible, so the
@@ -15,8 +15,8 @@ const FOCUS_ON_OLIVE =
  *
  * The olive is `--color-primary-strong`: the brand green one step down, because
  * white body copy on `#7f8c3a` is 3.67:1 and fails AA. Nothing here is written
- * for the occasion — the line is the site's own description, and the studio has
- * no reviews to quote yet.
+ * for the occasion — the line is the studio's own (`bookCloseLine`), and the
+ * studio has no reviews to quote yet.
  *
  * A photograph carries the right-hand half. Text and two links alone left the
  * band mostly empty olive, which read as an unfinished section rather than a
@@ -48,7 +48,7 @@ export default function BookClose() {
               {siteConfig.shortName}
             </h2>
             <p className="mt-3 max-w-[44ch] font-body text-[15px] leading-[1.7] text-white">
-              {siteConfig.description}
+              {bookCloseLine}
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
