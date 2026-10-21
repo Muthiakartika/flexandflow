@@ -57,9 +57,20 @@ export async function generateMetadata(
   const found = await resolve(category, slug);
   if (!found) return {};
 
-  return metadataFromSeo(
-    found.kind === "service" ? found.service.seo : found.post.seo,
-  );
+  const metadata = metadataFromSeo(
+  found.kind === "service" ? found.service.seo : found.post.seo,
+);
+
+  const hideFromSearch =
+    category === "uluwatu-bali" &&
+    ["facial-massage", "full-body-massage"].includes(slug);
+  
+  return {
+    ...metadata,
+    ...(hideFromSearch
+      ? { robots: { index: false, follow: false } }
+      : {}),
+  };
 }
 
 export default async function ArticlePage(
