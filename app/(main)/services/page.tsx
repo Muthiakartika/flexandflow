@@ -10,7 +10,7 @@ import { listPricedServices } from "@/lib/cms/read";
 import { contact } from "@/lib/site";
 
 const description =
-  "Check out our services that offer massage, stretching, and therapy to improve mobility and support your health.";
+  "Massage and bodywork in Uluwatu, Bali: sports massage, assisted stretching, lymphatic drainage, cupping, pregnancy massage and home service.";
 
 export const metadata: Metadata = {
   title: "Massage and Treatment Services in Uluwatu Bali",

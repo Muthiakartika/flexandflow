@@ -9,15 +9,22 @@ import Practitioners from "@/sections/home/Practitioners";
 import PrivateTherapy from "@/sections/home/PrivateTherapy";
 import ServiceTicker from "@/sections/home/ServiceTicker";
 import Treatments from "@/sections/home/Treatments";
-import { siteConfig } from "@/lib/site";
+/* Search-facing only — the page's own headings and copy are untouched. Aimed
+   at "massage uluwatu" (600 searches a month in Indonesia, KD 12 — Ahrefs,
+   2026-10-27), the largest query this studio can realistically win and one
+   the old WordPress title ("Flex and Flow - Wellness Studio") never named. */
+const title = "Massage & Bodywork Studio in Uluwatu, Bali - Flex and Flow";
+const description =
+  "Private massage, assisted stretching and recovery bodywork in Uluwatu, " +
+  "Bali. One-to-one sessions with expert therapists, at our studio or your villa.";
 
 export const metadata: Metadata = {
-  title: "Flex and Flow - Wellness Studio",
-  description: siteConfig.description,
+  title,
+  description,
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Flex and Flow - Wellness Studio",
-    description: siteConfig.description,
+    title,
+    description,
     url: "/",
     type: "website",
     images: ["/images/2023/09/slider-png-01.png"],
