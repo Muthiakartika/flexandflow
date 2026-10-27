@@ -27,6 +27,7 @@ export const metadata: Metadata = {
     description,
     url: "/price-list/",
     type: "article",
+    images: ["/images/2026/08/complete-wellness.jpg"],
   },
 };
 

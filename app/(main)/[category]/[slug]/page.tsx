@@ -2,11 +2,17 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import PostArticle from "@/components/content/PostArticle";
+import JsonLd from "@/components/layout/JsonLd";
 import ServiceArticle from "@/components/content/ServiceArticle";
 import { getCategory } from "@/lib/cms/category-store";
 import { getPost, getService, publishedParams } from "@/lib/cms/read";
 import { TREATMENT_PREFIX } from "@/lib/cms/categories";
-import { metadataFromSeo, postNeighbours } from "@/lib/content";
+import {
+  NOINDEX_SERVICES,
+  metadataFromSeo,
+  postNeighbours,
+} from "@/lib/content";
+import { articleSchema, serviceSchema } from "@/lib/structured-data";
 
 /**
  * Every article on the site: `/uluwatu-bali/…`, `/injury-guide/…`, and
@@ -57,6 +63,13 @@ export async function generateMetadata(
   const found = await resolve(category, slug);
   if (!found) return {};
 
+  if (found.kind === "service" && NOINDEX_SERVICES.has(found.service.slug)) {
+    return {
+      ...metadataFromSeo(found.service.seo),
+      robots: { index: false, follow: false },
+    };
+  }
+
   return metadataFromSeo(
     found.kind === "service" ? found.service.seo : found.post.seo,
   );
@@ -76,9 +89,19 @@ export default async function ArticlePage(
   if (!found) notFound();
 
   if (found.kind === "service") {
-    return <ServiceArticle service={found.service} />;
+    return (
+      <>
+        <JsonLd data={serviceSchema(found.service)} />
+        <ServiceArticle service={found.service} />
+      </>
+    );
   }
 
   const { previous, next } = await postNeighbours(found.post);
-  return <PostArticle post={found.post} previous={previous} next={next} />;
+  return (
+    <>
+      <JsonLd data={articleSchema(found.post)} />
+      <PostArticle post={found.post} previous={previous} next={next} />
+    </>
+  );
 }

@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { Amatic_SC, Andika } from "next/font/google";
 
 import PreviewBanner from "@/components/cms/PreviewBanner";
+import JsonLd from "@/components/layout/JsonLd";
 import ScrollToTop from "@/components/layout/ScrollToTop";
 import SiteChrome from "@/components/layout/SiteChrome";
 import { siteConfig } from "@/lib/site";
+import { businessSchema } from "@/lib/structured-data";
 
 import "./globals.css";
 
@@ -87,6 +89,7 @@ MOTION: one moving strip of treatment names. Nothing on this page ships at opaci
         {/* Above the header, and the only thing in this layout that knows the
             CMS exists. Renders nothing unless the draft cookie is set. */}
         <PreviewBanner />
+        <JsonLd data={businessSchema()} />
         <SiteChrome>{children}</SiteChrome>
         <ScrollToTop />
       </body>

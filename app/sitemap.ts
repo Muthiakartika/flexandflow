@@ -1,13 +1,15 @@
 import type { MetadataRoute } from "next";
 
 import { listPosts, listServices } from "@/lib/cms/read";
+import { NOINDEX_SERVICES } from "@/lib/content";
 import { siteConfig } from "@/lib/site";
 
 /**
  * Every URL here is meant to rank. Deliberately excluded, because WordPress
  * marks the equivalents `noindex` and this app matches that (see
  * SITE-STRUCTURE.md): the `/uluwatu-bali/` and `/injury-guide/` category
- * archives and the two therapist profiles. Listing
+ * archives, the two therapist profiles, and the treatments in
+ * `NOINDEX_SERVICES`. Listing
  * a `noindex` page here would tell Google to index the very page its own
  * meta tag says not to.
  *
@@ -29,9 +31,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteConfig.url}/blog/` },
   ];
 
-  const servicePages: MetadataRoute.Sitemap = services.map((service) => ({
-    url: `${siteConfig.url}${service.seo.canonicalPath}`,
-  }));
+  const servicePages: MetadataRoute.Sitemap = services
+    .filter((service) => !NOINDEX_SERVICES.has(service.slug))
+    .map((service) => ({
+      url: `${siteConfig.url}${service.seo.canonicalPath}`,
+    }));
 
   const postPages: MetadataRoute.Sitemap = posts.map((post) => ({
     url: `${siteConfig.url}${post.seo.canonicalPath}`,

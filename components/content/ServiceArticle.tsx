@@ -4,7 +4,8 @@ import Link from "next/link";
 import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
 import { BAND, CARD, FOCUS, LINK, WRAP } from "@/components/ui/tokens";
-import { listServices } from "@/lib/cms/read";
+import { listPosts, listServices } from "@/lib/cms/read";
+import { NOINDEX_SERVICES } from "@/lib/content";
 import { formatIdr, priceAmount, serviceMinutes, tierMinutes } from "@/lib/pricing";
 import { contact } from "@/lib/site";
 import RichText from "./RichText";
@@ -45,9 +46,32 @@ export default async function ServiceArticle({ service }: { service: Service }) 
         ];
   });
 
-  const others = (await listServices())
+  /* The five treatments that follow this one, wrapping round the end. A plain
+     `slice(0, 5)` of the reading order linked the same five pages from every
+     treatment and starved the rest of internal links; rotating gives each
+     listed treatment five. The `NOINDEX_SERVICES` pages are left out — they
+     are kept out of search on purpose, so linking them from every treatment
+     would only spend links on pages Google is told to ignore. */
+  const all = (await listServices()).filter(
+    (other) => other.slug === service.slug || !NOINDEX_SERVICES.has(other.slug),
+  );
+  const at = all.findIndex((other) => other.slug === service.slug);
+  const others = [...all.slice(at + 1), ...all.slice(0, Math.max(at, 0))]
     .filter((other) => other.slug !== service.slug)
     .slice(0, 5);
+
+  /* Three articles per treatment, offset by the treatment's position so the
+     set differs from page to page and every post is linked from at least two
+     treatments. Before this, articles were reachable only from the blog
+     listing — three or four internal links each against twenty-eight for a
+     treatment. */
+  const posts = await listPosts();
+  const reading = posts.length
+    ? Array.from(
+        { length: Math.min(3, posts.length) },
+        (_, k) => posts[(Math.max(at, 0) * 3 + k) % posts.length],
+      )
+    : [];
 
   return (
     <>
@@ -146,29 +170,56 @@ export default async function ServiceArticle({ service }: { service: Service }) 
             </div>
           </aside>
 
-          <nav
-            className={`${CARD} self-start p-5 lg:col-start-2 lg:row-start-2 lg:mt-3`}
-            aria-label="Other treatments"
-          >
-            <h2 className="page-label">Other treatments</h2>
-            <ul className="mt-3 flex flex-col">
-              {others.map((other) => (
-                <li key={other.slug} className="border-t border-secondary/10">
-                  <Link
-                    href={`/uluwatu-bali/${other.slug}`}
-                    className={`block py-2.5 font-body text-[14px] transition-colors duration-300 hover:text-primary ${FOCUS}`}
-                  >
-                    {other.title}
+          {/* One cell for both link lists. The article spans rows 1–2, so a
+              third row would only start below the end of the article. */}
+          <div className="flex flex-col gap-3 self-start lg:col-start-2 lg:row-start-2 lg:mt-3">
+            <nav className={`${CARD} p-5`} aria-label="Other treatments">
+              <h2 className="page-label">Other treatments</h2>
+              <ul className="mt-3 flex flex-col">
+                {others.map((other) => (
+                  <li key={other.slug} className="border-t border-secondary/10">
+                    <Link
+                      href={`/uluwatu-bali/${other.slug}`}
+                      className={`block py-2.5 font-body text-[14px] transition-colors duration-300 hover:text-primary ${FOCUS}`}
+                    >
+                      {other.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3">
+                <Link href="/services" className={LINK}>
+                  All treatments &amp; rates
+                </Link>
+              </p>
+            </nav>
+
+            {reading.length > 0 && (
+              <nav className={`${CARD} p-5`} aria-label="From the blog">
+                <h2 className="page-label">From the blog</h2>
+                <ul className="mt-3 flex flex-col">
+                  {reading.map((post) => (
+                    <li
+                      key={post.slug}
+                      className="border-t border-secondary/10"
+                    >
+                      <Link
+                        href={post.seo.canonicalPath}
+                        className={`block py-2.5 font-body text-[14px] transition-colors duration-300 hover:text-primary ${FOCUS}`}
+                      >
+                        {post.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3">
+                  <Link href="/blog" className={LINK}>
+                    All articles
                   </Link>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-3">
-              <Link href="/services" className={LINK}>
-                All treatments &amp; rates
-              </Link>
-            </p>
-          </nav>
+                </p>
+              </nav>
+            )}
+          </div>
         </div>
       </section>
     </>

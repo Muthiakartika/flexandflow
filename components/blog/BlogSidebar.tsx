@@ -2,7 +2,8 @@ import Link from "next/link";
 
 import { BTN_SOLID, CARD, FOCUS } from "@/components/ui/tokens";
 import { listCategories } from "@/lib/cms/category-store";
-import { listPosts } from "@/lib/cms/read";
+import { listPosts, listServices } from "@/lib/cms/read";
+import { NOINDEX_SERVICES } from "@/lib/content";
 import { contact } from "@/lib/site";
 import SearchForm from "./SearchForm";
 
@@ -17,10 +18,18 @@ import SearchForm from "./SearchForm";
 export default async function BlogSidebar() {
   /* Read together: the sidebar shows every category with a count beside it, so
      one without the other is half a list. */
-  const [posts, blogCategories] = await Promise.all([
+  const [posts, blogCategories, services] = await Promise.all([
     listPosts(),
     listCategories(),
+    listServices(),
   ]);
+
+  /* A reader of a recovery article is one step from a treatment, and the
+     treatments are what the studio sells — so every article links to each one
+     that is meant to rank. */
+  const treatments = services.filter(
+    (service) => !NOINDEX_SERVICES.has(service.slug),
+  );
 
   return (
     <aside className="flex flex-col gap-3 lg:sticky lg:top-[92px] lg:h-fit">
@@ -47,6 +56,22 @@ export default async function BlogSidebar() {
           ))}
         </ul>
       </section>
+
+      <nav className={`${CARD} p-5`} aria-label="Treatments">
+        <h2 className="page-label">Treatments</h2>
+        <ul className="mt-3 flex flex-col">
+          {treatments.map((service) => (
+            <li key={service.slug} className="border-t border-secondary/10">
+              <Link
+                href={service.seo.canonicalPath}
+                className={`block py-2.5 font-body text-[14px] transition-colors duration-300 hover:text-primary ${FOCUS}`}
+              >
+                {service.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       <section className={`${CARD} p-5`}>
         <h2 className="font-display text-[22px] leading-none font-bold">

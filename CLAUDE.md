@@ -214,7 +214,10 @@ was ported on 2026-08-18 — it is a live, indexable page listed in
 `facial-massage` it appears in neither the WordPress services grid nor the nav, only in
 the sitemap and in search. Both are therefore absent from the `order` array in
 `app/(main)/services/page.tsx` and from `primaryNav`, on purpose. Neither has published
-rates, so both carry `tiers: []` and render the aside with no price rows. The body copy
+rates, so both carry `tiers: []` and render the aside with no price rows.
+**Since 2026-10-27 both are `noindex, nofollow`** at the owner's request —
+`NOINDEX_SERVICES` in `lib/content.ts` also drops them from the sitemap and from
+the "Other treatments" sidebar. They still answer at their URLs. The body copy
 of the full-body page was taken from the live HTML verbatim, stray comma and "Let us to
 transform" included; do not tidy it.
 

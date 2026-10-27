@@ -20,21 +20,22 @@ export async function generateStaticParams() {
 }
 
 /**
- * WordPress's actual blog index is at `/blog-2/` — not `/blog/`, which
- * genuinely 404s (a slug collision left WordPress to append "-2"; that
- * detail is exactly why testing `/blog/page/2/` earlier gave the wrong
- * answer and led this comment astray for one revision). Checked directly
- * against `/blog-2/page/2/` on 2026-08-26: same title, same description,
- * and a canonical pointing back at `/blog-2/` — WordPress really does
- * consolidate every paginated page into page 1's `<head>`, and it is not
- * noindexed either. Mirrored exactly, now against the right URL.
+ * Each listing page is its own canonical, with its own title.
+ *
+ * This used to mirror WordPress, which gave `/blog-2/page/2/` page 1's title
+ * and description and a canonical pointing back at page 1. That tells Google
+ * page 2 is a duplicate of page 1, so the posts only listed on page 2 lose
+ * their crawl path through the listing — Google's own pagination guidance is
+ * a self-referencing canonical per page. Ahrefs flagged the duplicate title.
  */
-export function generateMetadata(): Metadata {
+export async function generateMetadata(
+  props: PageProps<"/blog/page/[page]">,
+): Promise<Metadata> {
+  const { page } = await props.params;
   return {
-    title: "Blog - Flex and Flow",
-    description:
-      "Explore our blog for expert tips on yoga, flexibility training, and Physical Therapy in Uluwatu to support your overall well-being.",
-    alternates: { canonical: "/blog/" },
+    title: `Blog - Page ${page} - Flex and Flow`,
+    description: `Page ${page} of the Flex and Flow blog: tips on yoga, flexibility training, injury recovery and Physical Therapy in Uluwatu.`,
+    alternates: { canonical: `/blog/page/${page}/` },
   };
 }
 

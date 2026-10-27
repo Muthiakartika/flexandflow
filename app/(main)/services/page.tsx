@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     description,
     url: "/services/",
     type: "article",
+    images: ["/images/2026/08/private-therapy.jpg"],
   },
 };
 

@@ -25,6 +25,19 @@ export async function postNeighbours(post: Post) {
   };
 }
 
+/**
+ * Treatments that stay reachable by URL but are kept out of search: served
+ * `noindex, nofollow`, left out of the sitemap and out of the "Other
+ * treatments" sidebar. Neither is on any menu or on the priced grid (no
+ * `gridOrder`), and neither has published rates — the owner's call, matching
+ * what flexandflow.fit already served. Removing a slug here re-lists it in
+ * all three places at once.
+ */
+export const NOINDEX_SERVICES: ReadonlySet<string> = new Set([
+  "facial-massage",
+  "full-body-massage",
+]);
+
 /** Build Next.js metadata from a ported Yoast SEO record. */
 export function metadataFromSeo(seo: Seo, type: "article" | "website" = "article") {
   return {

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import BlogListing from "@/components/blog/BlogListing";
 import PageHero from "@/components/ui/PageHero";
 import { listPosts } from "@/lib/cms/read";
+import { assets } from "@/lib/site";
 
 const description =
   "Explore our blog for expert tips on yoga, flexibility training, and Physical Therapy in Uluwatu to support your overall well-being.";
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
     description,
     url: "/blog/",
     type: "website",
+    images: [assets.pageHeroBackground],
   },
 };
 

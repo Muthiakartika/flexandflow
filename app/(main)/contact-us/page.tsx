@@ -23,6 +23,7 @@ export const metadata: Metadata = {
     description,
     url: "/contact-us/",
     type: "article",
+    images: ["/images/2026/08/gallery-1.jpg"],
   },
 };
 
