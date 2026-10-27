@@ -7,7 +7,12 @@ import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
 import { BAND, CARD, FOCUS, H3, WRAP } from "@/components/ui/tokens";
 import { therapistBySlug, therapists } from "@/lib/data/therapists";
-import { contact, workingHours } from "@/lib/site";
+import {
+  bookingCtaHref,
+  bookingCtaProps,
+  contact,
+  workingHours,
+} from "@/lib/site";
 
 export function generateStaticParams() {
   return therapists.map((therapist) => ({ slug: therapist.slug }));
@@ -57,12 +62,12 @@ export default async function TherapistPage(
   if (!therapist) notFound();
 
   /* booking.flexandflow.fit — a WordPress plugin that reads no query string,
-     so there's no per-therapist link to build even now that this goes through
-     the intake form first; every visitor lands on the same booking page
+     so there's no per-therapist link to build, with or without the intake form
+     in front of it; every visitor lands on the same booking page
      regardless of which therapist's "Book with" button sent them there. The
      studio's phone number stays under the button in the aside for anyone who
      would rather just ask a question first. */
-  const bookingHref = "/intake";
+  const bookingHref = bookingCtaHref;
 
   return (
     <>
@@ -155,6 +160,7 @@ export default async function TherapistPage(
 
               <Link
                 href={bookingHref}
+                {...bookingCtaProps}
                 className={`mt-5 flex w-full items-center justify-center rounded-[10px] bg-primary-strong px-5 py-3 font-body text-[14px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
               >
                 Book with {therapist.name}
@@ -174,7 +180,7 @@ export default async function TherapistPage(
                     href={therapist.instagram}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`font-body text-[14px] underline decoration-secondary/25 underline-offset-[5px] transition-colors duration-300 hover:text-primary ${FOCUS}`}
+                    className={`font-body text-[14px] text-primary-strong transition-colors duration-300 hover:text-secondary ${FOCUS}`}
                   >
                     Instagram
                   </a>

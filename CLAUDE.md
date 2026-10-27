@@ -750,7 +750,13 @@ verified. **`INTAKE-PLAN.md` is the spec, the as-built model, and the current
 status; read it before changing any of this** — it is more detailed than this
 section and is the file to update as this phase progresses.
 
-Every booking CTA site-wide now routes through `/intake` first — no memory,
+**Held back from the live site since 2026-10-27.** `INTAKE_ENABLED` in
+`lib/flags.ts` reads `NEXT_PUBLIC_INTAKE_ENABLED` — `"true"` in `.env.local`,
+unset on Vercel. Off, every CTA goes straight to `booking.flexandflow.fit` in a
+new tab (`bookingCtaHref` / `bookingCtaProps` in `lib/site.ts`) and `/intake`
+307s there from `next.config.ts`. Build-time: flipping it needs a redeploy.
+
+With the switch on, every booking CTA site-wide routes through `/intake` first — no memory,
 every attempt requires a fresh fill — with the site nav hidden on that page,
 redirecting on success to the external `booking.flexandflow.fit`
 ([[booking-external-redirect]] in memory; the booking form itself is still

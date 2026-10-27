@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 
 import useIsActive from "./useIsActive";
 import { ButtonLink } from "@/components/ui/Button";
-import { contact, type NavItem } from "@/lib/site";
+import { bookingCtaHref, contact, type NavItem } from "@/lib/site";
 
 /**
  * Drawer navigation for viewports below 1281px, standing in for the theme's
@@ -235,10 +235,10 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
           </ul>
         </nav>
 
-        {/* Internal now: every booking CTA on the site sends visitors through
-            the client intake & consent form first, which redirects to the
-            external booking site itself once they have completed it. */}
-        <ButtonLink href="/intake" className="mt-8 w-full">
+        {/* Through the intake form when it is switched on, which redirects to
+            the external booking site once completed; straight there when it
+            is off. See `bookingCtaHref`. */}
+        <ButtonLink href={bookingCtaHref} className="mt-8 w-full">
           Book Appointment
         </ButtonLink>
 

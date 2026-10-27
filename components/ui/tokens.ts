@@ -44,10 +44,13 @@ export const BTN_GHOST =
   "border border-secondary/20 px-6 py-3 font-body text-[15px] leading-none " +
   `transition-colors duration-300 hover:border-primary hover:text-primary ${FOCUS}`;
 
-/** Quiet text link with a hairline underline. */
+/**
+ * Quiet text link. No underline anywhere on the site — the owner's call: a
+ * link is told apart by colour, and hovering changes only the colour.
+ */
 export const LINK =
-  "font-body text-[14px] underline decoration-secondary/25 underline-offset-[5px] " +
-  `transition-colors duration-300 hover:text-primary hover:decoration-primary ${FOCUS}`;
+  "font-body text-[14px] text-primary-strong " +
+  `transition-colors duration-300 hover:text-secondary ${FOCUS}`;
 
 /** Form field. Replaces the theme's `outline-none`-with-no-replacement inputs. */
 export const FIELD =

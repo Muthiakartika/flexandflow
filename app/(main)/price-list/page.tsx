@@ -10,6 +10,7 @@ import { listPricedServices } from "@/lib/cms/read";
 import { therapistBySlug } from "@/lib/data/therapists";
 import { therapistRates } from "@/lib/data/priceList";
 import { formatIdr } from "@/lib/pricing";
+import { bookingCtaHref } from "@/lib/site";
 
 /** Title and description are WordPress's, verbatim — matched against the
  *  live `/price-list/` page on 2026-08-26, same rule as every other page. */
@@ -51,7 +52,7 @@ export default async function PriceListPage() {
         crumbs={[{ label: "Price List" }]}
         lead="Rates are set by who performs the session and how long it runs. Ginny is the Master Therapist rate; Yuni is the more affordable one."
         actions={
-          <ButtonLink href="/intake" variant="solid">
+          <ButtonLink href={bookingCtaHref} variant="solid">
             Book Now
           </ButtonLink>
         }

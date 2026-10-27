@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { CARD, FOCUS, LINK } from "@/components/ui/tokens";
 import { formatIdr, priceAmount, serviceMinutes, tierMinutes } from "@/lib/pricing";
+import { bookingCtaHref, bookingCtaProps } from "@/lib/site";
 import type { Service } from "@/types";
 
 /**
@@ -96,7 +97,8 @@ export default function ServicePriceCard({ service }: { service: Service }) {
 
         <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-5">
           <Link
-            href="/intake"
+            href={bookingCtaHref}
+            {...bookingCtaProps}
             className={`inline-flex items-center justify-center rounded-[10px] bg-primary-strong px-5 py-2.5 font-body text-[14px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
           >
             Book Session

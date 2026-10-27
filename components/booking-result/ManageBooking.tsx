@@ -42,7 +42,7 @@ export default function ManageBooking({
       href={whatsappHref}
       target="_blank"
       rel="noopener noreferrer"
-      className={`font-body text-[15px] underline decoration-secondary/25 underline-offset-[5px] transition-colors duration-300 hover:text-primary hover:decoration-primary ${FOCUS}`}
+      className={`font-body text-[15px] text-primary-strong transition-colors duration-300 hover:text-secondary ${FOCUS}`}
     >
       Message us on WhatsApp
     </a>

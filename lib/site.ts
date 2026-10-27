@@ -15,7 +15,7 @@
  * absolute like `wordpressUrls`. See `BOOKING-PLAN.md`.
  */
 
-import { ACADEMY_ENABLED } from "./flags";
+import { ACADEMY_ENABLED, INTAKE_ENABLED } from "./flags";
 
 export const siteConfig = {
   name: "Flex and Flow",
@@ -57,6 +57,19 @@ export const bookingUrl = "/appointment/";
  * for the redirect on success, and INTAKE-PLAN.md for why.
  */
 export const externalBookingUrl = "https://booking.flexandflow.fit/";
+
+/**
+ * Where every marketing "Book …" button points. Through `/intake` while the
+ * intake form is switched on; straight to the external booking site in a new
+ * tab while it is off (`INTAKE_ENABLED` in `lib/flags.ts`). Spread
+ * `bookingCtaProps` onto any plain `<Link>`/`<a>` that uses it — `ButtonLink`
+ * opens absolute URLs in a new tab on its own.
+ */
+export const bookingCtaHref = INTAKE_ENABLED ? "/intake" : externalBookingUrl;
+
+export const bookingCtaProps = INTAKE_ENABLED
+  ? {}
+  : ({ target: "_blank", rel: "noopener noreferrer" } as const);
 
 /**
  * The training academy used to be a separate deployment on its own domain; it

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { BAND, BTN_GHOST, H2, WRAP } from "@/components/ui/tokens";
+import { bookingCtaHref, bookingCtaProps } from "@/lib/site";
 
 /* The studio's own list of what every session is aimed at, in source order. */
 const points = [
@@ -40,7 +41,11 @@ export default function CompleteWellness() {
               ))}
             </ul>
 
-            <Link href="/intake" className={`${BTN_GHOST} mt-7`}>
+            <Link
+              href={bookingCtaHref}
+              {...bookingCtaProps}
+              className={`${BTN_GHOST} mt-7`}
+            >
               Book Appointment
             </Link>
           </div>

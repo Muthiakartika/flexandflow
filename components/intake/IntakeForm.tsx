@@ -220,7 +220,7 @@ export function IntakeForm({ fields }: { fields: PublicIntakeField[] }) {
         </p>
         <a
           href={externalBookingUrl}
-          className="mt-3 inline-block font-body text-[14px] font-bold underline decoration-secondary/25 underline-offset-[4px] transition-colors duration-300 hover:text-primary"
+          className="mt-3 inline-block font-body text-[14px] font-bold text-primary-strong transition-colors duration-300 hover:text-secondary"
         >
           Continue to booking now
         </a>

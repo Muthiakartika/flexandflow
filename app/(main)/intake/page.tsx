@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { IntakeForm } from "@/components/intake/IntakeForm";
 import { BAND, H1, WRAP } from "@/components/ui/tokens";
+import { INTAKE_ENABLED } from "@/lib/flags";
 import { listPublicIntakeFields } from "@/lib/intake/read";
 
 const description =
@@ -35,6 +37,11 @@ export const metadata: Metadata = {
  * `/admin/intake/`.
  */
 export default async function IntakePage() {
+  /* Held back from the live site for now — see `INTAKE_ENABLED`. A 404,
+     because that is what flexandflow.fit answered here before the form
+     existed. */
+  if (!INTAKE_ENABLED) notFound();
+
   const fields = await listPublicIntakeFields();
 
   return (

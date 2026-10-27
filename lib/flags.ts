@@ -32,3 +32,25 @@
  * ranking or indexed page to lose by holding it back.
  */
 export const ACADEMY_ENABLED = false;
+
+/**
+ * Whether the client intake & consent form at `/intake` is live.
+ *
+ * **Off unless the environment says otherwise.** The form is built and works
+ * (INTAKE-PLAN.md), but the owner is holding it back from flexandflow.fit for
+ * now. Read from `NEXT_PUBLIC_INTAKE_ENABLED`, which `.env.local` sets to
+ * `true` for development; production leaves it unset. `NEXT_PUBLIC_` because
+ * the header and the mobile drawer are client components, and Next inlines
+ * the value at build time — changing it on Vercel needs a redeploy.
+ *
+ * With the switch off:
+ *
+ * - every booking CTA goes straight to `externalBookingUrl` in a new tab,
+ *   exactly as the live site did before the form existed (`bookingCtaHref`
+ *   and `bookingCtaProps` in `lib/site.ts`);
+ * - `app/(main)/intake/page.tsx` answers 404.
+ *
+ * The admin side (`/admin/intake/`, field builder, submissions) keeps working
+ * either way — it is behind the login and is how the form gets prepared.
+ */
+export const INTAKE_ENABLED = process.env.NEXT_PUBLIC_INTAKE_ENABLED === "true";

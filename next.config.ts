@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-import { ACADEMY_ENABLED } from "./lib/flags";
+import { ACADEMY_ENABLED, INTAKE_ENABLED } from "./lib/flags";
 import { externalBookingUrl } from "./lib/site";
 
 /**
@@ -54,6 +54,18 @@ const academyRedirects = ACADEMY_ENABLED
         permanent: false,
       },
     ];
+
+/**
+ * Intake form held back — see `INTAKE_ENABLED` in `lib/flags.ts`. The page
+ * itself calls `notFound()` too, but its `loading.tsx` has already streamed by
+ * then, so it would answer 200 with the form's title still in the head. A
+ * redirect here runs before any of that. It goes where every booking CTA
+ * goes while the switch is off, and is temporary (307) for the same reason as
+ * the academy's: a cached permanent redirect would outlive the switch.
+ */
+const intakeRedirects = INTAKE_ENABLED
+  ? []
+  : [{ source: "/intake", destination: externalBookingUrl, permanent: false }];
 
 const nextConfig: NextConfig = {
   /**
@@ -215,6 +227,7 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       ...academyRedirects,
+      ...intakeRedirects,
     ];
   },
 };

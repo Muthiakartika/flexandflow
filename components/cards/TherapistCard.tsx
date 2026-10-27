@@ -4,6 +4,7 @@ import Link from "next/link";
 import { PendingLink } from "@/components/ui/PendingLink";
 import { CARD, FOCUS } from "@/components/ui/tokens";
 import type { Therapist } from "@/lib/data/therapists";
+import { bookingCtaHref, bookingCtaProps } from "@/lib/site";
 
 /**
  * Practitioner card, shared by the home page and the About page's team grid.
@@ -71,7 +72,8 @@ export default function TherapistCard({ therapist }: { therapist: Therapist }) {
           it is already in hand. */}
       <div className="mt-auto flex flex-wrap items-center gap-2 pt-5">
         <Link
-          href="/intake"
+          href={bookingCtaHref}
+          {...bookingCtaProps}
           className={`inline-flex items-center justify-center rounded-[10px] bg-primary-strong px-4 py-2.5 font-body text-[13px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
         >
           Book with {therapist.name}

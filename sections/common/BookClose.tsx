@@ -64,7 +64,7 @@ export default function BookClose() {
                 href={contact.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`font-body text-[15px] text-white underline decoration-white/50 underline-offset-[5px] transition-colors duration-300 hover:decoration-white ${FOCUS_ON_OLIVE}`}
+                className={`font-body text-[15px] text-white transition-colors duration-300 hover:text-white/70 ${FOCUS_ON_OLIVE}`}
               >
                 Instagram
               </a>

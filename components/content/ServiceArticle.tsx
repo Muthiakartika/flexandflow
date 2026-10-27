@@ -7,7 +7,7 @@ import { BAND, CARD, FOCUS, LINK, WRAP } from "@/components/ui/tokens";
 import { listPosts, listServices } from "@/lib/cms/read";
 import { NOINDEX_SERVICES } from "@/lib/content";
 import { formatIdr, priceAmount, serviceMinutes, tierMinutes } from "@/lib/pricing";
-import { contact } from "@/lib/site";
+import { bookingCtaHref, bookingCtaProps, contact } from "@/lib/site";
 import RichText from "./RichText";
 import type { Service } from "@/types";
 
@@ -114,7 +114,7 @@ export default async function ServiceArticle({ service }: { service: Service }) 
               <ButtonLink href={contact.whatsapp} external variant="solid">
                 Book on WhatsApp
               </ButtonLink>
-              <ButtonLink href="/intake">Book an Appointment</ButtonLink>
+              <ButtonLink href={bookingCtaHref}>Book an Appointment</ButtonLink>
             </div>
           </article>
 
@@ -151,7 +151,9 @@ export default async function ServiceArticle({ service }: { service: Service }) 
               </dl>
 
               <Link
-                href="/intake"
+                href={bookingCtaHref}
+
+                {...bookingCtaProps}
                 className={`mt-4 flex w-full items-center justify-center rounded-[10px] bg-primary-strong px-5 py-3 font-body text-[14px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
               >
                 Book Session

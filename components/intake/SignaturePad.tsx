@@ -166,7 +166,7 @@ export const SignaturePad = forwardRef<
         <button
           type="button"
           onClick={clear}
-          className="shrink-0 text-[13px] underline decoration-secondary/25 underline-offset-[4px] transition-colors duration-300 hover:text-primary"
+          className="shrink-0 text-[13px] text-primary-strong transition-colors duration-300 hover:text-secondary"
         >
           Clear
         </button>

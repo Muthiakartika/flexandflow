@@ -185,7 +185,7 @@ export default function CancelBooking({
               href={whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
-              className={`underline decoration-secondary/25 underline-offset-[5px] transition-colors duration-300 hover:text-primary hover:decoration-primary ${FOCUS}`}
+              className={`text-primary-strong transition-colors duration-300 hover:text-secondary ${FOCUS}`}
             >
               Message us on WhatsApp
             </a>
