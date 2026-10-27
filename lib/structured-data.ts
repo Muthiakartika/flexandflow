@@ -4,13 +4,14 @@
  * articles. Rendered by `components/layout/JsonLd.tsx`.
  *
  * **Only facts the site already publishes.** No `aggregateRating`, no review,
- * no `geo` and no `priceRange` that is not derived from a real tier: a rating
+ * no `geo`, and a `priceRange` derived from the published rate card: a rating
  * the studio cannot back up is a manual action waiting to happen, and this repo
  * has published a wrong price three times already (CLAUDE.md). Offers come
  * from the same `priceAmount` the visible price rows use, so the two cannot
  * disagree.
  */
 
+import { therapistRates } from "@/lib/data/priceList";
 import { priceAmount } from "@/lib/pricing";
 import { contact, siteConfig } from "@/lib/site";
 import type { Post, Service } from "@/types";
@@ -23,6 +24,15 @@ const absolute = (path: string) =>
 
 /** The Instagram URL without its share-tracking query string. */
 const instagram = contact.instagram.split("?")[0];
+
+/** Cheapest to dearest session on `/price-list`, from the rows that page renders. */
+function priceRange() {
+  const amounts = therapistRates.flatMap((card) =>
+    card.rows.map((row) => row.amount),
+  );
+  const idr = (n: number) => n.toLocaleString("en-US");
+  return `IDR ${idr(Math.min(...amounts))} – ${idr(Math.max(...amounts))}`;
+}
 
 export function businessSchema() {
   return {
@@ -37,11 +47,13 @@ export function businessSchema() {
     description: siteConfig.description,
     telephone: contact.phone,
     email: contact.email,
+    priceRange: priceRange(),
     address: {
       "@type": "PostalAddress",
       streetAddress: "Jl. Toya Ning II",
       addressLocality: "Ungasan, Kuta Selatan",
       addressRegion: "Bali",
+      postalCode: "80361",
       addressCountry: "ID",
     },
     areaServed: ["Uluwatu", "Ungasan", "Bali"],
