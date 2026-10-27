@@ -107,6 +107,11 @@ export type Seo = {
   ogImage?: string;
   /** Path on the original site, used for the canonical URL. */
   canonicalPath: string;
+  /** Yoast's "show this page in search results? — No". Also keeps it out of
+   *  the sitemap, the JSON-LD and the sidebars. Absent means indexable. */
+  noindex?: boolean;
+  /** Yoast's "follow links on this page? — No". Meta tag only. */
+  nofollow?: boolean;
 };
 
 export type BlogCategory = {

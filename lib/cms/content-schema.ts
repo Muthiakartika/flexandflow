@@ -96,6 +96,8 @@ export const contentPayloadSchema = z.object({
   seoTitle: trimmed.min(1, "Give the page an SEO title").max(200),
   seoDescription: trimmed.min(1, "Write an SEO description").max(400),
   seoOgImage: trimmed.nullable().default(null),
+  seoNoindex: z.boolean().default(false),
+  seoNofollow: z.boolean().default(false),
 
   /* Treatments. */
   tiers: z.array(tierSchema).nullable().default(null),

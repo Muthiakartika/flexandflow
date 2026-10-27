@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BTN_SOLID, CARD, FOCUS } from "@/components/ui/tokens";
 import { listCategories } from "@/lib/cms/category-store";
 import { listPosts, listServices } from "@/lib/cms/read";
-import { NOINDEX_SERVICES } from "@/lib/content";
+import { isIndexable } from "@/lib/content";
 import { contact } from "@/lib/site";
 import SearchForm from "./SearchForm";
 
@@ -27,9 +27,7 @@ export default async function BlogSidebar() {
   /* A reader of a recovery article is one step from a treatment, and the
      treatments are what the studio sells — so every article links to each one
      that is meant to rank. */
-  const treatments = services.filter(
-    (service) => !NOINDEX_SERVICES.has(service.slug),
-  );
+  const treatments = services.filter(isIndexable);
 
   return (
     <aside className="flex flex-col gap-3 lg:sticky lg:top-[92px] lg:h-fit">

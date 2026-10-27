@@ -556,6 +556,14 @@ model ContentRevision {
   seoOgImage     String?
   canonicalPath  String
 
+  /// The two Yoast "Advanced" switches. Stored on the revision, like the rest
+  /// of the search metadata, so they go live when the page is published and
+  /// not a moment before. `seoNoindex` also takes the page out of the sitemap,
+  /// the JSON-LD and the "other treatments" sidebars — listing a page there
+  /// while its own meta tag says "do not index" contradicts itself.
+  seoNoindex  Boolean @default(false)
+  seoNofollow Boolean @default(false)
+
   /// Service only. `TherapistTier[]`. Prices stay editable here per the
   /// owner's decision (CMS-PLAN.md §10.2), which is why `npm run check:prices`
   /// remains the guard against `ServiceVariant`.

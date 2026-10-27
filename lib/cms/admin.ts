@@ -125,6 +125,10 @@ export type EditorDoc = {
   sortOrder: number;
   gridOrder: number | null;
   hasUnpublishedChanges: boolean;
+  /** The robots switches the public page serves right now, so the editor can
+   *  say when a saved draft would change them. Null when nothing is live. */
+  liveNoindex: boolean | null;
+  liveNofollow: boolean | null;
 
   /* The draft — the highest revision, which is what the editor opens. */
   version: number;
@@ -139,6 +143,8 @@ export type EditorDoc = {
   seoDescription: string;
   seoOgImage: string | null;
   canonicalPath: string;
+  seoNoindex: boolean;
+  seoNofollow: boolean;
   tiers: unknown;
   durationLabel: string | null;
   displayDate: string | null;
@@ -165,6 +171,18 @@ export async function loadEditorDoc(docId: string): Promise<EditorDoc | null> {
 
   const draft = doc.revisions[0];
 
+  const live =
+    doc.publishedVersion === null
+      ? null
+      : doc.publishedVersion === draft.version
+        ? draft
+        : await prisma.contentRevision.findUnique({
+            where: {
+              docId_version: { docId: doc.id, version: doc.publishedVersion },
+            },
+            select: { seoNoindex: true, seoNofollow: true },
+          });
+
   return {
     id: doc.id,
     kind: doc.kind,
@@ -177,6 +195,8 @@ export async function loadEditorDoc(docId: string): Promise<EditorDoc | null> {
     gridOrder: doc.gridOrder,
     hasUnpublishedChanges:
       doc.publishedVersion !== null && draft.version > doc.publishedVersion,
+    liveNoindex: live?.seoNoindex ?? null,
+    liveNofollow: live?.seoNofollow ?? null,
 
     version: draft.version,
     title: draft.title,
@@ -192,6 +212,8 @@ export async function loadEditorDoc(docId: string): Promise<EditorDoc | null> {
     seoDescription: draft.seoDescription,
     seoOgImage: draft.seoOgImage,
     canonicalPath: draft.canonicalPath,
+    seoNoindex: draft.seoNoindex,
+    seoNofollow: draft.seoNofollow,
     tiers: draft.tiers,
     durationLabel: draft.durationLabel,
     displayDate: draft.displayDate,

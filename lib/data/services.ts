@@ -223,6 +223,8 @@ export const services: Service[] = [
       description: "Experience rejuvenating facial massage in Uluwatu, Bali with Flex & Flow. Relax, refresh, and glow with our expert therapist.",
       canonicalPath: "/uluwatu-bali/facial-massage/",
       ogImage: "/images/2025/03/Facial-Massage.jpg",
+      noindex: true,
+      nofollow: true,
     },
     body: [
       {
@@ -966,6 +968,8 @@ export const services: Service[] = [
       description: "Experience ultimate relaxation with our full-body relaxing massage that relieves tension and leaves you feeling rejuvenated and stress-free.",
       canonicalPath: "/uluwatu-bali/full-body-massage/",
       ogImage: "/images/2025/02/body-massage-New-warm.jpg",
+      noindex: true,
+      nofollow: true,
     },
     body: [
       {

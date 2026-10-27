@@ -32,6 +32,8 @@ export type RevisionRow = {
   seoDescription: string;
   seoOgImage: string | null;
   canonicalPath: string;
+  seoNoindex: boolean;
+  seoNofollow: boolean;
   tiers: unknown;
   durationLabel: string | null;
   displayDate: string | null;
@@ -54,6 +56,8 @@ function seoOf(revision: RevisionRow): Seo {
     description: revision.seoDescription,
     canonicalPath: revision.canonicalPath,
     ...(revision.seoOgImage ? { ogImage: revision.seoOgImage } : {}),
+    ...(revision.seoNoindex ? { noindex: true } : {}),
+    ...(revision.seoNofollow ? { nofollow: true } : {}),
   };
 }
 
@@ -143,6 +147,8 @@ export const REVISION_SELECT = {
   seoDescription: true,
   seoOgImage: true,
   canonicalPath: true,
+  seoNoindex: true,
+  seoNofollow: true,
   tiers: true,
   durationLabel: true,
   displayDate: true,
@@ -176,6 +182,8 @@ export function toRevisionData(
     seoDescription: entry.seo.description,
     seoOgImage: entry.seo.ogImage ?? null,
     canonicalPath: entry.seo.canonicalPath,
+    seoNoindex: entry.seo.noindex ?? false,
+    seoNofollow: entry.seo.nofollow ?? false,
     tiers: service?.tiers ?? null,
     durationLabel: service?.duration ?? null,
     displayDate: post?.date ?? null,

@@ -26,17 +26,43 @@ export async function postNeighbours(post: Post) {
 }
 
 /**
- * Treatments that stay reachable by URL but are kept out of search: served
- * `noindex, nofollow`, left out of the sitemap and out of the "Other
- * treatments" sidebar. Neither is on any menu or on the priced grid (no
- * `gridOrder`), and neither has published rates — the owner's call, matching
- * what flexandflow.fit already served. Removing a slug here re-lists it in
- * all three places at once.
+ * Whether a page is meant to rank — the CMS's "show in search results"
+ * switch. Everything that advertises a URL to a search engine goes through
+ * this: the sitemap, the JSON-LD, and the "other treatments" / "treatments"
+ * sidebars. Listing a page in any of them while its own meta tag says
+ * `noindex` tells Google two opposite things about the same URL. Flip the
+ * switch back and the page reappears in all of them on the next publish.
+ *
+ * The page itself stays reachable by its URL either way; this is not
+ * unpublishing.
  */
-export const NOINDEX_SERVICES: ReadonlySet<string> = new Set([
-  "facial-massage",
-  "full-body-massage",
-]);
+export function isIndexable(entry: { seo: Seo }): boolean {
+  return !entry.seo.noindex;
+}
+
+/**
+ * The `robots` override for a page, or nothing when it is plain
+ * `index, follow` — in which case the root layout's object (with Yoast's
+ * `max-image-preview` / `max-snippet` directives) is inherited untouched.
+ *
+ * Setting `robots` replaces that whole object rather than merging into it,
+ * so an indexable-but-nofollow page has to carry the snippet directives
+ * itself or its search result would shrink. A noindex page has no search
+ * result, so it carries none, exactly as Yoast does.
+ */
+function robotsFor(seo: Seo) {
+  if (seo.noindex) return { index: false, follow: !seo.nofollow };
+  if (seo.nofollow) {
+    return {
+      index: true,
+      follow: false,
+      "max-image-preview": "large" as const,
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    };
+  }
+  return undefined;
+}
 
 /** Build Next.js metadata from a ported Yoast SEO record. */
 export function metadataFromSeo(seo: Seo, type: "article" | "website" = "article") {
@@ -51,5 +77,7 @@ export function metadataFromSeo(seo: Seo, type: "article" | "website" = "article
       type,
       ...(seo.ogImage ? { images: [seo.ogImage] } : {}),
     },
+
+    ...(robotsFor(seo) ? { robots: robotsFor(seo) } : {}),
   };
 }

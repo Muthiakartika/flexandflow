@@ -7,11 +7,7 @@ import ServiceArticle from "@/components/content/ServiceArticle";
 import { getCategory } from "@/lib/cms/category-store";
 import { getPost, getService, publishedParams } from "@/lib/cms/read";
 import { TREATMENT_PREFIX } from "@/lib/cms/categories";
-import {
-  NOINDEX_SERVICES,
-  metadataFromSeo,
-  postNeighbours,
-} from "@/lib/content";
+import { isIndexable, metadataFromSeo, postNeighbours } from "@/lib/content";
 import { articleSchema, serviceSchema } from "@/lib/structured-data";
 
 /**
@@ -63,13 +59,8 @@ export async function generateMetadata(
   const found = await resolve(category, slug);
   if (!found) return {};
 
-  if (found.kind === "service" && NOINDEX_SERVICES.has(found.service.slug)) {
-    return {
-      ...metadataFromSeo(found.service.seo),
-      robots: { index: false, follow: false },
-    };
-  }
-
+  /* Robots come from the page's own "search engine visibility" switches,
+     which `metadataFromSeo` turns into the meta tag. */
   return metadataFromSeo(
     found.kind === "service" ? found.service.seo : found.post.seo,
   );
@@ -91,7 +82,11 @@ export default async function ArticlePage(
   if (found.kind === "service") {
     return (
       <>
-        <JsonLd data={serviceSchema(found.service)} />
+        {/* Structured data only for pages meant to rank: a rich result for
+            a URL the page itself marks `noindex` is a contradiction. */}
+        {isIndexable(found.service) && (
+          <JsonLd data={serviceSchema(found.service)} />
+        )}
         <ServiceArticle service={found.service} />
       </>
     );
@@ -100,7 +95,7 @@ export default async function ArticlePage(
   const { previous, next } = await postNeighbours(found.post);
   return (
     <>
-      <JsonLd data={articleSchema(found.post)} />
+      {isIndexable(found.post) && <JsonLd data={articleSchema(found.post)} />}
       <PostArticle post={found.post} previous={previous} next={next} />
     </>
   );

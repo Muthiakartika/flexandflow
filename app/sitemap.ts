@@ -1,15 +1,15 @@
 import type { MetadataRoute } from "next";
 
 import { listPosts, listServices } from "@/lib/cms/read";
-import { NOINDEX_SERVICES } from "@/lib/content";
+import { isIndexable } from "@/lib/content";
 import { siteConfig } from "@/lib/site";
 
 /**
  * Every URL here is meant to rank. Deliberately excluded, because WordPress
  * marks the equivalents `noindex` and this app matches that (see
  * SITE-STRUCTURE.md): the `/uluwatu-bali/` and `/injury-guide/` category
- * archives, the two therapist profiles, and the treatments in
- * `NOINDEX_SERVICES`. Listing
+ * archives, the two therapist profiles, and any treatment or post whose
+ * "show in search results" switch is off in the CMS. Listing
  * a `noindex` page here would tell Google to index the very page its own
  * meta tag says not to.
  *
@@ -32,15 +32,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const servicePages: MetadataRoute.Sitemap = services
-    .filter((service) => !NOINDEX_SERVICES.has(service.slug))
+    .filter(isIndexable)
     .map((service) => ({
       url: `${siteConfig.url}${service.seo.canonicalPath}`,
     }));
 
-  const postPages: MetadataRoute.Sitemap = posts.map((post) => ({
-    url: `${siteConfig.url}${post.seo.canonicalPath}`,
-    lastModified: new Date(post.date),
-  }));
+  const postPages: MetadataRoute.Sitemap = posts
+    .filter(isIndexable)
+    .map((post) => ({
+      url: `${siteConfig.url}${post.seo.canonicalPath}`,
+      lastModified: new Date(post.date),
+    }));
 
   return [...staticPages, ...servicePages, ...postPages];
 }

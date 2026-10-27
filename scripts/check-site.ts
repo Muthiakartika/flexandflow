@@ -272,8 +272,8 @@ async function main(): Promise<void> {
       "/price-list/",
       "/contact-us/",
       "/blog/",
-      ...services.map((s) => s.seo.canonicalPath),
-      ...posts.map((p) => p.seo.canonicalPath),
+      ...services.filter((s) => !s.seo.noindex).map((s) => s.seo.canonicalPath),
+      ...posts.filter((p) => !p.seo.noindex).map((p) => p.seo.canonicalPath),
     ];
 
     const missing = expected.filter(
@@ -294,6 +294,12 @@ async function main(): Promise<void> {
       "/therapist/",
       "/preview/",
     ];
+    /* And the pages switched to `noindex` in the CMS. */
+    shouldBeAbsent.push(
+      ...[...services, ...posts]
+        .filter((entry) => entry.seo.noindex)
+        .map((entry) => `${entry.seo.canonicalPath}<`),
+    );
     check(
       "sitemap omits the noindex archives, profiles and previews",
       shouldBeAbsent.every((path) => !html.includes(`flexandflow.fit${path}`)),

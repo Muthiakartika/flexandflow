@@ -44,6 +44,8 @@ export type ContentInput = {
   seoDescription: string;
   seoOgImage: string | null;
   canonicalPath: string;
+  seoNoindex: boolean;
+  seoNofollow: boolean;
   tiers: unknown;
   durationLabel: string | null;
   displayDate: string | null;
@@ -127,6 +129,8 @@ function revisionData(input: ContentInput, version: number, authorId: string) {
     seoDescription: input.seoDescription,
     seoOgImage: input.seoOgImage,
     canonicalPath: input.canonicalPath,
+    seoNoindex: input.seoNoindex,
+    seoNofollow: input.seoNofollow,
     tiers: (input.tiers ?? undefined) as never,
     durationLabel: input.durationLabel,
     displayDate: input.displayDate,
@@ -321,6 +325,8 @@ export async function restoreRevision(
       seoDescription: source.seoDescription,
       seoOgImage: source.seoOgImage,
       canonicalPath: source.canonicalPath,
+      seoNoindex: source.seoNoindex,
+      seoNofollow: source.seoNofollow,
       tiers: source.tiers,
       durationLabel: source.durationLabel,
       displayDate: source.displayDate,

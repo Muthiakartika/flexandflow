@@ -5,7 +5,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
 import { BAND, CARD, FOCUS, LINK, WRAP } from "@/components/ui/tokens";
 import { listPosts, listServices } from "@/lib/cms/read";
-import { NOINDEX_SERVICES } from "@/lib/content";
+import { isIndexable } from "@/lib/content";
 import { formatIdr, priceAmount, serviceMinutes, tierMinutes } from "@/lib/pricing";
 import { bookingCtaHref, bookingCtaProps, contact } from "@/lib/site";
 import RichText from "./RichText";
@@ -49,11 +49,11 @@ export default async function ServiceArticle({ service }: { service: Service }) 
   /* The five treatments that follow this one, wrapping round the end. A plain
      `slice(0, 5)` of the reading order linked the same five pages from every
      treatment and starved the rest of internal links; rotating gives each
-     listed treatment five. The `NOINDEX_SERVICES` pages are left out — they
-     are kept out of search on purpose, so linking them from every treatment
-     would only spend links on pages Google is told to ignore. */
+     listed treatment five. Pages switched to `noindex` in the CMS are left
+     out — they are kept out of search on purpose, so linking them from every
+     treatment would only spend links on pages Google is told to ignore. */
   const all = (await listServices()).filter(
-    (other) => other.slug === service.slug || !NOINDEX_SERVICES.has(other.slug),
+    (other) => other.slug === service.slug || isIndexable(other),
   );
   const at = all.findIndex((other) => other.slug === service.slug);
   const others = [...all.slice(at + 1), ...all.slice(0, Math.max(at, 0))]
@@ -64,8 +64,8 @@ export default async function ServiceArticle({ service }: { service: Service }) 
      set differs from page to page and every post is linked from at least two
      treatments. Before this, articles were reachable only from the blog
      listing — three or four internal links each against twenty-eight for a
-     treatment. */
-  const posts = await listPosts();
+     treatment. Same rule as above for posts switched to `noindex`. */
+  const posts = (await listPosts()).filter(isIndexable);
   const reading = posts.length
     ? Array.from(
         { length: Math.min(3, posts.length) },

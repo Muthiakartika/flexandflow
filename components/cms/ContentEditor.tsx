@@ -65,6 +65,8 @@ export function ContentEditor({
 
   const [seoTitle, setSeoTitle] = useState(doc.seoTitle);
   const [seoDescription, setSeoDescription] = useState(doc.seoDescription);
+  const [seoNoindex, setSeoNoindex] = useState(doc.seoNoindex);
+  const [seoNofollow, setSeoNofollow] = useState(doc.seoNofollow);
 
   const [durationLabel, setDurationLabel] = useState(doc.durationLabel ?? "");
   const [displayDate, setDisplayDate] = useState(doc.displayDate ?? "");
@@ -119,6 +121,8 @@ export function ContentEditor({
       seoTitle,
       seoDescription,
       seoOgImage: image.src || null,
+      seoNoindex,
+      seoNofollow,
       tiers: isService ? tiers : null,
       durationLabel: isService ? durationLabel || null : null,
       displayDate: isService ? null : displayDate || null,
@@ -397,6 +401,17 @@ export function ContentEditor({
             <FieldError message={fields.seoDescription} />
           ) : null}
         </section>
+
+        <RobotsSection
+          noindex={seoNoindex}
+          nofollow={seoNofollow}
+          onNoindex={edited(setSeoNoindex)}
+          onNofollow={edited(setSeoNofollow)}
+          isService={isService}
+          live={doc.status === "PUBLISHED"}
+          liveNoindex={doc.liveNoindex}
+          liveNofollow={doc.liveNofollow}
+        />
       </div>
 
       {/* ── Actions and preview ───────────────────────────────────────── */}
@@ -633,6 +648,130 @@ function describeProblems(
 
       return `${FIELD_LABEL[head] ?? path}: ${message}`;
     });
+}
+
+/**
+ * Yoast's two "Advanced" questions, asked the same way.
+ *
+ * Saved on the revision like the SEO title, so they take effect when the page
+ * is published — a draft with "No" changes nothing on the live page. Turning
+ * "show in search results" off does more than write the meta tag: the page
+ * also leaves the sitemap, the structured data and the sidebars that link it,
+ * and comes back to all of them when it is turned on again
+ * (`isIndexable` in `lib/content.ts`).
+ */
+function RobotsSection({
+  noindex,
+  nofollow,
+  onNoindex,
+  onNofollow,
+  isService,
+  live,
+  liveNoindex,
+  liveNofollow,
+}: {
+  noindex: boolean;
+  nofollow: boolean;
+  onNoindex: (value: boolean) => void;
+  onNofollow: (value: boolean) => void;
+  isService: boolean;
+  live: boolean;
+  liveNoindex: boolean | null;
+  liveNofollow: boolean | null;
+}) {
+  const directive = `${noindex ? "noindex" : "index"}, ${nofollow ? "nofollow" : "follow"}`;
+  const changed =
+    live &&
+    liveNoindex !== null &&
+    (liveNoindex !== noindex || liveNofollow !== nofollow);
+
+  return (
+    <section className="admin-card mb-3 p-4">
+      <h2 className="text-[15px] font-bold text-ink">Search engine visibility</h2>
+      <p className="mt-1 mb-3 text-[13px] text-muted">
+        Whether Google may list this page. The page stays reachable by its web
+        address either way — this is not the same as unpublishing.
+      </p>
+
+      <YesNo
+        name="cms-noindex"
+        question="Show this page in search results?"
+        yes={!noindex}
+        onChange={(yes) => onNoindex(!yes)}
+      />
+      <p className="mt-1 mb-3 text-[12px] text-faint">
+        {noindex
+          ? `No: the page is marked noindex and is also removed from the sitemap, from its structured data (schema), and from the ${
+              isService
+                ? "“other treatments” lists on other treatment pages and the blog sidebar"
+                : "“From the blog” lists on treatment pages"
+            }.`
+          : "Yes: the page is listed in the sitemap and carries its structured data (schema)."}
+      </p>
+
+      <YesNo
+        name="cms-nofollow"
+        question="Should search engines follow links on this page?"
+        yes={!nofollow}
+        onChange={(yes) => onNofollow(!yes)}
+      />
+      <p className="mt-1 text-[12px] text-faint">
+        Only changes the page’s meta tag. Usually “Yes”.
+      </p>
+
+      <p className="mt-3 text-[12px] text-muted">
+        Meta robots: <code className="rounded bg-cream px-1">{directive}</code>
+      </p>
+
+      {changed ? (
+        <p className="mt-2 rounded-[6px] bg-warn-soft px-2 py-1.5 text-[12px] text-warn">
+          The live page is{" "}
+          <code>
+            {liveNoindex ? "noindex" : "index"}, {liveNofollow ? "nofollow" : "follow"}
+          </code>
+          . This takes effect when you publish.
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function YesNo({
+  name,
+  question,
+  yes,
+  onChange,
+}: {
+  name: string;
+  question: string;
+  yes: boolean;
+  onChange: (yes: boolean) => void;
+}) {
+  return (
+    <fieldset>
+      <legend className="admin-label">{question}</legend>
+      <div className="flex gap-4 text-[14px] text-ink">
+        <label className="flex items-center gap-1.5">
+          <input
+            type="radio"
+            name={name}
+            checked={yes}
+            onChange={() => onChange(true)}
+          />
+          Yes
+        </label>
+        <label className="flex items-center gap-1.5">
+          <input
+            type="radio"
+            name={name}
+            checked={!yes}
+            onChange={() => onChange(false)}
+          />
+          No
+        </label>
+      </div>
+    </fieldset>
+  );
 }
 
 function FieldError({ message }: { message: string }) {

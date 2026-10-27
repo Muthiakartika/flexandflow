@@ -215,9 +215,13 @@ was ported on 2026-08-18 — it is a live, indexable page listed in
 the sitemap and in search. Both are therefore absent from the `order` array in
 `app/(main)/services/page.tsx` and from `primaryNav`, on purpose. Neither has published
 rates, so both carry `tiers: []` and render the aside with no price rows.
-**Since 2026-10-27 both are `noindex, nofollow`** at the owner's request —
-`NOINDEX_SERVICES` in `lib/content.ts` also drops them from the sitemap and from
-the "Other treatments" sidebar. They still answer at their URLs. The body copy
+**Since 2026-10-27 both are `noindex, nofollow`** at the owner's request.
+That is now a per-page CMS setting ("Search engine visibility" in the editor,
+`seoNoindex` / `seoNofollow` on `ContentRevision`), not a hard-coded list:
+`isIndexable` in `lib/content.ts` drops a noindex page from the sitemap, its
+JSON-LD, the "Other treatments" / blog-sidebar treatment lists and the
+"From the blog" lists, and puts it back when switched on. Like the SEO title,
+it takes effect on publish. They still answer at their URLs. The body copy
 of the full-body page was taken from the live HTML verbatim, stray comma and "Let us to
 transform" included; do not tidy it.
 

@@ -187,6 +187,8 @@ export async function saveContent(
     /* Derived, never taken from the form. A canonical tag pointing anywhere
        other than the page's own URL tells Google to index something else. */
     canonicalPath,
+    seoNoindex: input.seoNoindex,
+    seoNofollow: input.seoNofollow,
     tiers: input.tiers,
     durationLabel: input.durationLabel,
     displayDate: input.displayDate,
@@ -333,6 +335,8 @@ export async function createContent(input: unknown): Promise<CmsResult> {
         seoDescription: "",
         seoOgImage: null,
         canonicalPath: `/${prefix}/${slug}/`,
+        seoNoindex: false,
+        seoNofollow: false,
         tiers: kind === "SERVICE" ? [] : null,
         durationLabel: null,
         displayDate:
