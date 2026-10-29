@@ -11,7 +11,7 @@
  * on the studio's own domain.
  */
 import { actingAdmin } from "@/lib/admin/auth";
-import { listAssets, storeUpload } from "@/lib/cms/media";
+import { deleteAsset, listAssets, storeUpload } from "@/lib/cms/media";
 import { fail, ok, serverError } from "@/lib/api/respond";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,12 @@ export async function GET(request: Request): Promise<Response> {
   const search = new URL(request.url).searchParams.get("q") ?? undefined;
 
   try {
-    return ok({ assets: await listAssets(search) });
+    return ok({
+      assets: await listAssets(search),
+      /* Tells the picker whether to draw the delete control. Drawing only —
+         DELETE below checks the permission again on its own. */
+      canDelete: Boolean(await actingAdmin("media.delete")),
+    });
   } catch (error) {
     console.error("[cms] could not list media", error);
     return serverError("The image library could not be read.");
@@ -76,5 +81,29 @@ export async function POST(request: Request): Promise<Response> {
       "The image could not be saved. If this keeps happening, the storage " +
         "settings may be wrong.",
     );
+  }
+}
+
+/**
+ * Removes an uploaded image. `deleteAsset` is where the refusals live — a
+ * built-in file, or one still used by a draft or a published page — so this
+ * only gates on the permission and relays its message.
+ */
+export async function DELETE(request: Request): Promise<Response> {
+  if (!(await actingAdmin("media.delete"))) {
+    return fail("NOT_FOUND", "Not found.");
+  }
+
+  const id = new URL(request.url).searchParams.get("id");
+  if (!id) return fail("VALIDATION", "Which image?");
+
+  try {
+    const result = await deleteAsset(id);
+    return result.ok
+      ? ok({ message: result.message })
+      : fail("VALIDATION", result.message);
+  } catch (error) {
+    console.error("[cms] delete failed", error);
+    return serverError("The image could not be deleted. Try again.");
   }
 }

@@ -65,6 +65,10 @@ function PickerBody({
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [canDelete, setCanDelete] = useState(false);
+  /* One armed card at a time: the ✕ asks, a second click on "Delete?" acts. */
+  const [armed, setArmed] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
@@ -73,6 +77,7 @@ function PickerBody({
       const body = await response.json();
       if (response.ok) {
         setAssets(body.assets ?? []);
+        setCanDelete(Boolean(body.canDelete));
       } else {
         setAssets([]);
         setMessage(body.error ?? "The library could not load.");
@@ -136,6 +141,26 @@ function PickerBody({
     } finally {
       setUploading(false);
       if (fileInput.current) fileInput.current.value = "";
+    }
+  }
+
+  async function remove(asset: Asset) {
+    setDeleting(asset.id);
+    setMessage(null);
+
+    try {
+      const response = await fetch(
+        `/api/cms/media/?id=${encodeURIComponent(asset.id)}`,
+        { method: "DELETE" },
+      );
+      const body = await response.json();
+      setMessage(body.message ?? body.error ?? "The image could not be deleted.");
+      if (response.ok) await load();
+    } catch {
+      setMessage("The image could not be deleted.");
+    } finally {
+      setDeleting(null);
+      setArmed(null);
     }
   }
 
@@ -230,7 +255,7 @@ function PickerBody({
           ) : (
             <ul className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-4">
               {shown.map((asset) => (
-                <li key={asset.id}>
+                <li key={asset.id} className="relative">
                   <button
                     type="button"
                     onClick={() => pick(asset)}
@@ -262,6 +287,34 @@ function PickerBody({
                       </span>
                     </span>
                   </button>
+
+                  {/* A sibling of the card rather than inside it: a button
+                      cannot nest in a button. Built-in files are never offered —
+                      `deleteAsset` refuses them anyway. */}
+                  {canDelete && !asset.builtIn ? (
+                    <span className="absolute right-1.5 top-1.5">
+                      {armed === asset.id ? (
+                        <button
+                          type="button"
+                          disabled={deleting === asset.id}
+                          onClick={() => void remove(asset)}
+                          className="admin-btn admin-btn-danger bg-surface"
+                        >
+                          {deleting === asset.id ? "Deleting…" : "Delete?"}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setArmed(asset.id)}
+                          className="cms-icon-btn is-danger"
+                          aria-label={`Delete ${asset.filename}`}
+                          title="Delete"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </span>
+                  ) : null}
                 </li>
               ))}
             </ul>
