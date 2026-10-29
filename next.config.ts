@@ -177,6 +177,23 @@ const nextConfig: NextConfig = {
      */
     deviceSizes: [640, 828, 1080, 1920],
     imageSizes: [64, 96, 128, 256, 384],
+
+    /**
+     * CMS uploads, served from the R2 bucket behind the studio's own domain
+     * (CMS-PLAN.md §10.1, `MEDIA_PUBLIC_BASE`). Inert while `unoptimized` is
+     * on — the host check lives in the default loader, which that skips — but
+     * the moment the optimizer comes back, every uploaded image would otherwise
+     * fail with "hostname is not configured". Narrowed to `/uploads/`, the
+     * only prefix `lib/cms/storage.ts` writes, so the optimizer cannot be
+     * pointed at anything else on that host.
+     */
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "media.flexandflow.fit",
+        pathname: "/uploads/**",
+      },
+    ],
   },
   async redirects() {
     return [
