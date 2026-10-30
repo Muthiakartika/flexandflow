@@ -216,6 +216,27 @@ into its own cache key, so negotiation is correct once Cloudflare is out of it.
 
 Use `starts_with`, not `matches` — the regex operator needs a Business plan.
 
+> **Rule 3 — Bypass HTML** (added 2026-10-29) · Action: **Bypass cache**,
+> last in the list
+> ```
+> (http.host eq "flexandflow.fit"
+>  and not starts_with(http.request.uri.path, "/_next/static/")
+>  and not starts_with(http.request.uri.path, "/images/")
+>  and not starts_with(http.request.uri.path, "/photos/")
+>  and not starts_with(http.request.uri.path, "/shapes/")
+>  and not starts_with(http.request.uri.path, "/video/"))
+> ```
+
+Added because a CMS publish was not reaching readers: Cloudflare held the HTML
+for two hours and the edge purge in `lib/cms/purge.ts` was not taking effect
+on live (`/api/cache/purge/` answered 502 when probed — not yet diagnosed).
+Vercel's own cache is expired by `updateTag` the moment a page is published,
+so with Cloudflare out of the HTML path a publish is visible on the next
+request. Pages now answer `cf-cache-status: DYNAMIC` with `max-age=0,
+must-revalidate`; everything under rule 2 and `media.flexandflow.fit` still
+answers `HIT`. The same day **Browser Cache TTL** was set to **Respect Existing
+Headers**, so browsers stop holding a page for two hours either.
+
 Then, once only: **Caching → Configuration → Purge Everything**, to drop
 variants cached under the old behaviour.
 
@@ -225,6 +246,9 @@ Also check, in the same session:
   Vercel causes a redirect loop.
 - **Speed → Optimization → Content Optimization**: turn **Rocket Loader off**.
   It reorders script execution and breaks React hydration.
+
+*Superseded by rule 3 — HTML is no longer cached at Cloudflare. Kept because
+the two "must not change" points below still apply if it ever is again.*
 
 **The HTML is cached at Cloudflare, and on Next 16 that is safe — but only
 because of one thing.** The runbook warns that App Router separates a full HTML
