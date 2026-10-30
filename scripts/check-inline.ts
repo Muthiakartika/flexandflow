@@ -70,6 +70,14 @@ function inlineStrings(body: ContentBlock[], where: string): void {
           roundTrip(`${at} a${i + 1}`, item.answer);
         });
         break;
+      case "table":
+        [block.head, ...block.rows].forEach((row, r) =>
+          row.forEach((cell, c) => {
+            /* A blank cell is legal in a table and has nothing to round-trip. */
+            if (cell) roundTrip(`${at} r${r} c${c + 1}`, cell);
+          }),
+        );
+        break;
       case "heading":
         /* `renderInline` does not run on headings — they render raw, so the
            editor disables the mark controls there. Checked anyway: a heading

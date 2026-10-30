@@ -438,6 +438,51 @@
     margin-block: 0.35em;
   }
 
+  /* Tables: price rows and side-by-side comparisons. Each column gets at
+     least 130px, so a two-column table fits a phone as it is and only a
+     wider one scrolls sideways inside its frame, never crushed or pushing
+     the page. `--cols` is set by `RichText`. */
+  .prose-table {
+    overflow-x: auto;
+    overflow-wrap: normal;
+    border: 1px solid color-mix(in oklab, var(--color-secondary) 10%, transparent);
+    border-radius: 10px;
+  }
+
+  .prose-table:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  .prose-table table {
+    width: 100%;
+    min-width: calc(var(--cols, 4) * 130px);
+    border-collapse: collapse;
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .prose-table :where(th, td) {
+    padding: 10px 14px;
+    text-align: left;
+    vertical-align: top;
+    border-top: 1px solid color-mix(in oklab, var(--color-secondary) 10%, transparent);
+    color: color-mix(in oklab, var(--color-body-text) 82%, transparent);
+  }
+
+  .prose-table thead th {
+    border-top: 0;
+    background: var(--color-cream);
+    color: var(--color-body-text);
+    font-weight: 700;
+  }
+
+  .prose-table tbody th {
+    font-weight: 700;
+    color: var(--color-body-text);
+  }
+
   /* Star-bulleted list used by the service pages' "Why Choose..." widgets.
      The original splits these into two side-by-side `<ul>`s, so the items read
      down the left column before the right. CSS columns reproduce that fill

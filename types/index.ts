@@ -43,7 +43,10 @@ export type ContentBlock =
   /** Image beside text. `side` is which side the image takes on a wide screen. */
   | ({ type: "imageText"; text: string; side?: "left" | "right" } & ContentImage)
   | { type: "cta"; label: string; href: string; variant?: "solid" | "outline" }
-  | { type: "divider"; space?: "small" | "medium" | "large"; rule?: boolean };
+  | { type: "divider"; space?: "small" | "medium" | "large"; rule?: boolean }
+  /** A comparison or price table. Cells carry the same inline markers as a
+   *  paragraph; every row has as many cells as `head`. */
+  | { type: "table"; head: string[]; rows: string[][] };
 
 /** A `dt_service` entry: has its own detail page plus a priced card. */
 export type Service = {
@@ -92,6 +95,13 @@ export type Post = {
   excerpt: string;
   /** Published date as displayed on the original, e.g. "June 22, 2026". */
   date: string;
+  /**
+   * When the live version was published, as an ISO date (`2026-10-30`).
+   * Only set once a post has been edited after the import — the first
+   * revision of a ported post is the WordPress text, and calling the day it
+   * was copied across an "update" would be untrue.
+   */
+  updated?: string;
   /** Absent for posts with no featured image, as on the original. */
   image?: string;
   /** Intrinsic size of the featured image; drives the listing's masonry packing. */

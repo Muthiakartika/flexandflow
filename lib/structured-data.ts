@@ -119,18 +119,77 @@ function isoDay(display: string): string | undefined {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+/**
+ * Who the posts are credited to. The studio's articles are written in its
+ * founder's voice, and answer engines weigh a named practitioner over a
+ * business name. `about` repeats only what her own profile page publishes.
+ */
+export const POST_AUTHOR = {
+  name: "Ginny",
+  jobTitle: "Founder and Bodywork Specialist",
+  profile: "/therapist/ginny/",
+  portrait: "/images/2026/08/ginny-portrait.jpg",
+  about:
+    "Ginny is the founder of Flex & Flow in Ungasan, Uluwatu, and our master therapist, with a background in nursing, professional fitness training and bodywork. She specialises in sport massage, assisted stretching, lymphatic drainage and healing bodywork.",
+};
+
+/** Inline markers (`[text](url)`, `**bold**`, `*italic*`) reduced to their text. */
+function plain(text: string): string {
+  return text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1");
+}
+
+/**
+ * A `BlogPosting`, plus a `FAQPage` when the body has questions.
+ *
+ * The FAQ is built from the page's own `faq` blocks rather than written
+ * separately, so the structured answers are always the visible ones word for
+ * word — Google ignores FAQ markup that does not match the page, and a second
+ * copy kept by hand would drift the first time somebody edited an answer.
+ */
 export function articleSchema(post: Post) {
   const url = absolute(post.seo.canonicalPath);
-  return {
-    "@context": "https://schema.org",
-    "@type": "Article",
+  const questions = post.body.flatMap((block) =>
+    block.type === "faq" ? block.items : [],
+  );
+
+  const article = {
+    "@type": "BlogPosting",
+    "@id": `${url}#article`,
     headline: post.title,
     description: post.seo.description,
     url,
     mainEntityOfPage: url,
     image: post.image ? absolute(post.image) : undefined,
     datePublished: isoDay(post.date),
-    author: { "@id": BUSINESS_ID },
+    dateModified: post.updated,
+    inLanguage: "en",
+    author: {
+      "@type": "Person",
+      name: POST_AUTHOR.name,
+      jobTitle: POST_AUTHOR.jobTitle,
+      url: absolute(POST_AUTHOR.profile),
+      worksFor: { "@id": BUSINESS_ID },
+    },
     publisher: { "@id": BUSINESS_ID },
+  };
+
+  const faq = questions.length
+    ? {
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        mainEntity: questions.map((item) => ({
+          "@type": "Question",
+          name: plain(item.question),
+          acceptedAnswer: { "@type": "Answer", text: plain(item.answer) },
+        })),
+      }
+    : null;
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": faq ? [article, faq] : [article],
   };
 }

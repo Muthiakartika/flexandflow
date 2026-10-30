@@ -73,7 +73,7 @@ export async function joinPublished(
     },
     /* `docId` is not in the shared select — that one lists the columns
        `toService`/`toPost` read. It is added because the join needs a key. */
-    select: { ...REVISION_SELECT, docId: true },
+    select: { ...REVISION_SELECT, docId: true, version: true },
   });
 
   const byDoc = new Map(revisions.map((r) => [r.docId, r]));
@@ -109,7 +109,7 @@ export async function joinDraft(
 
   const revisions = await prisma.contentRevision.findMany({
     where: { docId: { in: docs.map((d) => d.id) } },
-    select: { ...REVISION_SELECT, docId: true },
+    select: { ...REVISION_SELECT, docId: true, version: true },
     orderBy: { version: "desc" },
   });
 

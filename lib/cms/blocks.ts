@@ -113,6 +113,21 @@ const dividerBlock = z.object({
   rule: z.boolean().optional(),
 });
 
+/**
+ * Cells may be blank — a comparison table's top-left corner usually is — but
+ * every row must be as wide as the header, or the columns stop lining up and
+ * a price lands under the wrong therapist.
+ */
+const tableBlock = z
+  .object({
+    type: z.literal("table"),
+    head: z.array(z.string().trim()).min(1),
+    rows: z.array(z.array(z.string().trim())).min(1),
+  })
+  .refine((table) => table.rows.every((row) => row.length === table.head.length), {
+    message: "Every row needs as many cells as the header",
+  });
+
 export const blockSchema = z.discriminatedUnion("type", [
   headingBlock,
   paragraphBlock,
@@ -126,6 +141,7 @@ export const blockSchema = z.discriminatedUnion("type", [
   imageTextBlock,
   ctaBlock,
   dividerBlock,
+  tableBlock,
 ]);
 
 export const blocksSchema = z.array(blockSchema);
@@ -142,6 +158,7 @@ export const BLOCK_TYPES = [
   "callout",
   "quote",
   "faq",
+  "table",
   "cta",
   "divider",
 ] as const;
@@ -159,6 +176,7 @@ export const BLOCK_LABEL: Record<BlockType, string> = {
   callout: "Highlight box",
   quote: "Quote",
   faq: "Questions & answers",
+  table: "Table",
   cta: "Button",
   divider: "Divider",
 };
@@ -175,6 +193,7 @@ export const BLOCK_HINT: Record<BlockType, string> = {
   callout: "The olive box with a quote mark, for one standout sentence.",
   quote: "A pull-quote, optionally with a name under it.",
   faq: "An expanding list of questions.",
+  table: "Rows and columns — prices, or two things compared side by side.",
   cta: "A button linking somewhere — booking, WhatsApp, another page.",
   divider: "Space, or a line, between sections.",
 };
@@ -261,6 +280,12 @@ export function emptyBlock(type: BlockType): ContentBlock {
       return {
         type: "faq",
         items: [{ question: "A question?", answer: "The answer." }],
+      };
+    case "table":
+      return {
+        type: "table",
+        head: ["", "Column"],
+        rows: [["Row", "Value"]],
       };
     case "cta":
       return { type: "cta", label: "Book a session", href: "", variant: "solid" };

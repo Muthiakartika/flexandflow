@@ -18,6 +18,11 @@ export type DocRow = {
   urlPrefix: string;
   sortOrder: number;
   gridOrder: number | null;
+  /** Read for a post's "updated" date. Optional so callers that build a row
+   *  by hand (the import check) need not invent them. */
+  publishedVersion?: number | null;
+  /** A `Date` from Prisma, an ISO string once it has been through the cache. */
+  publishedAt?: Date | string | null;
 };
 
 export type RevisionRow = {
@@ -37,6 +42,8 @@ export type RevisionRow = {
   tiers: unknown;
   durationLabel: string | null;
   displayDate: string | null;
+  /** Present on rows from `lib/cms/query.ts`; see `updatedOf`. */
+  version?: number;
 };
 
 export type Joined = { doc: DocRow; revision: RevisionRow };
@@ -114,7 +121,41 @@ export function toService({ doc, revision }: Joined): Service {
   };
 }
 
+/** `2026-10-30`, on the studio's calendar (UTC+8) rather than the server's. */
+const studioDay = (date: Date) =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Makassar" }).format(date);
+
+/**
+ * The day the version being shown went live, when that is news.
+ *
+ * Version 1 of a ported post is the WordPress text, so a post nobody has
+ * edited since the import has no "updated" date at all. A revision newer than
+ * the published one is a draft in preview, which would go live today if
+ * published — so that is the date preview shows.
+ */
+function updatedOf({ doc, revision }: Joined): string | undefined {
+  const live = doc.publishedVersion ?? 0;
+
+  let day: string | undefined;
+  if (revision.version !== undefined && revision.version > live) {
+    day = studioDay(new Date());
+  } else if (live > 1 && doc.publishedAt) {
+    day = studioDay(new Date(doc.publishedAt));
+  }
+
+  /* Edited the same day it was first published is not an update. */
+  const published = revision.displayDate ? new Date(revision.displayDate) : null;
+  if (day && published && !Number.isNaN(published.getTime())) {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const first = `${published.getFullYear()}-${pad(published.getMonth() + 1)}-${pad(published.getDate())}`;
+    if (first >= day) return undefined;
+  }
+
+  return day;
+}
+
 export function toPost({ doc, revision }: Joined, labels: CategoryNames = {}): Post {
+  const updated = updatedOf({ doc, revision });
   return {
     slug: doc.slug,
     category: doc.urlPrefix,
@@ -126,6 +167,7 @@ export function toPost({ doc, revision }: Joined, labels: CategoryNames = {}): P
     title: revision.title,
     excerpt: revision.excerpt,
     date: revision.displayDate ?? "",
+    ...(updated ? { updated } : {}),
     seo: seoOf(revision),
     body: bodyOf(revision, `post ${doc.slug}`),
     ...(revision.image ? { image: revision.image } : {}),
@@ -161,6 +203,7 @@ export const DOC_SELECT = {
   sortOrder: true,
   gridOrder: true,
   publishedVersion: true,
+  publishedAt: true,
 } as const;
 
 /** A `Service` or `Post` turned back into the columns a revision stores. */

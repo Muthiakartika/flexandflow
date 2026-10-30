@@ -621,6 +621,125 @@ function BlockFields({
         </div>
       );
 
+    case "table": {
+      /* Columns are added and removed across the header and every row at
+         once — the stored format refuses a row of the wrong width, and so
+         would the save. */
+      const setCell = (r: number, c: number, value: string) => {
+        if (r < 0) {
+          onChange({
+            ...block,
+            head: block.head.map((cell, j) => (j === c ? value : cell)),
+          });
+          return;
+        }
+        onChange({
+          ...block,
+          rows: block.rows.map((row, i) =>
+            i === r ? row.map((cell, j) => (j === c ? value : cell)) : row,
+          ),
+        });
+      };
+
+      return (
+        <div className="grid gap-2">
+          <p className="text-[12px] text-faint">
+            The first row is the header. Leave its first cell empty to make the
+            first column bold row labels.
+          </p>
+
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-[13px]">
+              <tbody>
+                {[block.head, ...block.rows].map((row, i) => {
+                  const r = i - 1;
+                  return (
+                    <tr key={i} className={r < 0 ? "bg-cream" : ""}>
+                      {row.map((cell, c) => (
+                        <td
+                          key={c}
+                          className="min-w-[140px] border border-line p-1 align-top"
+                        >
+                          <InlineText
+                            value={cell}
+                            ariaLabel={
+                              r < 0
+                                ? `Header, column ${c + 1}`
+                                : `Row ${r + 1}, column ${c + 1}`
+                            }
+                            onChange={(text) => setCell(r, c, text)}
+                          />
+                        </td>
+                      ))}
+                      <td className="w-8 align-top">
+                        {r >= 0 ? (
+                          <IconButton
+                            label="Remove row"
+                            danger
+                            disabled={block.rows.length === 1}
+                            onClick={() =>
+                              onChange({
+                                ...block,
+                                rows: block.rows.filter((_, j) => j !== r),
+                              })
+                            }
+                          >
+                            ✕
+                          </IconButton>
+                        ) : null}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="admin-btn admin-btn-quiet"
+              onClick={() =>
+                onChange({
+                  ...block,
+                  rows: [...block.rows, block.head.map(() => "")],
+                })
+              }
+            >
+              Add row
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn-quiet"
+              onClick={() =>
+                onChange({
+                  ...block,
+                  head: [...block.head, ""],
+                  rows: block.rows.map((row) => [...row, ""]),
+                })
+              }
+            >
+              Add column
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn-quiet"
+              disabled={block.head.length === 1}
+              onClick={() =>
+                onChange({
+                  ...block,
+                  head: block.head.slice(0, -1),
+                  rows: block.rows.map((row) => row.slice(0, -1)),
+                })
+              }
+            >
+              Remove last column
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     case "cta":
       return (
         <div className="grid gap-2 sm:grid-cols-2">

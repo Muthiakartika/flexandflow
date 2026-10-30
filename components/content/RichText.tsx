@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { BTN_GHOST, BTN_SOLID } from "@/components/ui/tokens";
 import InlineFaq from "./InlineFaq";
@@ -264,6 +264,50 @@ export default function RichText({
               <hr key={i} className={`${space} border-0 border-t border-secondary/12`} />
             );
           }
+
+          /* Scrolls sideways on a phone rather than squeezing a four-column
+             price table into 360px. The wrapper is focusable so that scroll
+             is reachable from the keyboard too. */
+          case "table":
+            return (
+              <div
+                key={i}
+                className="prose-table"
+                role="region"
+                aria-label="Table"
+                tabIndex={0}
+                style={{ "--cols": block.head.length } as CSSProperties}
+              >
+                <table>
+                  <thead>
+                    <tr>
+                      {block.head.map((cell, j) => (
+                        <th key={j} scope="col">
+                          {renderInline(cell)}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {block.rows.map((row, r) => (
+                      <tr key={r}>
+                        {row.map((cell, j) =>
+                          /* A blank top-left corner makes the first column a
+                             column of row labels. */
+                          j === 0 && block.head[0] === "" ? (
+                            <th key={j} scope="row">
+                              {renderInline(cell)}
+                            </th>
+                          ) : (
+                            <td key={j}>{renderInline(cell)}</td>
+                          ),
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
 
           /* A block written by a newer build degrades to nothing rather than
              throwing and taking an indexed page down with it. */
