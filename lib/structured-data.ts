@@ -14,7 +14,7 @@
 import { therapistRates } from "@/lib/data/priceList";
 import { priceAmount } from "@/lib/pricing";
 import { contact, siteConfig } from "@/lib/site";
-import type { Post, Service } from "@/types";
+import type { ContentBlock, Post, Service } from "@/types";
 
 /** The business node's `@id`. Services and articles point back at it. */
 export const BUSINESS_ID = `${siteConfig.url}/#business`;
@@ -93,16 +93,23 @@ export function serviceSchema(service: Service) {
         ];
   });
 
-  return {
-    "@context": "https://schema.org",
+  const url = absolute(service.seo.canonicalPath);
+  const node = {
     "@type": "Service",
+    "@id": `${url}#service`,
     name: service.title,
     description: service.seo.description,
-    url: absolute(service.seo.canonicalPath),
+    url,
     image: service.image ? absolute(service.image) : undefined,
     provider: { "@id": BUSINESS_ID },
     areaServed: { "@type": "Place", name: "Uluwatu, Bali" },
     offers: offers.length ? offers : undefined,
+  };
+  const faq = faqSchema(url, service.body);
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": faq ? [node, faq] : [node],
   };
 }
 
@@ -142,18 +149,34 @@ function plain(text: string): string {
 }
 
 /**
- * A `BlogPosting`, plus a `FAQPage` when the body has questions.
+ * A `FAQPage` for every `faq` block on the page, or null when it has none.
  *
- * The FAQ is built from the page's own `faq` blocks rather than written
- * separately, so the structured answers are always the visible ones word for
- * word — Google ignores FAQ markup that does not match the page, and a second
- * copy kept by hand would drift the first time somebody edited an answer.
+ * Built from the page's own blocks rather than written separately, so the
+ * structured answers are always the visible ones word for word — Google
+ * ignores FAQ markup that does not match the page, and a second copy kept by
+ * hand would drift the first time somebody edited an answer. The body already
+ * includes the sections `lib/seo/sections` adds, so their questions count too.
  */
-export function articleSchema(post: Post) {
-  const url = absolute(post.seo.canonicalPath);
-  const questions = post.body.flatMap((block) =>
+function faqSchema(url: string, body: ContentBlock[]) {
+  const questions = body.flatMap((block) =>
     block.type === "faq" ? block.items : [],
   );
+  if (!questions.length) return null;
+
+  return {
+    "@type": "FAQPage",
+    "@id": `${url}#faq`,
+    mainEntity: questions.map((item) => ({
+      "@type": "Question",
+      name: plain(item.question),
+      acceptedAnswer: { "@type": "Answer", text: plain(item.answer) },
+    })),
+  };
+}
+
+/** A `BlogPosting`, plus a `FAQPage` when the body has questions. */
+export function articleSchema(post: Post) {
+  const url = absolute(post.seo.canonicalPath);
 
   const article = {
     "@type": "BlogPosting",
@@ -176,17 +199,7 @@ export function articleSchema(post: Post) {
     publisher: { "@id": BUSINESS_ID },
   };
 
-  const faq = questions.length
-    ? {
-        "@type": "FAQPage",
-        "@id": `${url}#faq`,
-        mainEntity: questions.map((item) => ({
-          "@type": "Question",
-          name: plain(item.question),
-          acceptedAnswer: { "@type": "Answer", text: plain(item.answer) },
-        })),
-      }
-    : null;
+  const faq = faqSchema(url, post.body);
 
   return {
     "@context": "https://schema.org",
