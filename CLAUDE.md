@@ -547,6 +547,16 @@ the panel for headings, body copy, pictures and rates.
   `npm run check:seo <preview-url>` → review → merge. Seeded from what the
   live site served, so the change that introduced it altered nothing visible.
 
+**`lib/seo/sections/` adds SEO sections and FAQs to the end of those pages**,
+one file per page (`<slug>.ts`, a `ContentBlock[]`), registered by canonical
+path in `index.ts`. `read.ts` appends them to the body after the panel's own
+blocks, so they render through `RichText`, show in the panel's preview, and
+their `faq` blocks feed the page's `FAQPage` JSON-LD (treatments now emit one
+too, from `serviceSchema`). The panel's block editor does not show them: to
+change one, edit the file. `check:seo` validates them against `blocksSchema`
+and checks every internal link. Written from Search Console, Ahrefs and Brand
+Radar data on 4 Nov 2026, using only facts the site already states.
+
 ## Phase 5 — the CMS (in progress)
 
 The owner wants to edit treatment pages and blog posts without opening the

@@ -1,5 +1,10 @@
 /**
- * Checks `lib/seo/pages.ts`, and with a URL, what that deployment serves.
+ * Checks `lib/seo/pages.ts` and `lib/seo/sections`, and with a URL, what that
+ * deployment serves.
+ *
+ * Sections are checked against the CMS's own block schema, for internal links
+ * that point at no page, for nested bold and italic (which `RichText` cannot
+ * render), and for a question asked twice on one page.
  *
  * Without an argument it checks the file alone: every key is a canonical path
  * with both slashes, nothing is empty, no two pages share a title or a
@@ -15,7 +20,22 @@
  *   npx tsx scripts/check-seo.ts                          # the file only
  *   npx tsx scripts/check-seo.ts https://flexandflow.fit  # plus the pages
  */
+import { blocksSchema } from "@/lib/cms/blocks";
 import { PAGE_SEO } from "@/lib/seo/pages";
+import { PAGE_SECTIONS } from "@/lib/seo/sections";
+
+/* Pages with their own route files, which sections may link to beside the
+   treatments and articles in `PAGE_SEO`. */
+const FIXED_PAGES = [
+  "/",
+  "/about-us/",
+  "/services/",
+  "/price-list/",
+  "/contact-us/",
+  "/blog/",
+  "/therapist/ginny/",
+  "/therapist/yuni/",
+];
 
 const BASE = process.argv[2]?.replace(/\/+$/, "");
 
@@ -79,6 +99,58 @@ function checkFile(): void {
   console.log(`  ${entries.length} pages in the file`);
 }
 
+/** Every string a reader sees in a block, for the link and markup checks. */
+function textsOf(block: (typeof PAGE_SECTIONS)[string][number]): string[] {
+  switch (block.type) {
+    case "paragraph":
+    case "callout":
+      return [block.text];
+    case "list":
+    case "columns":
+      return block.items;
+    case "table":
+      return [...block.head, ...block.rows.flat()];
+    case "faq":
+      return block.items.flatMap((item) => [item.question, item.answer]);
+    default:
+      return [];
+  }
+}
+
+function checkSections(): void {
+  console.log("\nlib/seo/sections");
+  const known = new Set([...Object.keys(PAGE_SEO), ...FIXED_PAGES]);
+
+  for (const [path, blocks] of Object.entries(PAGE_SECTIONS)) {
+    check(`${path} has an entry in lib/seo/pages.ts`, Boolean(PAGE_SEO[path]));
+
+    const parsed = blocksSchema.safeParse(blocks);
+    check(
+      `${path} blocks are valid`,
+      parsed.success,
+      parsed.success ? "" : parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
+    );
+
+    const texts = blocks.flatMap(textsOf);
+    const internal = texts.flatMap((text) =>
+      [...text.matchAll(/\]\((\/[^)]*)\)/g)].map((m) => m[1]),
+    );
+    for (const link of internal) {
+      check(`${path} links to ${link}`, known.has(link), "no such page");
+    }
+    check(
+      `${path} never nests bold and italic`,
+      !texts.some((text) => text.includes("***")),
+    );
+
+    const questions = blocks.flatMap((block) =>
+      block.type === "faq" ? block.items.map((item) => item.question.toLowerCase()) : [],
+    );
+    check(`${path} asks each question once`, new Set(questions).size === questions.length);
+  }
+  console.log(`  ${Object.keys(PAGE_SECTIONS).length} pages with sections`);
+}
+
 async function checkServed(base: string): Promise<void> {
   console.log(`\n${base}`);
 
@@ -118,6 +190,7 @@ async function checkServed(base: string): Promise<void> {
 
 async function main(): Promise<void> {
   checkFile();
+  checkSections();
   if (BASE) await checkServed(BASE);
 
   console.log(`\n${failures} failed, ${warnings} warnings`);

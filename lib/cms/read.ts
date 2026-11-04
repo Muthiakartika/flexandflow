@@ -46,6 +46,7 @@ import {
 } from "@/lib/cms/shape";
 import { prisma } from "@/lib/db";
 import { withPageSeo } from "@/lib/seo/pages";
+import { withPageSections } from "@/lib/seo/sections";
 import type { Post, Service } from "@/types";
 
 /** Invalidated by `lib/cms/write.ts` on every publish. */
@@ -106,19 +107,23 @@ async function load(
 }
 
 /*
- * Every function below lays `lib/seo/pages.ts` over the row with `withPageSeo`,
- * after the cache rather than inside it: the cache holds database rows, so a
- * deploy that changes a title takes effect without anything being invalidated.
- * It is applied here and not in `lib/cms/shape.ts` because the import check
+ * Every function below passes the row through `fromCode`, which lays
+ * `lib/seo/pages.ts` over its SEO and appends `lib/seo/sections` to its body.
+ * After the cache rather than inside it: the cache holds database rows, so a
+ * deploy that changes a title or a section takes effect without anything being
+ * invalidated. Here and not in `lib/cms/shape.ts`, because the import check
  * reads through `shape.ts` and compares against what WordPress published.
  */
+function fromCode<T extends Service | Post>(entry: T): T {
+  return withPageSeo(withPageSections(entry));
+}
 
 // ── Services ──────────────────────────────────────────────────────────────
 
 /** Every published treatment, in reading order. */
 export async function listServices(): Promise<Service[]> {
   const rows = await load({ kind: "SERVICE" }, "sortOrder", [CMS_TAG.services]);
-  return rows.map((row) => withPageSeo(toService(row)));
+  return rows.map((row) => fromCode(toService(row)));
 }
 
 /**
@@ -131,7 +136,7 @@ export async function listServices(): Promise<Service[]> {
  */
 export async function listPricedServices(): Promise<Service[]> {
   const rows = await load({ kind: "SERVICE" }, "gridOrder", [CMS_TAG.services]);
-  return rows.map((row) => withPageSeo(toService(row)));
+  return rows.map((row) => fromCode(toService(row)));
 }
 
 export async function getService(slug: string): Promise<Service | null> {
@@ -140,7 +145,7 @@ export async function getService(slug: string): Promise<Service | null> {
     "sortOrder",
     [CMS_TAG.services, CMS_TAG.service(slug)],
   );
-  return rows.length ? withPageSeo(toService(rows[0])) : null;
+  return rows.length ? fromCode(toService(rows[0])) : null;
 }
 
 // ── Posts ─────────────────────────────────────────────────────────────────
@@ -151,7 +156,7 @@ export async function listPosts(): Promise<Post[]> {
     load({ kind: "POST" }, "sortOrder", [CMS_TAG.posts]),
     categoryLabels(),
   ]);
-  return rows.map((row) => withPageSeo(toPost(row, labels)));
+  return rows.map((row) => fromCode(toPost(row, labels)));
 }
 
 export async function listPostsInCategory(
@@ -161,7 +166,7 @@ export async function listPostsInCategory(
     load({ kind: "POST", urlPrefix: category }, "sortOrder", [CMS_TAG.posts]),
     categoryLabels(),
   ]);
-  return rows.map((row) => withPageSeo(toPost(row, labels)));
+  return rows.map((row) => fromCode(toPost(row, labels)));
 }
 
 export async function getPost(
@@ -175,7 +180,7 @@ export async function getPost(
     ]),
     categoryLabels(),
   ]);
-  return rows.length ? withPageSeo(toPost(rows[0], labels)) : null;
+  return rows.length ? fromCode(toPost(rows[0], labels)) : null;
 }
 
 // ── Static params ─────────────────────────────────────────────────────────
