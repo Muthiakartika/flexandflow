@@ -66,7 +66,54 @@ function create(): PrismaClient {
     console.error("[prisma]", message);
   });
 
-  return client;
+  return process.env.NODE_ENV === "development" &&
+    process.env.DATABASE_READ_ONLY === "true"
+    ? readOnly(client)
+    : client;
+}
+
+/** Every Prisma operation that can change a row. */
+const WRITES = new Set([
+  "create",
+  "createMany",
+  "createManyAndReturn",
+  "update",
+  "updateMany",
+  "updateManyAndReturn",
+  "upsert",
+  "delete",
+  "deleteMany",
+  "$executeRaw",
+  "$executeRawUnsafe",
+]);
+
+/**
+ * The client with every write refused before it reaches the database.
+ *
+ * For a dev server pointed at the live database (`DATABASE_READ_ONLY=true` in
+ * `.env.local`): the real pages render, and a save in the panel, a test booking
+ * or an intake submission fails loudly instead of changing the live site.
+ * Development only, so a stray flag can never take the deployed site down.
+ *
+ * It guards this client only. Scripts that build their own (`prisma/seed.ts`,
+ * `scripts/cms-import.ts`, `scripts/create-admin.ts`, `scripts/check-move.ts`)
+ * are not covered, so do not run them against the live database.
+ * `$queryRaw` is let through because the app only reads with it.
+ */
+function readOnly(client: PrismaClient): PrismaClient {
+  return client.$extends({
+    query: {
+      $allOperations({ model, operation, args, query }) {
+        if (WRITES.has(operation)) {
+          throw new Error(
+            `DATABASE_READ_ONLY: refused ${model ? `${model}.` : ""}${operation}. ` +
+              "This dev server is reading the live database and may not change it.",
+          );
+        }
+        return query(args);
+      },
+    },
+  }) as unknown as PrismaClient;
 }
 
 function instance(): PrismaClient {
