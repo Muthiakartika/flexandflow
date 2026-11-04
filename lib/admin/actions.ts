@@ -28,7 +28,7 @@
  * customer's calendar holding the old time and gain a second event on the
  * next update rather than replacing the first.
  */
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { after } from "next/server";
 import { redirect } from "next/navigation";
 
@@ -53,7 +53,9 @@ import {
   setBookingStatus,
 } from "@/lib/booking/transitions";
 import { parseMinuteOfDay, studioInstant } from "@/lib/booking/time";
+import { BOOKING_PRICES_TAG } from "@/lib/booking/price-list";
 import { slugify } from "@/lib/cms/content-schema";
+import { purgeEdgePaths } from "@/lib/cms/purge";
 import { prisma } from "@/lib/db";
 import {
   dispatchPending,
@@ -731,6 +733,17 @@ export async function deleteTimeOffAction(
 
 // ── Services ──────────────────────────────────────────────────────────────
 
+/**
+ * A price row changed, so the public `/price-list` rate cards — which take
+ * their figures from these rows — must not keep serving the old one.
+ */
+function refreshPriceList(): void {
+  revalidatePath("/admin/services");
+  updateTag(BOOKING_PRICES_TAG);
+  revalidatePath("/price-list");
+  purgeEdgePaths(["/price-list/"], "booking price changed");
+}
+
 export async function updateVariantAction(
   _previous: ActionState,
   form: FormData,
@@ -789,10 +802,10 @@ export async function updateVariantAction(
     },
   });
 
-  revalidatePath("/admin/services");
+  refreshPriceList();
 
   return done(
-    "Saved. Bookings already taken keep the price they were quoted, and the marketing pages are unchanged — run npm run check:prices.",
+    "Saved. Bookings already taken keep the price they were quoted, and the rate cards on /price-list follow this row.",
   );
 }
 
@@ -860,7 +873,7 @@ export async function createVariantAction(
     meta: { serviceId, tier, durationMinutes, priceIdr },
   });
 
-  revalidatePath("/admin/services");
+  refreshPriceList();
 
   return done(
     therapists.length === 0
@@ -908,7 +921,7 @@ export async function deleteVariantAction(
     },
   });
 
-  revalidatePath("/admin/services");
+  refreshPriceList();
 
   return done("Price row deleted.");
 }
@@ -1063,7 +1076,8 @@ export async function deleteServiceAction(
     meta: { slug: existing.slug, title: existing.title },
   });
 
-  revalidatePath("/admin/services");
+  /* Its price rows went with it, so the rate cards fall back to the file. */
+  refreshPriceList();
 
   return done(`${existing.title} deleted.`);
 }

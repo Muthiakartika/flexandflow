@@ -197,3 +197,26 @@ export function purgeEdgeEverything(reason: string): void {
     }
   });
 }
+
+/**
+ * Schedule a purge of a few known public paths.
+ *
+ * For changes that are not a CMS document — a booking price feeds the
+ * `/price-list` rate cards, and nothing in `affectedPaths` knows that.
+ */
+export function purgeEdgePaths(paths: string[], reason: string): void {
+  after(async () => {
+    try {
+      const cloudflare = credentials();
+      if (!cloudflare) return;
+
+      await purgeUrls(
+        cloudflare,
+        normalisePurgeUrls(paths, env().NEXT_PUBLIC_SITE_URL),
+      );
+      console.log(`[cms] edge purge: ${paths.length} URL(s) (${reason})`);
+    } catch (error) {
+      report(error);
+    }
+  });
+}

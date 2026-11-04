@@ -12,16 +12,27 @@
  * WordPress services sitemap.
  *
  * Deliberately separate from `lib/data/services.ts` and `lib/pricing.ts`:
- * those feed `npm run check:prices`, which compares marketing tiers against
- * the booking database and fails on disagreement. These rows have no
- * corresponding `ServiceVariant` row to compare against (some of these
- * treatments are not bookable through this app's wizard at all), so folding
- * them in would give that guard something it cannot actually check.
+ * those feed `npm run check:prices`, and several of these rows have no
+ * `ServiceVariant` to compare against.
+ *
+ * Since 2026-11-04 this file decides *which* rows each card shows; the
+ * *price* comes from the admin panel's Booking prices wherever a matching
+ * row exists (`lib/booking/price-list.ts`), and `amount` is the fallback.
  */
 export type PriceListRow = {
   treatment: string;
+  /**
+   * The `Service.slug` whose booking price row (at this therapist's tier and
+   * this length) supplies the figure. `combo-stretching-and-massage` has no
+   * service yet; creating one under that name in the admin panel picks it up.
+   */
+  serviceSlug: string;
   minutes: number;
-  /** IDR, digits only. */
+  /**
+   * IDR, digits only. Only a fallback since 2026-11-04: `/price-list` shows
+   * the booking price from the admin panel wherever one exists, and this
+   * figure only where none does. See `lib/booking/price-list.ts`.
+   */
   amount: number;
 };
 
@@ -35,34 +46,116 @@ export const therapistRates: TherapistRateCard[] = [
   {
     therapistSlug: "ginny",
     rows: [
-      { treatment: "Trauma Healing", minutes: 90, amount: 1_800_000 },
-      { treatment: "Sport Massage", minutes: 60, amount: 750_000 },
-      { treatment: "Sport Massage", minutes: 90, amount: 1_000_000 },
-      { treatment: "Assisted Stretching", minutes: 60, amount: 750_000 },
       {
-        treatment: "Combo Stretching and Massage",
+        treatment: "Trauma Healing",
+        serviceSlug: "trauma-healing",
+        minutes: 90,
+        amount: 1_800_000,
+      },
+      {
+        treatment: "Sport Massage",
+        serviceSlug: "sport-massage",
+        minutes: 60,
+        amount: 750_000,
+      },
+      {
+        treatment: "Sport Massage",
+        serviceSlug: "sport-massage",
         minutes: 90,
         amount: 1_000_000,
       },
-      { treatment: "Lymphatic Drainage", minutes: 60, amount: 750_000 },
-      { treatment: "Lymphatic Drainage", minutes: 90, amount: 1_000_000 },
-      { treatment: "Man Lymphatic Drainage", minutes: 60, amount: 800_000 },
-      { treatment: "Man Lymphatic Drainage", minutes: 90, amount: 1_100_000 },
-      { treatment: "Cupping", minutes: 30, amount: 300_000 },
+      {
+        treatment: "Assisted Stretching",
+        serviceSlug: "assisted-stretching",
+        minutes: 60,
+        amount: 750_000,
+      },
+      {
+        treatment: "Combo Stretching and Massage",
+        serviceSlug: "combo-stretching-and-massage",
+        minutes: 90,
+        amount: 1_000_000,
+      },
+      {
+        treatment: "Lymphatic Drainage",
+        serviceSlug: "lymphatic-drainage",
+        minutes: 60,
+        amount: 750_000,
+      },
+      {
+        treatment: "Lymphatic Drainage",
+        serviceSlug: "lymphatic-drainage",
+        minutes: 90,
+        amount: 1_000_000,
+      },
+      {
+        treatment: "Man Lymphatic Drainage",
+        serviceSlug: "lymphatic-detox-massage-for-men",
+        minutes: 60,
+        amount: 800_000,
+      },
+      {
+        treatment: "Man Lymphatic Drainage",
+        serviceSlug: "lymphatic-detox-massage-for-men",
+        minutes: 90,
+        amount: 1_100_000,
+      },
+      {
+        treatment: "Cupping",
+        serviceSlug: "cupping-therapy",
+        minutes: 30,
+        amount: 300_000,
+      },
     ],
   },
   {
     therapistSlug: "yuni",
     rows: [
-      { treatment: "Lymphatic Drainage", minutes: 60, amount: 500_000 },
-      { treatment: "Lymphatic Drainage", minutes: 90, amount: 750_000 },
-      { treatment: "Man Lymphatic Drainage", minutes: 60, amount: 600_000 },
-      { treatment: "Man Lymphatic Drainage", minutes: 90, amount: 900_000 },
-      { treatment: "Sport Massage", minutes: 60, amount: 400_000 },
-      { treatment: "Sport Massage", minutes: 90, amount: 600_000 },
-      { treatment: "Cupping Therapy", minutes: 30, amount: 300_000 },
+      {
+        treatment: "Lymphatic Drainage",
+        serviceSlug: "lymphatic-drainage",
+        minutes: 60,
+        amount: 500_000,
+      },
+      {
+        treatment: "Lymphatic Drainage",
+        serviceSlug: "lymphatic-drainage",
+        minutes: 90,
+        amount: 750_000,
+      },
+      {
+        treatment: "Man Lymphatic Drainage",
+        serviceSlug: "lymphatic-detox-massage-for-men",
+        minutes: 60,
+        amount: 600_000,
+      },
+      {
+        treatment: "Man Lymphatic Drainage",
+        serviceSlug: "lymphatic-detox-massage-for-men",
+        minutes: 90,
+        amount: 900_000,
+      },
+      {
+        treatment: "Sport Massage",
+        serviceSlug: "sport-massage",
+        minutes: 60,
+        amount: 400_000,
+      },
+      {
+        treatment: "Sport Massage",
+        serviceSlug: "sport-massage",
+        minutes: 90,
+        amount: 600_000,
+      },
+      {
+        treatment: "Cupping Therapy",
+        serviceSlug: "cupping-therapy",
+        minutes: 30,
+        amount: 300_000,
+      },
       {
         treatment: "Combo Stretching and Massage",
+        serviceSlug: "combo-stretching-and-massage",
         minutes: 90,
         amount: 750_000,
       },

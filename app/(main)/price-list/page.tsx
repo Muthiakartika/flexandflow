@@ -6,9 +6,9 @@ import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
 import { PendingLink } from "@/components/ui/PendingLink";
 import { BAND, CARD, FOCUS, H2, WRAP } from "@/components/ui/tokens";
+import { loadTherapistRates } from "@/lib/booking/price-list";
 import { listPricedServices } from "@/lib/cms/read";
 import { therapistBySlug } from "@/lib/data/therapists";
-import { therapistRates } from "@/lib/data/priceList";
 import { formatIdr } from "@/lib/pricing";
 import { bookingCtaHref } from "@/lib/site";
 
@@ -42,7 +42,11 @@ export default async function PriceListPage() {
   /* Ordered by `gridOrder`, which is the WordPress grid order the hand-written
      `pricedServiceSlugs` array used to carry — a different order from the
      reading order the sitemap and the sidebar use. */
-  const pricedServices = await listPricedServices();
+  const [pricedServices, therapistRates] = await Promise.all([
+    listPricedServices(),
+    /* The rate cards' figures come from Booking prices in the admin panel. */
+    loadTherapistRates(),
+  ]);
 
   return (
     <>
