@@ -17,6 +17,7 @@
     "check:prices": "tsx scripts/check-prices.ts",
     "check:permissions": "tsx scripts/check-permissions.ts",
     "check:site": "tsx scripts/check-site.ts",
+    "check:seo": "tsx scripts/check-seo.ts",
     "check:inline": "tsx scripts/check-inline.ts",
     "cms:import": "tsx scripts/cms-import.ts",
     "cms:verify": "tsx scripts/cms-import.ts --verify",
