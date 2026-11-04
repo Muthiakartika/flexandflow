@@ -4,7 +4,7 @@ import { useActionState } from "react";
 
 import { FormMessage, SubmitButton } from "@/components/admin/SubmitButton";
 import { IDLE, type ActionState } from "@/lib/admin/action-state";
-import { updateVariantAction } from "@/lib/admin/actions";
+import { deleteVariantAction, updateVariantAction } from "@/lib/admin/actions";
 import type { VariantRow } from "@/lib/admin/queries";
 import { TIER_LABEL } from "@/lib/booking/types";
 
@@ -20,6 +20,10 @@ export function VariantRowForm({ variant }: { variant: VariantRow }) {
     updateVariantAction,
     IDLE,
   );
+  const [deleteState, deleteAction] = useActionState<ActionState, FormData>(
+    deleteVariantAction,
+    IDLE,
+  );
 
   const priceId = `price-${variant.id}`;
   const durationId = `duration-${variant.id}`;
@@ -29,7 +33,7 @@ export function VariantRowForm({ variant }: { variant: VariantRow }) {
     <form action={action} className="border-b border-line/60 py-3 last:border-b-0">
       <input type="hidden" name="id" value={variant.id} />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto_auto]">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto_auto_auto]">
         <div>
           <label className="admin-label" htmlFor={priceId}>
             {TIER_LABEL[variant.tier]} price (IDR)
@@ -83,6 +87,23 @@ export function VariantRowForm({ variant }: { variant: VariantRow }) {
             Save
           </SubmitButton>
         </div>
+
+        {/* Same form, different action: the hidden `id` is all delete needs.
+            A row with bookings is refused server-side and told to retire. */}
+        <div className="flex items-end pb-1">
+          <button
+            type="submit"
+            formAction={deleteAction}
+            className="admin-btn admin-btn-danger"
+            onClick={(event) => {
+              if (!window.confirm("Delete this price row?")) {
+                event.preventDefault();
+              }
+            }}
+          >
+            Delete
+          </button>
+        </div>
       </div>
 
       <p className="mt-1 text-[12px] text-faint">
@@ -92,6 +113,7 @@ export function VariantRowForm({ variant }: { variant: VariantRow }) {
       </p>
 
       <FormMessage state={state} />
+      <FormMessage state={deleteState} />
     </form>
   );
 }

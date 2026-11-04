@@ -745,6 +745,8 @@ export type ServiceRow = {
   title: string;
   active: boolean;
   bufferMinutes: number;
+  /** Who may be booked for it. A therapist also needs a price row at their tier. */
+  therapistIds: string[];
   variants: VariantRow[];
 };
 
@@ -756,6 +758,7 @@ export async function loadServices(): Promise<ServiceRow[]> {
         orderBy: [{ tier: "asc" }, { durationMinutes: "asc" }],
         include: { _count: { select: { bookings: true } } },
       },
+      therapists: { select: { therapistId: true } },
     },
   });
 
@@ -765,6 +768,7 @@ export async function loadServices(): Promise<ServiceRow[]> {
     title: service.title,
     active: service.active,
     bufferMinutes: service.bufferMinutes,
+    therapistIds: service.therapists.map((link) => link.therapistId),
     variants: service.variants.map((variant) => ({
       id: variant.id,
       tier: variant.tier,

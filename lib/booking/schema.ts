@@ -213,6 +213,38 @@ export const variantUpdateSchema = z.object({
   active: z.boolean(),
 });
 
+export const variantCreateSchema = z.object({
+  serviceId: z.string().min(1),
+  tier: z.enum(["MASTER", "STANDARD"]),
+  priceIdr: z.coerce
+    .number()
+    .int("Prices are whole rupiah")
+    .min(0)
+    .max(1_000_000_000),
+  durationMinutes: z.coerce.number().int().min(5).max(600),
+});
+
+const serviceFields = {
+  title: z.string().trim().min(2, "Give the service a name").max(120),
+  bufferMinutes: z.coerce.number().int().min(0).max(120),
+  active: z.boolean(),
+};
+
+export const serviceCreateSchema = z.object({
+  ...serviceFields,
+  slug: z
+    .string()
+    .min(2, "The slug needs at least two characters")
+    .max(120)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Lowercase letters, digits and hyphens only"),
+});
+
+export const serviceUpdateSchema = z.object({
+  ...serviceFields,
+  id: z.string().min(1),
+  therapistIds: z.array(z.string().min(1)),
+});
+
 export const adminBookingCreateSchema = z.object({
   therapistId: z.string().min(1),
   variantId: z.string().min(1),

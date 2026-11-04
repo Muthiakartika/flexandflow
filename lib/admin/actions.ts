@@ -41,7 +41,10 @@ import {
   adminLoginSchema,
   fieldErrors,
   refundSchema,
+  serviceCreateSchema,
+  serviceUpdateSchema,
   timeOffSchema,
+  variantCreateSchema,
   variantUpdateSchema,
   workingHourSchema,
 } from "@/lib/booking/schema";
@@ -50,6 +53,7 @@ import {
   setBookingStatus,
 } from "@/lib/booking/transitions";
 import { parseMinuteOfDay, studioInstant } from "@/lib/booking/time";
+import { slugify } from "@/lib/cms/content-schema";
 import { prisma } from "@/lib/db";
 import {
   dispatchPending,
@@ -790,6 +794,278 @@ export async function updateVariantAction(
   return done(
     "Saved. Bookings already taken keep the price they were quoted, and the marketing pages are unchanged — run npm run check:prices.",
   );
+}
+
+export async function createVariantAction(
+  _previous: ActionState,
+  form: FormData,
+): Promise<ActionState> {
+  const admin = await actingAdmin("booking.manage");
+  if (!admin) return await refusal();
+
+  const parsed = variantCreateSchema.safeParse({
+    serviceId: text(form, "serviceId"),
+    tier: text(form, "tier"),
+    priceIdr: text(form, "priceIdr").replace(/[^\d]/g, ""),
+    durationMinutes: text(form, "durationMinutes"),
+  });
+
+  if (!parsed.success) {
+    return failed("Check the fields below.", fieldErrors(parsed.error));
+  }
+
+  const { serviceId, tier, priceIdr, durationMinutes } = parsed.data;
+
+  const service = await prisma.service.findUnique({ where: { id: serviceId } });
+  if (!service) return failed("That service no longer exists.");
+
+  const clash = await prisma.serviceVariant.findUnique({
+    where: {
+      serviceId_tier_durationMinutes: { serviceId, tier, durationMinutes },
+    },
+  });
+  if (clash) {
+    return failed(
+      `${service.title} already has a ${durationMinutes}-minute row at this tier. Edit that row instead.`,
+    );
+  }
+
+  /* A price row alone sells nothing: the wizard only offers a variant through
+     a therapist of its tier who is linked to the service. Linking every active
+     therapist of that tier is the seed's own rule, and it is what "add a
+     Therapist price" means to the person pressing the button. */
+  const therapists = await prisma.therapist.findMany({
+    where: { tier, active: true },
+    select: { id: true },
+  });
+
+  const [variant] = await prisma.$transaction([
+    prisma.serviceVariant.create({
+      data: { serviceId, tier, durationMinutes, priceIdr, active: true },
+    }),
+    ...therapists.map(({ id: therapistId }) =>
+      prisma.serviceOnTherapist.upsert({
+        where: { therapistId_serviceId: { therapistId, serviceId } },
+        update: {},
+        create: { therapistId, serviceId },
+      }),
+    ),
+  ]);
+
+  await audit({
+    actor: admin.email,
+    action: "variant.create",
+    entity: "ServiceVariant",
+    entityId: variant.id,
+    meta: { serviceId, tier, durationMinutes, priceIdr },
+  });
+
+  revalidatePath("/admin/services");
+
+  return done(
+    therapists.length === 0
+      ? "Price row added — but no active therapist has this tier, so nobody can book it yet."
+      : "Price row added and bookable.",
+  );
+}
+
+export async function deleteVariantAction(
+  _previous: ActionState,
+  form: FormData,
+): Promise<ActionState> {
+  const admin = await actingAdmin("booking.manage");
+  if (!admin) return await refusal();
+
+  const id = text(form, "id");
+  if (!id) return failed("No price row was named.");
+
+  const existing = await prisma.serviceVariant.findUnique({
+    where: { id },
+    include: { _count: { select: { bookings: true } } },
+  });
+  if (!existing) return failed("That price row has already been removed.");
+
+  /* A booking points at its variant for the price it was quoted. Deleting the
+     row would orphan that history, so a used row can only be retired. */
+  if (existing._count.bookings > 0) {
+    return failed(
+      "This row has bookings against it, so it cannot be deleted. Untick Bookable and save to retire it instead.",
+    );
+  }
+
+  await prisma.serviceVariant.delete({ where: { id } });
+
+  await audit({
+    actor: admin.email,
+    action: "variant.delete",
+    entity: "ServiceVariant",
+    entityId: id,
+    meta: {
+      serviceId: existing.serviceId,
+      tier: existing.tier,
+      durationMinutes: existing.durationMinutes,
+      priceIdr: existing.priceIdr,
+    },
+  });
+
+  revalidatePath("/admin/services");
+
+  return done("Price row deleted.");
+}
+
+export async function createServiceAction(
+  _previous: ActionState,
+  form: FormData,
+): Promise<ActionState> {
+  const admin = await actingAdmin("booking.manage");
+  if (!admin) return await refusal();
+
+  const title = text(form, "title");
+  const parsed = serviceCreateSchema.safeParse({
+    title,
+    slug: slugify(text(form, "slug") || title),
+    bufferMinutes: text(form, "bufferMinutes") || "15",
+    active: checkbox(form, "active"),
+  });
+
+  if (!parsed.success) {
+    return failed("Check the fields below.", fieldErrors(parsed.error));
+  }
+
+  const taken = await prisma.service.findUnique({
+    where: { slug: parsed.data.slug },
+  });
+  if (taken) {
+    return failed("Check the fields below.", {
+      slug: `"${parsed.data.slug}" is already used by ${taken.title}.`,
+    });
+  }
+
+  const last = await prisma.service.aggregate({ _max: { sortOrder: true } });
+
+  const service = await prisma.service.create({
+    data: {
+      ...parsed.data,
+      sortOrder: (last._max.sortOrder ?? 0) + 1,
+    },
+  });
+
+  await audit({
+    actor: admin.email,
+    action: "service.create",
+    entity: "Service",
+    entityId: service.id,
+    meta: { slug: service.slug, title: service.title },
+  });
+
+  revalidatePath("/admin/services");
+
+  return done(
+    `${service.title} added. Give it a price row to make it bookable.`,
+  );
+}
+
+export async function updateServiceAction(
+  _previous: ActionState,
+  form: FormData,
+): Promise<ActionState> {
+  const admin = await actingAdmin("booking.manage");
+  if (!admin) return await refusal();
+
+  const parsed = serviceUpdateSchema.safeParse({
+    id: text(form, "id"),
+    title: text(form, "title"),
+    bufferMinutes: text(form, "bufferMinutes"),
+    active: checkbox(form, "active"),
+    therapistIds: form
+      .getAll("therapistIds")
+      .filter((value): value is string => typeof value === "string"),
+  });
+
+  if (!parsed.success) {
+    return failed("Check the fields below.", fieldErrors(parsed.error));
+  }
+
+  const { id, therapistIds, ...fields } = parsed.data;
+
+  const before = await prisma.service.findUnique({
+    where: { id },
+    include: { therapists: { select: { therapistId: true } } },
+  });
+  if (!before) return failed("That service no longer exists.");
+
+  await prisma.$transaction([
+    prisma.service.update({ where: { id }, data: fields }),
+    prisma.serviceOnTherapist.deleteMany({
+      where: { serviceId: id, therapistId: { notIn: therapistIds } },
+    }),
+    ...therapistIds.map((therapistId) =>
+      prisma.serviceOnTherapist.upsert({
+        where: { therapistId_serviceId: { therapistId, serviceId: id } },
+        update: {},
+        create: { therapistId, serviceId: id },
+      }),
+    ),
+  ]);
+
+  await audit({
+    actor: admin.email,
+    action: "service.update",
+    entity: "Service",
+    entityId: id,
+    meta: {
+      titleFrom: before.title,
+      titleTo: fields.title,
+      bufferFrom: before.bufferMinutes,
+      bufferTo: fields.bufferMinutes,
+      activeFrom: before.active,
+      activeTo: fields.active,
+      therapistsFrom: before.therapists.map((t) => t.therapistId).join(","),
+      therapistsTo: therapistIds.join(","),
+    },
+  });
+
+  revalidatePath("/admin/services");
+
+  return done("Service saved.");
+}
+
+export async function deleteServiceAction(
+  _previous: ActionState,
+  form: FormData,
+): Promise<ActionState> {
+  const admin = await actingAdmin("booking.manage");
+  if (!admin) return await refusal();
+
+  const id = text(form, "id");
+  if (!id) return failed("No service was named.");
+
+  const existing = await prisma.service.findUnique({ where: { id } });
+  if (!existing) return failed("That service has already been removed.");
+
+  const booked = await prisma.booking.count({
+    where: { variant: { serviceId: id } },
+  });
+  if (booked > 0) {
+    return failed(
+      `${existing.title} has ${booked} booking${booked === 1 ? "" : "s"} on record, so it cannot be deleted. Untick Listed and save to hide it instead.`,
+    );
+  }
+
+  /* Price rows and therapist links cascade with the service. */
+  await prisma.service.delete({ where: { id } });
+
+  await audit({
+    actor: admin.email,
+    action: "service.delete",
+    entity: "Service",
+    entityId: id,
+    meta: { slug: existing.slug, title: existing.title },
+  });
+
+  revalidatePath("/admin/services");
+
+  return done(`${existing.title} deleted.`);
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────

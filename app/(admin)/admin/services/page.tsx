@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 
 import { PageHeading, Panel } from "@/components/admin/primitives";
+import {
+  NewServiceForm,
+  NewVariantForm,
+  ServiceSettingsForm,
+} from "@/components/admin/ServiceForms";
 import { VariantRowForm } from "@/components/admin/VariantRowForm";
 import { requirePermission } from "@/lib/admin/auth";
-import { loadServices } from "@/lib/admin/queries";
+import { listTherapistOptions, loadServices } from "@/lib/admin/queries";
 
 export const metadata: Metadata = {
   title: "Services",
@@ -19,7 +24,10 @@ export const metadata: Metadata = {
 export default async function AdminServicesPage() {
   await requirePermission("booking.manage");
 
-  const services = await loadServices();
+  const [services, therapists] = await Promise.all([
+    loadServices(),
+    listTherapistOptions(),
+  ]);
 
   return (
     <>
@@ -28,30 +36,29 @@ export default async function AdminServicesPage() {
         lede="Prices are whole rupiah. A row that is not bookable disappears from the wizard but keeps its history."
       />
 
-      {/* Not decoration. `lib/data/services.ts` is a hand-maintained file that
-          the eight public service pages and the home grid derive their figures
-          from; this table is the database the booking wizard charges against.
-          Changing one has never changed the other, and this repo has published
-          a wrong price three times. */}
+      {/* Since the CMS (Phase 5) the public pages read their rates from the
+          treatment editor, not from `lib/data/services.ts`. The two are still
+          separate stores, and the live "Book" buttons go to the external
+          booking site, which reads neither. */}
       <div className="admin-card mb-5 border-warn/40 bg-warn-soft p-4">
         <h2 className="text-[15px] font-bold text-warn">
           This does not change the prices on the website
         </h2>
         <p className="mt-1 text-[13px] text-ink">
-          The public service pages and the home page take their figures from{" "}
-          <code className="rounded bg-cream px-1 py-0.5 text-[12px]">
-            lib/data/services.ts
-          </code>
-          , a separate file in the codebase. Editing a price here changes what
-          the booking wizard charges and nothing else. After changing anything
-          on this page, run{" "}
-          <code className="rounded bg-cream px-1 py-0.5 text-[12px]">
-            npm run check:prices
-          </code>{" "}
-          — it reports every figure where the two disagree. Three wrong prices
-          have gone live on this site by skipping that step.
+          The prices shown on the treatment pages, the home page and the price
+          list are edited under <strong>Treatments</strong> — open a treatment
+          and change its rates there. This page only sets what the built-in
+          booking wizard at <code className="rounded bg-cream px-1 py-0.5 text-[12px]">/booking</code>{" "}
+          charges. The site&rsquo;s &ldquo;Book&rdquo; buttons currently go to{" "}
+          <code className="rounded bg-cream px-1 py-0.5 text-[12px]">booking.flexandflow.fit</code>
+          , which is managed in its own WordPress admin and is not affected by
+          anything here.
         </p>
       </div>
+
+      <Panel title="Add a service">
+        <NewServiceForm />
+      </Panel>
 
       {services.length === 0 ? (
         <Panel>
@@ -72,6 +79,8 @@ export default async function AdminServicesPage() {
               </>
             }
           >
+            <ServiceSettingsForm service={service} therapists={therapists} />
+
             {service.variants.length === 0 ? (
               <p className="px-1 py-4 text-center text-[14px] text-faint">
                 No price rows. This service cannot be booked.
@@ -81,6 +90,8 @@ export default async function AdminServicesPage() {
                 <VariantRowForm key={variant.id} variant={variant} />
               ))
             )}
+
+            <NewVariantForm serviceId={service.id} />
           </Panel>
         ))
       )}
