@@ -10,29 +10,30 @@ const blocks: ContentBlock[] = [
   /* The therapist-or-Ginny choice that opens this section on the redesign
      is `TierChooser`, placed under this heading by `ServiceArticle` from the
      rate card. */
+  /* One session per row, team first and Ginny after, so the scannable layout
+     sets it as a price menu (`RichText`): studio price, villa price under it. */
   {
     type: "table",
-    head: ["Session", "Therapist", "Master therapist (Ginny)"],
+    head: ["Session", "At the studio", "At your villa"],
     rows: [
       [
-        "Assisted stretching, 60 min",
+        "60 minutes · Therapist",
         "IDR {{price:assisted-stretching:60:standard}}",
-        "IDR {{price:assisted-stretching:60:master}}",
-      ],
-      [
-        "Stretching and massage combo, 90 min",
-        "IDR {{price:combo-stretching-and-massage:90:standard}}",
-        "IDR {{price:combo-stretching-and-massage:90:master}}",
-      ],
-      ["Home service fee, per visit", "+ IDR {{fee}}", "+ IDR {{fee}}"],
-      [
-        "Assisted stretching at your villa, 60 min (incl. fee)",
         "IDR {{villa:assisted-stretching:60:standard}}",
+      ],
+      [
+        "Combo with massage, 90 minutes · Therapist",
+        "IDR {{price:combo-stretching-and-massage:90:standard}}",
+        "IDR {{villa:combo-stretching-and-massage:90:standard}}",
+      ],
+      [
+        "60 minutes · Ginny, master therapist",
+        "IDR {{price:assisted-stretching:60:master}}",
         "IDR {{villa:assisted-stretching:60:master}}",
       ],
       [
-        "Stretching and massage combo at your villa, 90 min (incl. fee)",
-        "IDR {{villa:combo-stretching-and-massage:90:standard}}",
+        "Combo with massage, 90 minutes · Ginny",
+        "IDR {{price:combo-stretching-and-massage:90:master}}",
         "IDR {{villa:combo-stretching-and-massage:90:master}}",
       ],
     ],

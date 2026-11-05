@@ -10,18 +10,20 @@ const blocks: ContentBlock[] = [
   /* The therapist-or-Ginny choice that opens this section on the redesign
      is `TierChooser`, placed under this heading by `ServiceArticle` from the
      rate card. */
+  /* One session per row, team first and Ginny after, so the scannable layout
+     sets it as a price menu (`RichText`): studio price, villa price under it. */
   {
     type: "table",
-    head: ["Pregnancy massage, 90 min", "Therapist", "Master therapist (Ginny)"],
+    head: ["Session", "At the studio", "At your villa"],
     rows: [
       [
-        "At the studio in Ungasan",
+        "90 minutes · Therapist",
         "IDR {{price:pregnancy-massage-service:90:standard}}",
-        "IDR {{price:pregnancy-massage-service:90:master}}",
+        "IDR {{villa:pregnancy-massage-service:90:standard}}",
       ],
       [
-        "At your villa or hotel (Uluwatu area)",
-        "IDR {{villa:pregnancy-massage-service:90:standard}}",
+        "90 minutes · Ginny, master therapist",
+        "IDR {{price:pregnancy-massage-service:90:master}}",
         "IDR {{villa:pregnancy-massage-service:90:master}}",
       ],
     ],
