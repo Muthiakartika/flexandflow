@@ -47,6 +47,8 @@ import {
 import { prisma } from "@/lib/db";
 import { withPageFixes } from "@/lib/seo/fixes";
 import { withPageSeo } from "@/lib/seo/pages";
+import type { PriceBook } from "@/lib/seo/price-tokens";
+import { loadPriceBook } from "@/lib/seo/prices";
 import { withPageSections } from "@/lib/seo/sections";
 import type { Post, Service } from "@/types";
 
@@ -116,17 +118,22 @@ async function load(
  * deploy that changes any of these takes effect without anything being
  * invalidated. Here and not in `lib/cms/shape.ts`, because the import check
  * reads through `shape.ts` and compares against what WordPress published.
+ * Each loads the price book beside its own query, for the price tokens in
+ * that code (`lib/seo/prices.ts`).
  */
-function fromCode<T extends Service | Post>(entry: T): T {
-  return withPageSeo(withPageSections(withPageFixes(entry)));
+function fromCode<T extends Service | Post>(entry: T, prices: PriceBook): T {
+  return withPageSeo(withPageSections(withPageFixes(entry, prices), prices));
 }
 
 // ── Services ──────────────────────────────────────────────────────────────
 
 /** Every published treatment, in reading order. */
 export async function listServices(): Promise<Service[]> {
-  const rows = await load({ kind: "SERVICE" }, "sortOrder", [CMS_TAG.services]);
-  return rows.map((row) => fromCode(toService(row)));
+  const [rows, prices] = await Promise.all([
+    load({ kind: "SERVICE" }, "sortOrder", [CMS_TAG.services]),
+    loadPriceBook(),
+  ]);
+  return rows.map((row) => fromCode(toService(row), prices));
 }
 
 /**
@@ -138,52 +145,60 @@ export async function listServices(): Promise<Service[]> {
  * both are live, indexable pages that appear on no menu, on purpose.
  */
 export async function listPricedServices(): Promise<Service[]> {
-  const rows = await load({ kind: "SERVICE" }, "gridOrder", [CMS_TAG.services]);
-  return rows.map((row) => fromCode(toService(row)));
+  const [rows, prices] = await Promise.all([
+    load({ kind: "SERVICE" }, "gridOrder", [CMS_TAG.services]),
+    loadPriceBook(),
+  ]);
+  return rows.map((row) => fromCode(toService(row), prices));
 }
 
 export async function getService(slug: string): Promise<Service | null> {
-  const rows = await load(
-    { kind: "SERVICE", urlPrefix: "uluwatu-bali", slug },
-    "sortOrder",
-    [CMS_TAG.services, CMS_TAG.service(slug)],
-  );
-  return rows.length ? fromCode(toService(rows[0])) : null;
+  const [rows, prices] = await Promise.all([
+    load({ kind: "SERVICE", urlPrefix: "uluwatu-bali", slug }, "sortOrder", [
+      CMS_TAG.services,
+      CMS_TAG.service(slug),
+    ]),
+    loadPriceBook(),
+  ]);
+  return rows.length ? fromCode(toService(rows[0]), prices) : null;
 }
 
 // ── Posts ─────────────────────────────────────────────────────────────────
 
 /** Every published post, newest-written first, as the listing shows them. */
 export async function listPosts(): Promise<Post[]> {
-  const [rows, labels] = await Promise.all([
+  const [rows, labels, prices] = await Promise.all([
     load({ kind: "POST" }, "sortOrder", [CMS_TAG.posts]),
     categoryLabels(),
+    loadPriceBook(),
   ]);
-  return rows.map((row) => fromCode(toPost(row, labels)));
+  return rows.map((row) => fromCode(toPost(row, labels), prices));
 }
 
 export async function listPostsInCategory(
   category: PostCategory,
 ): Promise<Post[]> {
-  const [rows, labels] = await Promise.all([
+  const [rows, labels, prices] = await Promise.all([
     load({ kind: "POST", urlPrefix: category }, "sortOrder", [CMS_TAG.posts]),
     categoryLabels(),
+    loadPriceBook(),
   ]);
-  return rows.map((row) => fromCode(toPost(row, labels)));
+  return rows.map((row) => fromCode(toPost(row, labels), prices));
 }
 
 export async function getPost(
   category: PostCategory,
   slug: string,
 ): Promise<Post | null> {
-  const [rows, labels] = await Promise.all([
+  const [rows, labels, prices] = await Promise.all([
     load({ kind: "POST", urlPrefix: category, slug }, "sortOrder", [
       CMS_TAG.posts,
       CMS_TAG.post(slug),
     ]),
     categoryLabels(),
+    loadPriceBook(),
   ]);
-  return rows.length ? fromCode(toPost(rows[0], labels)) : null;
+  return rows.length ? fromCode(toPost(rows[0], labels), prices) : null;
 }
 
 // ── Static params ─────────────────────────────────────────────────────────

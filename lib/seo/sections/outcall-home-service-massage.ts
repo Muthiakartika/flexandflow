@@ -49,20 +49,20 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "A home service massage in Uluwatu costs the studio price plus a home service fee of IDR 100,000 per visit. A few examples:",
+    text: "A home service massage in Uluwatu costs the studio price plus a home service fee of IDR {{fee}} per visit. A few examples:",
   },
   {
     type: "table",
     head: ["Treatment", "Studio price (IDR)", "At your villa (IDR)"],
     rows: [
-      ["Cupping, 30 min", "300,000", "400,000"],
-      ["Sport massage, 60 min, therapist", "500,000", "600,000"],
+      ["Cupping, 30 min", "{{price:cupping-therapy:30:standard}}", "{{villa:cupping-therapy:30:standard}}"],
+      ["Sport massage, 60 min, therapist", "{{price:sport-massage:60:standard}}", "{{villa:sport-massage:60:standard}}"],
       [
         "Sport massage, 60 min, master therapist (Ginny)",
-        "750,000",
-        "850,000",
+        "{{price:sport-massage:60:master}}",
+        "{{villa:sport-massage:60:master}}",
       ],
-      ["Pregnancy massage, 90 min, therapist", "750,000", "850,000"],
+      ["Pregnancy massage, 90 min, therapist", "{{price:pregnancy-massage-service:90:standard}}", "{{villa:pregnancy-massage-service:90:standard}}"],
     ],
   },
   {
@@ -79,7 +79,7 @@ const blocks: ContentBlock[] = [
     items: [
       {
         question: "How much does a home massage in Uluwatu cost in total?",
-        answer: "At Flex & Flow, a home massage in Uluwatu costs the same as the studio treatment plus a home service fee of IDR 100,000 per visit. For example, a 60-minute lymphatic drainage at your villa comes to IDR 600,000 with a therapist or IDR 850,000 with Ginny, the master therapist. A 60-minute assisted stretching session works out the same.",
+        answer: "At Flex & Flow, a home massage in Uluwatu costs the same as the studio treatment plus a home service fee of IDR {{fee}} per visit. For example, a 60-minute lymphatic drainage at your villa comes to IDR {{villa:lymphatic-drainage:60:standard}} with a therapist or IDR {{villa:lymphatic-drainage:60:master}} with Ginny, the master therapist. A 60-minute assisted stretching session comes to IDR {{villa:assisted-stretching:60:standard}} or IDR {{villa:assisted-stretching:60:master}}.",
       },
       {
         question: "Can I book a home massage on a Sunday or in the evening?",
@@ -91,7 +91,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Can I get a pregnancy massage at my villa in Uluwatu?",
-        answer: "Yes. Pregnancy massage is part of Flex & Flow's home service in the Uluwatu area. It is a 90-minute session costing IDR 750,000 with a therapist or IDR 1,000,000 with Ginny, plus the IDR 100,000 home service fee. Check with your midwife or doctor first, and tell your therapist how far along you are and about any complications.",
+        answer: "Yes. Pregnancy massage is part of Flex & Flow's home service in the Uluwatu area. It is a 90-minute session costing IDR {{price:pregnancy-massage-service:90:standard}} with a therapist or IDR {{price:pregnancy-massage-service:90:master}} with Ginny, plus the IDR {{fee}} home service fee. Check with your midwife or doctor first, and tell your therapist how far along you are and about any complications.",
       },
       {
         question: "Can I ask for Ginny to come to my villa?",

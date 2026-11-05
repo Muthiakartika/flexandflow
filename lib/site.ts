@@ -103,6 +103,13 @@ export const workingHours = [
   { days: "Monday to Saturday", hours: "09:00 - 17:00 hrs" },
 ] as const;
 
+/**
+ * Added once per visit for a treatment at the client's villa, hotel or home.
+ * Not a booking price row, so it lives here; `lib/seo/prices.ts` adds it to
+ * every `{{villa:…}}` figure. The home service page's own copy states it too.
+ */
+export const homeServiceFeeIdr = 100_000;
+
 export type NavItem = {
   label: string;
   href: string;

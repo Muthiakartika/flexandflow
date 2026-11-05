@@ -88,7 +88,7 @@ const blocks: ContentBlock[] = [
     ordered: true,
     items: [
       "**Choose the session.** [Lymphatic drainage](/uluwatu-bali/lymphatic-drainage/) can focus on one area, such as the legs, or cover more of the body. The [lymphatic detox massage for men](/uluwatu-bali/lymphatic-detox-massage-for-men/) adds face, scalp, head and neck work.",
-      "**Choose the place.** Come to the studio on Jl. Toya Ning II, Ungasan, Monday to Saturday from 09:00 to 17:00, or have a therapist visit your villa in the Uluwatu area for an extra IDR 100,000.",
+      "**Choose the place.** Come to the studio on Jl. Toya Ning II, Ungasan, Monday to Saturday from 09:00 to 17:00, or have a therapist visit your villa in the Uluwatu area for an extra IDR {{fee}}.",
       "**Share your health history.** Mention medication, recent surgery, pregnancy and any of the warning signs above. We ask before every session.",
       "**Book.** Use [online booking](https://booking.flexandflow.fit/) or [WhatsApp](https://wa.me/6285858887777).",
     ],
@@ -123,7 +123,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Can men have lymphatic drainage massage?",
-        answer: "Yes. The technique is the same for men and women. At Flex & Flow in Uluwatu, men can book standard lymphatic drainage from IDR 500,000 for 60 minutes, or the [lymphatic detox massage for men](/uluwatu-bali/lymphatic-detox-massage-for-men/), a full-body session with added face, scalp, head and neck work, from IDR 600,000 for 60 minutes. Both are available at the studio in Ungasan or at your villa.",
+        answer: "Yes. The technique is the same for men and women. At Flex & Flow in Uluwatu, men can book standard lymphatic drainage from IDR {{price:lymphatic-drainage:60:standard}} for 60 minutes, or the [lymphatic detox massage for men](/uluwatu-bali/lymphatic-detox-massage-for-men/), a full-body session with added face, scalp, head and neck work, from IDR {{price:lymphatic-detox-massage-for-men:60:standard}} for 60 minutes. Both are available at the studio in Ungasan or at your villa.",
       },
     ],
   },

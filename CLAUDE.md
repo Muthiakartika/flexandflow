@@ -557,6 +557,17 @@ change one, edit the file. `check:seo` validates them against `blocksSchema`
 and checks every internal link. Written from Search Console, Ahrefs and Brand
 Radar data on 4 Nov 2026, using only facts the site already states.
 
+**The code's copy never types a price.** Sections and fix replacements write
+tokens (`{{price:sport-massage:60:standard}}`, `{{villa:…}}` = price + the
+home service fee in `lib/site.ts`, `{{fee}}`), defined in
+`lib/seo/price-tokens.ts` and filled in `read.ts` from `lib/seo/prices.ts`:
+an active booking price row first, then the `/price-list` card rows, then the
+page's rate card. Cached under `BOOKING_PRICES_TAG` and `cms:services`, so a
+price changed in the booking admin or on a rate card reaches the sections on
+the next render. A token nothing can price throws in development and renders
+"(price not listed)" in production; `check:seo <url>` fails on either. Bump
+the version in `loadPriceBook`'s cache key whenever the loader changes.
+
 **`lib/seo/fixes.ts` corrects wrong panel copy in code**, so the agency never
 has to edit through `/admin`: exact find/replace pairs per page (a `row` scope
 for table cells), applied in `read.ts` before the sections are appended. The

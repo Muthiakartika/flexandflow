@@ -42,7 +42,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "How often can you have a pregnancy massage?",
-        answer: "There is no fixed rule. Some people have one a month, and others prefer more often in the third trimester as back and hip aches build. Let your comfort guide you, and check with your midwife or doctor if your pregnancy is high risk. At Flex & Flow in Uluwatu, each pregnancy massage lasts 90 minutes and costs from IDR 750,000.",
+        answer: "There is no fixed rule. Some people have one a month, and others prefer more often in the third trimester as back and hip aches build. Let your comfort guide you, and check with your midwife or doctor if your pregnancy is high risk. At Flex & Flow in Uluwatu, each pregnancy massage lasts 90 minutes and costs from IDR {{price:pregnancy-massage-service:90:standard}}.",
       },
       {
         question: "What should I tell my therapist before a pregnancy massage?",
@@ -50,7 +50,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Who gives pregnancy massage at Flex & Flow in Uluwatu?",
-        answer: "You can book a therapist, at IDR 750,000 for 90 minutes, or our founder and master therapist, [Ginny](/therapist/ginny/), at IDR 1,000,000 (prices as of 4 November 2026). Ginny has a background in nursing, professional fitness training and bodywork. Come to our Ungasan studio in Uluwatu, or have your therapist visit your villa, for a home service fee of IDR 100,000.",
+        answer: "You can book a therapist, at IDR {{price:pregnancy-massage-service:90:standard}} for 90 minutes, or our founder and master therapist, [Ginny](/therapist/ginny/), at IDR {{price:pregnancy-massage-service:90:master}} (prices as of 4 November 2026). Ginny has a background in nursing, professional fitness training and bodywork. Come to our Ungasan studio in Uluwatu, or have your therapist visit your villa, for a home service fee of IDR {{fee}}.",
       },
     ],
   },

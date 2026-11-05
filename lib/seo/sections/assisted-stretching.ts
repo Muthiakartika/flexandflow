@@ -9,19 +9,33 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "One-to-one assisted stretching at Flex & Flow costs from IDR 500,000 for 60 minutes at our studio on Jl. Toya Ning II, Ungasan, Uluwatu, open Monday to Saturday, 09:00 to 17:00. Our founder [Ginny](/therapist/ginny/) specialises in assisted stretching and has a background in nursing and professional fitness training. Prices as of 4 November 2026.",
+    text: "One-to-one assisted stretching at Flex & Flow costs from IDR {{price:assisted-stretching:60:standard}} for 60 minutes at our studio on Jl. Toya Ning II, Ungasan, Uluwatu, open Monday to Saturday, 09:00 to 17:00. Our founder [Ginny](/therapist/ginny/) specialises in assisted stretching and has a background in nursing and professional fitness training. Prices as of 4 November 2026.",
   },
   {
     type: "table",
     head: ["Session", "Therapist", "Master therapist (Ginny)"],
     rows: [
-      ["Assisted stretching, 60 min", "IDR 500,000", "IDR 750,000"],
+      [
+        "Assisted stretching, 60 min",
+        "IDR {{price:assisted-stretching:60:standard}}",
+        "IDR {{price:assisted-stretching:60:master}}",
+      ],
       [
         "Stretching and massage combo, 90 min",
-        "IDR 750,000",
-        "IDR 1,000,000",
+        "IDR {{price:combo-stretching-and-massage:90:standard}}",
+        "IDR {{price:combo-stretching-and-massage:90:master}}",
       ],
-      ["Home service fee, per visit", "+ IDR 100,000", "+ IDR 100,000"],
+      ["Home service fee, per visit", "+ IDR {{fee}}", "+ IDR {{fee}}"],
+      [
+        "Assisted stretching at your villa, 60 min (incl. fee)",
+        "IDR {{villa:assisted-stretching:60:standard}}",
+        "IDR {{villa:assisted-stretching:60:master}}",
+      ],
+      [
+        "Stretching and massage combo at your villa, 90 min (incl. fee)",
+        "IDR {{villa:combo-stretching-and-massage:90:standard}}",
+        "IDR {{villa:combo-stretching-and-massage:90:master}}",
+      ],
     ],
   },
   {
@@ -85,7 +99,7 @@ const blocks: ContentBlock[] = [
     items: [
       {
         question: "Can I book assisted stretching at my villa in Uluwatu?",
-        answer: "Yes. Flex & Flow brings assisted stretching to villas, hotels and homes in the Uluwatu area, including Ungasan, Pecatu, Bingin, Padang Padang and Balangan, Monday to Saturday from 09:00 to 17:00. You pay the studio price, from IDR 500,000 for 60 minutes, plus a [home service](/uluwatu-bali/outcall-home-service-massage/) fee of IDR 100,000 per visit. Not sure if you are in range? Message us on [WhatsApp](https://wa.me/6285858887777).",
+        answer: "Yes. Flex & Flow brings assisted stretching to villas, hotels and homes in the Uluwatu area, including Ungasan, Pecatu, Bingin, Padang Padang and Balangan, Monday to Saturday from 09:00 to 17:00. You pay the studio price, from IDR {{price:assisted-stretching:60:standard}} for 60 minutes, plus a [home service](/uluwatu-bali/outcall-home-service-massage/) fee of IDR {{fee}} per visit. Not sure if you are in range? Message us on [WhatsApp](https://wa.me/6285858887777).",
       },
       {
         question: "What should I wear for assisted stretching?",
@@ -97,7 +111,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "How many assisted stretching sessions do I need?",
-        answer: "One session can leave you feeling looser, but lasting change in flexibility comes from repetition. A common approach is a few sessions close together to work on your tightest areas, then one every few weeks to maintain them, with simple stretches at home in between. At Flex & Flow in Uluwatu, a 60-minute session costs IDR 500,000 with a therapist or IDR 750,000 with Ginny.",
+        answer: "One session can leave you feeling looser, but lasting change in flexibility comes from repetition. A common approach is a few sessions close together to work on your tightest areas, then one every few weeks to maintain them, with simple stretches at home in between. At Flex & Flow in Uluwatu, a 60-minute session costs IDR {{price:assisted-stretching:60:standard}} with a therapist or IDR {{price:assisted-stretching:60:master}} with Ginny.",
       },
       {
         question: "Is assisted stretching good for surfers?",

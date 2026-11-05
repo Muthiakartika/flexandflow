@@ -37,23 +37,23 @@ const blocks: ContentBlock[] = [
       [
         "Tight, achy neck, shoulders and upper back from laptop work",
         "[Sport massage](/uluwatu-bali/sport-massage/), 60 min",
-        "IDR 500,000 / IDR 750,000",
+        "IDR {{price:sport-massage:60:standard}} / IDR {{price:sport-massage:60:master}}",
       ],
       [
         "Stiff hips and hamstrings, hard to stand up straight after sitting",
         "[Assisted stretching](/uluwatu-bali/assisted-stretching/), 60 min",
-        "IDR 500,000 / IDR 750,000",
+        "IDR {{price:assisted-stretching:60:standard}} / IDR {{price:assisted-stretching:60:master}}",
       ],
       [
         "Both, or stiffness that keeps coming back",
         "Stretching and massage combo, 90 min",
-        "IDR 750,000 / IDR 1,000,000",
+        "IDR {{price:combo-stretching-and-massage:90:standard}} / IDR {{price:combo-stretching-and-massage:90:master}}",
       ],
     ],
   },
   {
     type: "paragraph",
-    text: "Prices as of 4 November 2026, at our studio on Jl. Toya Ning II, Ungasan, open Monday to Saturday, 09:00 to 17:00. A therapist can also come to your villa through our [home service](/uluwatu-bali/outcall-home-service-massage/) for an extra IDR 100,000. Bodywork is most useful alongside the breaks and strength work above, not as a replacement. If pain spreads down a leg or comes with numbness, see a doctor, or read [when to choose a physio](/uluwatu-bali/physiotherapy/).",
+    text: "Prices as of 4 November 2026, at our studio on Jl. Toya Ning II, Ungasan, open Monday to Saturday, 09:00 to 17:00. A therapist can also come to your villa through our [home service](/uluwatu-bali/outcall-home-service-massage/) for an extra IDR {{fee}}. Bodywork is most useful alongside the breaks and strength work above, not as a replacement. If pain spreads down a leg or comes with numbness, see a doctor, or read [when to choose a physio](/uluwatu-bali/physiotherapy/).",
   },
   {
     type: "heading",
@@ -69,7 +69,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Can massage help neck and shoulder pain from working on a laptop?",
-        answer: "Many people find that a sport massage eases tight neck and shoulder muscles after long laptop days. It is most useful alongside a raised screen and regular breaks. See a doctor or physio if the pain spreads into your arm or comes with numbness, tingling or weakness. At Flex & Flow in Uluwatu, a 60-minute sport massage costs IDR 500,000, or IDR 750,000 with our master therapist, Ginny.",
+        answer: "Many people find that a sport massage eases tight neck and shoulder muscles after long laptop days. It is most useful alongside a raised screen and regular breaks. See a doctor or physio if the pain spreads into your arm or comes with numbness, tingling or weakness. At Flex & Flow in Uluwatu, a 60-minute sport massage costs IDR {{price:sport-massage:60:standard}}, or IDR {{price:sport-massage:60:master}} with our master therapist, Ginny.",
       },
       {
         question: "Is a standing desk better than sitting all day?",

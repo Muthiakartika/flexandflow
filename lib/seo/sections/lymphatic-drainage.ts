@@ -9,19 +9,37 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "A lymphatic drainage massage at Flex & Flow in Uluwatu costs IDR 500,000 for 60 minutes or IDR 750,000 for 90 minutes with Yuni, our Javanese massage and lymphatic specialist. With Ginny, our founder and master therapist, it costs IDR 750,000 or IDR 1,000,000.",
+    text: "A lymphatic drainage massage at Flex & Flow in Uluwatu costs IDR {{price:lymphatic-drainage:60:standard}} for 60 minutes or IDR {{price:lymphatic-drainage:90:standard}} for 90 minutes with Yuni, our Javanese massage and lymphatic specialist. With Ginny, our founder and master therapist, it costs IDR {{price:lymphatic-drainage:60:master}} or IDR {{price:lymphatic-drainage:90:master}}.",
   },
   {
     type: "table",
     head: ["Session", "Therapist (Yuni)", "Master therapist (Ginny)"],
     rows: [
-      ["Lymphatic drainage, 60 min", "IDR 500,000", "IDR 750,000"],
-      ["Lymphatic drainage, 90 min", "IDR 750,000", "IDR 1,000,000"],
+      [
+        "Lymphatic drainage, 60 min",
+        "IDR {{price:lymphatic-drainage:60:standard}}",
+        "IDR {{price:lymphatic-drainage:60:master}}",
+      ],
+      [
+        "Lymphatic drainage, 90 min",
+        "IDR {{price:lymphatic-drainage:90:standard}}",
+        "IDR {{price:lymphatic-drainage:90:master}}",
+      ],
+      [
+        "60 min at your villa (incl. home service fee)",
+        "IDR {{villa:lymphatic-drainage:60:standard}}",
+        "IDR {{villa:lymphatic-drainage:60:master}}",
+      ],
+      [
+        "90 min at your villa (incl. home service fee)",
+        "IDR {{villa:lymphatic-drainage:90:standard}}",
+        "IDR {{villa:lymphatic-drainage:90:master}}",
+      ],
     ],
   },
   {
     type: "paragraph",
-    text: "Choose **60 minutes** if one area bothers you, such as legs that feel heavy after a long flight or a day on your feet. Choose **90 minutes** if you would like a broader part of the body covered at an unhurried pace. Prices are the same at our studio on Jl. Toya Ning II, Ungasan, and at your villa or hotel in the Uluwatu area, where an IDR 100,000 home service fee is added per visit.",
+    text: "Choose **60 minutes** if one area bothers you, such as legs that feel heavy after a long flight or a day on your feet. Choose **90 minutes** if you would like a broader part of the body covered at an unhurried pace. Prices are the same at our studio on Jl. Toya Ning II, Ungasan, and at your villa or hotel in the Uluwatu area, where an IDR {{fee}} home service fee is added per visit.",
   },
   {
     type: "heading",
@@ -37,7 +55,7 @@ const blocks: ContentBlock[] = [
     items: [
       "**Lymphatic drainage**: light, slow strokes close to the skin. A good fit for puffiness, heavy legs, or when you simply want calm, gentle bodywork.",
       "**[Sport massage](/uluwatu-bali/sport-massage/)**: firmer work into the muscles. A better fit for stiffness and soreness after surfing or training.",
-      "**[Lymphatic detox massage for men](/uluwatu-bali/lymphatic-detox-massage-for-men/)**: full-body lymphatic work plus face, scalp, head and neck, from IDR 600,000 for 60 minutes.",
+      "**[Lymphatic detox massage for men](/uluwatu-bali/lymphatic-detox-massage-for-men/)**: full-body lymphatic work plus face, scalp, head and neck, from IDR {{price:lymphatic-detox-massage-for-men:60:standard}} for 60 minutes.",
       "**[Pregnancy massage](/uluwatu-bali/pregnancy-massage-service/)**: if you are pregnant, this 90-minute session is the one adapted for pregnancy. Check with your midwife or doctor first.",
     ],
   },
@@ -80,7 +98,7 @@ const blocks: ContentBlock[] = [
     items: [
       {
         question: "How much is a lymphatic drainage massage in Uluwatu?",
-        answer: "At Flex & Flow in Ungasan, Uluwatu, lymphatic drainage costs IDR 500,000 for 60 minutes or IDR 750,000 for 90 minutes with our therapist, Yuni. With Ginny, the founder and master therapist, it is IDR 750,000 for 60 minutes or IDR 1,000,000 for 90 minutes. For a session at your villa or hotel in the Uluwatu area, add an IDR 100,000 home service fee per visit.",
+        answer: "At Flex & Flow in Ungasan, Uluwatu, lymphatic drainage costs IDR {{price:lymphatic-drainage:60:standard}} for 60 minutes or IDR {{price:lymphatic-drainage:90:standard}} for 90 minutes with our therapist, Yuni. With Ginny, the founder and master therapist, it is IDR {{price:lymphatic-drainage:60:master}} for 60 minutes or IDR {{price:lymphatic-drainage:90:master}} for 90 minutes. For a session at your villa or hotel in the Uluwatu area, add an IDR {{fee}} home service fee per visit.",
       },
       {
         question: "Where can I get a lymphatic massage near me in Bali?",
@@ -88,7 +106,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Can I have lymphatic drainage at my villa in Uluwatu?",
-        answer: "Yes. Through Flex & Flow's [home service](/uluwatu-bali/outcall-home-service-massage/), a therapist comes to your villa, hotel or home in the Uluwatu area, including Ungasan, Pecatu, Bingin, Padang Padang and Balangan, Monday to Saturday from 09:00 to 17:00. You pay the normal treatment price plus IDR 100,000 per visit. If you are not sure whether you are in range, message us on WhatsApp.",
+        answer: "Yes. Through Flex & Flow's [home service](/uluwatu-bali/outcall-home-service-massage/), a therapist comes to your villa, hotel or home in the Uluwatu area, including Ungasan, Pecatu, Bingin, Padang Padang and Balangan, Monday to Saturday from 09:00 to 17:00. You pay the normal treatment price plus IDR {{fee}} per visit. If you are not sure whether you are in range, message us on WhatsApp.",
       },
       {
         question: "Can lymphatic drainage focus on just my legs?",
@@ -104,7 +122,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Is drainage lymphatique the same as lymphatic drainage massage?",
-        answer: "Yes. *Drainage lymphatique* is the French name for lymphatic drainage massage. If you are looking for drainage lymphatique in Uluwatu, Flex & Flow in Ungasan offers 60 and 90-minute sessions from IDR 500,000, at the studio or at your villa in the Uluwatu area. The pressure is light and slow, quite different from a firm or deep tissue massage.",
+        answer: "Yes. *Drainage lymphatique* is the French name for lymphatic drainage massage. If you are looking for drainage lymphatique in Uluwatu, Flex & Flow in Ungasan offers 60 and 90-minute sessions from IDR {{price:lymphatic-drainage:60:standard}}, at the studio or at your villa in the Uluwatu area. The pressure is light and slow, quite different from a firm or deep tissue massage.",
       },
     ],
   },

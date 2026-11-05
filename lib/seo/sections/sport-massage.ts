@@ -9,15 +9,33 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "A sports massage at Flex & Flow costs from IDR 500,000 for 60 minutes. You choose the length and the price level: **Therapist**, or **Master therapist** with our founder [Ginny](/therapist/ginny/), who specialises in sport massage and has a background in nursing and professional fitness training. Prices as of 4 November 2026.",
+    text: "A sports massage at Flex & Flow costs from IDR {{price:sport-massage:60:standard}} for 60 minutes. You choose the length and the price level: **Therapist**, or **Master therapist** with our founder [Ginny](/therapist/ginny/), who specialises in sport massage and has a background in nursing and professional fitness training. Prices as of 4 November 2026.",
   },
   {
     type: "table",
     head: ["Session", "Therapist", "Master therapist (Ginny)"],
     rows: [
-      ["Sport massage, 60 min", "IDR 500,000", "IDR 750,000"],
-      ["Sport massage, 90 min", "IDR 750,000", "IDR 1,000,000"],
-      ["Home service fee, per visit", "+ IDR 100,000", "+ IDR 100,000"],
+      [
+        "Sport massage, 60 min",
+        "IDR {{price:sport-massage:60:standard}}",
+        "IDR {{price:sport-massage:60:master}}",
+      ],
+      [
+        "Sport massage, 90 min",
+        "IDR {{price:sport-massage:90:standard}}",
+        "IDR {{price:sport-massage:90:master}}",
+      ],
+      ["Home service fee, per visit", "+ IDR {{fee}}", "+ IDR {{fee}}"],
+      [
+        "Sport massage at your villa, 60 min (incl. fee)",
+        "IDR {{villa:sport-massage:60:standard}}",
+        "IDR {{villa:sport-massage:60:master}}",
+      ],
+      [
+        "Sport massage at your villa, 90 min (incl. fee)",
+        "IDR {{villa:sport-massage:90:standard}}",
+        "IDR {{villa:sport-massage:90:master}}",
+      ],
     ],
   },
   {
@@ -37,7 +55,7 @@ const blocks: ContentBlock[] = [
     type: "list",
     items: [
       "**At the studio:** anyone can book, wherever in Bali you are staying.",
-      "**At your villa or hotel:** a therapist comes to you in the Uluwatu area, including Ungasan, Pecatu, Bingin, Padang Padang and Balangan, at the studio price plus IDR 100,000. Read how [home service massage](/uluwatu-bali/outcall-home-service-massage/) works.",
+      "**At your villa or hotel:** a therapist comes to you in the Uluwatu area, including Ungasan, Pecatu, Bingin, Padang Padang and Balangan, at the studio price plus IDR {{fee}}. Read how [home service massage](/uluwatu-bali/outcall-home-service-massage/) works.",
       "**Staying further away**, for example in Canggu, Seminyak or Ubud: home visits do not reach you, so the studio is the way to book. Not sure if you are in range? [Message us on WhatsApp](https://wa.me/6285858887777).",
     ],
   },
@@ -69,7 +87,7 @@ const blocks: ContentBlock[] = [
     items: [
       {
         question: "How much is a sports massage in Bali at Flex & Flow?",
-        answer: "At Flex & Flow in Ungasan, Uluwatu, a 60-minute sports massage costs IDR 500,000 with a therapist or IDR 750,000 with master therapist Ginny. A 90-minute session costs IDR 750,000 or IDR 1,000,000. Home visits in the Uluwatu area cost the same plus a home service fee of IDR 100,000 per visit. Prices as of 4 November 2026; see the full [price list](/price-list/).",
+        answer: "At Flex & Flow in Ungasan, Uluwatu, a 60-minute sports massage costs IDR {{price:sport-massage:60:standard}} with a therapist or IDR {{price:sport-massage:60:master}} with master therapist Ginny. A 90-minute session costs IDR {{price:sport-massage:90:standard}} or IDR {{price:sport-massage:90:master}}. Home visits in the Uluwatu area cost the same plus a home service fee of IDR {{fee}} per visit. Prices as of 4 November 2026; see the full [price list](/price-list/).",
       },
       {
         question: "Where can I get a sports massage in Bali if I am not staying in Uluwatu?",

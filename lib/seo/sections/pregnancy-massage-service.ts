@@ -9,23 +9,27 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "A pregnancy massage at Flex & Flow in Uluwatu is a 90-minute session. It costs IDR 750,000 with a therapist, or IDR 1,000,000 with Ginny, our founder and master therapist, who has a background in nursing, professional fitness training and bodywork.",
+    text: "A pregnancy massage at Flex & Flow in Uluwatu is a 90-minute session. It costs IDR {{price:pregnancy-massage-service:90:standard}} with a therapist, or IDR {{price:pregnancy-massage-service:90:master}} with Ginny, our founder and master therapist, who has a background in nursing, professional fitness training and bodywork.",
   },
   {
     type: "table",
     head: ["Pregnancy massage, 90 min", "Therapist", "Master therapist (Ginny)"],
     rows: [
-      ["At the studio in Ungasan", "IDR 750,000", "IDR 1,000,000"],
+      [
+        "At the studio in Ungasan",
+        "IDR {{price:pregnancy-massage-service:90:standard}}",
+        "IDR {{price:pregnancy-massage-service:90:master}}",
+      ],
       [
         "At your villa or hotel (Uluwatu area)",
-        "IDR 850,000",
-        "IDR 1,100,000",
+        "IDR {{villa:pregnancy-massage-service:90:standard}}",
+        "IDR {{villa:pregnancy-massage-service:90:master}}",
       ],
     ],
   },
   {
     type: "paragraph",
-    text: "Villa prices include the IDR 100,000 home service fee per visit. The studio, on Jl. Toya Ning II, Ungasan, is open Monday to Saturday from 09:00 to 17:00 and closed on Sunday. Every treatment is on our [price list](/price-list/).",
+    text: "Villa prices include the IDR {{fee}} home service fee per visit. The studio, on Jl. Toya Ning II, Ungasan, is open Monday to Saturday from 09:00 to 17:00 and closed on Sunday. Every treatment is on our [price list](/price-list/).",
   },
   {
     type: "heading",
@@ -74,11 +78,11 @@ const blocks: ContentBlock[] = [
     items: [
       {
         question: "How much does a pregnancy massage cost at Flex & Flow in Uluwatu?",
-        answer: "At Flex & Flow in Ungasan, Uluwatu, a 90-minute pregnancy massage costs IDR 750,000 with a therapist or IDR 1,000,000 with Ginny, the founder and master therapist. If you would like the therapist to come to your villa or hotel in the Uluwatu area, add the IDR 100,000 home service fee, which makes it IDR 850,000 or IDR 1,100,000.",
+        answer: "At Flex & Flow in Ungasan, Uluwatu, a 90-minute pregnancy massage costs IDR {{price:pregnancy-massage-service:90:standard}} with a therapist or IDR {{price:pregnancy-massage-service:90:master}} with Ginny, the founder and master therapist. If you would like the therapist to come to your villa or hotel in the Uluwatu area, add the IDR {{fee}} home service fee, which makes it IDR {{villa:pregnancy-massage-service:90:standard}} or IDR {{villa:pregnancy-massage-service:90:master}}.",
       },
       {
         question: "Where can I find a pregnancy massage near me in Uluwatu?",
-        answer: "Flex & Flow offers pregnancy massage at its studio on Jl. Toya Ning II, Ungasan, and through [home service](/uluwatu-bali/outcall-home-service-massage/) to villas, hotels and homes in the Uluwatu area, including Ungasan, Pecatu, Bingin, Padang Padang and Balangan. A home visit saves you a trip on the road while pregnant and costs IDR 100,000 extra. Not sure if you are in range? Ask on WhatsApp.",
+        answer: "Flex & Flow offers pregnancy massage at its studio on Jl. Toya Ning II, Ungasan, and through [home service](/uluwatu-bali/outcall-home-service-massage/) to villas, hotels and homes in the Uluwatu area, including Ungasan, Pecatu, Bingin, Padang Padang and Balangan. A home visit saves you a trip on the road while pregnant and costs IDR {{fee}} extra. Not sure if you are in range? Ask on WhatsApp.",
       },
       {
         question: "Can pregnancy massage help with back and hip pain?",

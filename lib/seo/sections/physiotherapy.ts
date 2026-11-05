@@ -81,7 +81,7 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "A 60-minute [sport massage](/uluwatu-bali/sport-massage/) costs IDR 500,000 with a therapist or IDR 750,000 with our master therapist, Ginny, and 90 minutes costs IDR 750,000 or IDR 1,000,000. A 60-minute [assisted stretching](/uluwatu-bali/assisted-stretching/) session costs IDR 500,000 or IDR 750,000 (prices as of 4 November 2026). Surfers can also read our guide to [common surfing injuries](/injury-guide/common-surfing-injuries/).",
+    text: "A 60-minute [sport massage](/uluwatu-bali/sport-massage/) costs IDR {{price:sport-massage:60:standard}} with a therapist or IDR {{price:sport-massage:60:master}} with our master therapist, Ginny, and 90 minutes costs IDR {{price:sport-massage:90:standard}} or IDR {{price:sport-massage:90:master}}. A 60-minute [assisted stretching](/uluwatu-bali/assisted-stretching/) session costs IDR {{price:assisted-stretching:60:standard}} or IDR {{price:assisted-stretching:60:master}} (prices as of 4 November 2026). Surfers can also read our guide to [common surfing injuries](/injury-guide/common-surfing-injuries/).",
   },
   {
     type: "heading",
@@ -93,7 +93,7 @@ const blocks: ContentBlock[] = [
     items: [
       {
         question: "Does Flex & Flow offer dry needling in Uluwatu?",
-        answer: "No. Flex & Flow is a bodywork studio in Ungasan, Uluwatu, with no physiotherapist on the team, so we do not offer dry needling. Some physiotherapists offer it, so ask a registered physio clinic whether it suits your problem. We offer dry cupping, which uses suction rather than needles: a 30-minute session costs IDR 300,000.",
+        answer: "No. Flex & Flow is a bodywork studio in Ungasan, Uluwatu, with no physiotherapist on the team, so we do not offer dry needling. Some physiotherapists offer it, so ask a registered physio clinic whether it suits your problem. We offer dry cupping, which uses suction rather than needles: a 30-minute session costs IDR {{price:cupping-therapy:30:standard}}.",
       },
       {
         question: "How do I find a physio near me in Uluwatu?",
@@ -109,11 +109,11 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Is assisted stretching safe after an injury?",
-        answer: "It can be, once a physiotherapist or doctor has checked the injury and agrees stretching will help. At Flex & Flow, your therapist supports each stretch and controls the movement. Tell them straight away if you feel sharp pain, pinching, numbness or tingling. A 60-minute assisted stretching session in Uluwatu costs IDR 500,000, or IDR 750,000 with our master therapist, Ginny.",
+        answer: "It can be, once a physiotherapist or doctor has checked the injury and agrees stretching will help. At Flex & Flow, your therapist supports each stretch and controls the movement. Tell them straight away if you feel sharp pain, pinching, numbness or tingling. A 60-minute assisted stretching session in Uluwatu costs IDR {{price:assisted-stretching:60:standard}}, or IDR {{price:assisted-stretching:60:master}} with our master therapist, Ginny.",
       },
       {
         question: "Can a massage therapist come to my villa if I am injured?",
-        answer: "Yes, for bodywork, as long as your physiotherapist or doctor agrees massage is suitable. Flex & Flow's [home service](/uluwatu-bali/outcall-home-service-massage/) covers the Uluwatu area, including Ungasan, Pecatu, Bingin, Padang Padang and Balangan, Monday to Saturday, 09:00 to 17:00. Treatment prices are the same as at the studio, plus a home service fee of IDR 100,000 per visit.",
+        answer: "Yes, for bodywork, as long as your physiotherapist or doctor agrees massage is suitable. Flex & Flow's [home service](/uluwatu-bali/outcall-home-service-massage/) covers the Uluwatu area, including Ungasan, Pecatu, Bingin, Padang Padang and Balangan, Monday to Saturday, 09:00 to 17:00. Treatment prices are the same as at the studio, plus a home service fee of IDR {{fee}} per visit.",
       },
     ],
   },

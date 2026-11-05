@@ -9,24 +9,24 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "Cupping therapy in Bali at Flex & Flow is a **30-minute dry cupping session for IDR 300,000**, the same price with Ginny, our founder and master therapist, or with Yuni. You can book it on its own or alongside a massage, at the studio on Jl. Toya Ning II, Ungasan, or at your villa or hotel in the Uluwatu area.",
+    text: "Cupping therapy in Bali at Flex & Flow is a **30-minute dry cupping session for IDR {{price:cupping-therapy:30:standard}}**, the same price with Ginny, our founder and master therapist, or with Yuni. You can book it on its own or alongside a massage, at the studio on Jl. Toya Ning II, Ungasan, or at your villa or hotel in the Uluwatu area.",
   },
   {
     type: "table",
     head: ["Option", "Where", "Length", "Price (IDR)"],
     rows: [
-      ["Cupping on its own", "Ungasan studio", "30 min", "300,000"],
+      ["Cupping on its own", "Ungasan studio", "30 min", "{{price:cupping-therapy:30:standard}}"],
       [
         "Cupping on its own",
         "Your villa or hotel in the Uluwatu area",
         "30 min",
-        "300,000 plus the 100,000 home service fee per visit",
+        "{{villa:cupping-therapy:30:standard}}, including the {{fee}} home service fee per visit",
       ],
       [
         "Cupping with a sport massage",
         "Studio, or villa plus the home service fee",
         "30 min + 60 min",
-        "300,000 for cupping, plus 500,000 (therapist) or 750,000 (Ginny) for the massage",
+        "{{price:cupping-therapy:30:standard}} for cupping, plus {{price:sport-massage:60:standard}} (therapist) or {{price:sport-massage:60:master}} (Ginny) for the massage",
       ],
     ],
   },
@@ -80,7 +80,7 @@ const blocks: ContentBlock[] = [
     items: [
       {
         question: "How much does cupping therapy cost in Uluwatu?",
-        answer: "At Flex & Flow in Ungasan, Uluwatu, cupping therapy costs **IDR 300,000 for a 30-minute session**. The price is the same with Ginny, the master therapist, or with Yuni. You can book cupping on its own or alongside a sport massage, Monday to Saturday from 09:00 to 17:00, online at booking.flexandflow.fit or on WhatsApp.",
+        answer: "At Flex & Flow in Ungasan, Uluwatu, cupping therapy costs **IDR {{price:cupping-therapy:30:standard}} for a 30-minute session**. The price is the same with Ginny, the master therapist, or with Yuni. You can book cupping on its own or alongside a sport massage, Monday to Saturday from 09:00 to 17:00, online at booking.flexandflow.fit or on WhatsApp.",
       },
       {
         question: "Does Flex & Flow offer hijama or wet cupping in Bali?",
@@ -96,7 +96,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Can I have cupping at my villa in Uluwatu?",
-        answer: "Yes. Cupping is one of the treatments Flex & Flow offers as a home service. A therapist comes to your villa, hotel or home in the Uluwatu area, including Ungasan, Pecatu, Bingin, Padang Padang and Balangan, Monday to Saturday from 09:00 to 17:00. You pay the studio price of IDR 300,000 for 30 minutes plus the IDR 100,000 home service fee per visit.",
+        answer: "Yes. Cupping is one of the treatments Flex & Flow offers as a home service. A therapist comes to your villa, hotel or home in the Uluwatu area, including Ungasan, Pecatu, Bingin, Padang Padang and Balangan, Monday to Saturday from 09:00 to 17:00. You pay the studio price of IDR {{price:cupping-therapy:30:standard}} for 30 minutes plus the IDR {{fee}} home service fee per visit.",
       },
       {
         question: "Is there scientific evidence that cupping works?",

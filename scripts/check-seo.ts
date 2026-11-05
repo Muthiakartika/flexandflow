@@ -23,6 +23,7 @@
 import { blocksSchema } from "@/lib/cms/blocks";
 import { PAGE_FIXES } from "@/lib/seo/fixes";
 import { PAGE_SEO } from "@/lib/seo/pages";
+import { PRICE_MISSING, PRICE_TOKEN } from "@/lib/seo/price-tokens";
 import { PAGE_SECTIONS } from "@/lib/seo/sections";
 
 /* Pages with their own route files, which sections may link to beside the
@@ -103,6 +104,7 @@ function checkFile(): void {
 /** Every string a reader sees in a block, for the link and markup checks. */
 function textsOf(block: (typeof PAGE_SECTIONS)[string][number]): string[] {
   switch (block.type) {
+    case "heading":
     case "paragraph":
     case "callout":
       return [block.text];
@@ -148,8 +150,26 @@ function checkSections(): void {
       block.type === "faq" ? block.items.map((item) => item.question.toLowerCase()) : [],
     );
     check(`${path} asks each question once`, new Set(questions).size === questions.length);
+
+    checkTokens(path, texts);
+    const typed = texts.filter((text) => HARD_PRICE.test(text.replace(PRICE_TOKEN, "")));
+    for (const text of typed) warn(`${path} types a price instead of a token: "${text.slice(0, 70)}…"`);
   }
   console.log(`  ${Object.keys(PAGE_SECTIONS).length} pages with sections`);
+
+  for (const [path, fixes] of Object.entries(PAGE_FIXES)) {
+    checkTokens(`${path} (fixes)`, fixes.map((f) => f.replace));
+  }
+}
+
+/* A price written as a figure: "IDR 500,000", or a bare "500,000" table cell. */
+const HARD_PRICE = /IDR\s?\d|\b\d{1,3}(,\d{3})+\b/;
+
+/** Every `{{…}}` in `texts` must be a price token `lib/seo/price-tokens.ts` reads. */
+function checkTokens(label: string, texts: string[]): void {
+  const raw = texts.flatMap((text) => text.match(/\{\{[^}]*\}\}/g) ?? []);
+  const bad = raw.filter((token) => !new RegExp(`^${PRICE_TOKEN.source}$`).test(token));
+  check(`${label} price tokens are well formed (${raw.length})`, bad.length === 0, bad.join(", "));
 }
 
 async function checkServed(base: string): Promise<void> {
@@ -163,6 +183,12 @@ async function checkServed(base: string): Promise<void> {
     const robots = html.match(/<meta name="robots" content="([^"]*)"/)?.[1] ?? "";
 
     check(`${path} answers 200`, response.status === 200, `got ${response.status}`);
+    const shown = visible(html);
+    check(
+      `${path} fills every price token`,
+      !shown.includes("{{") && !shown.includes(PRICE_MISSING),
+      shown.includes("{{") ? "an unfilled {{…}} is served" : `"${PRICE_MISSING}" is served`,
+    );
     check(`${path} title`, title === seo.title, `serves "${title}"`);
     check(`${path} description`, description === seo.description, `serves "${description}"`);
     check(
@@ -203,6 +229,16 @@ function visible(html: string): string {
     .replace(/\s+/g, " ");
 }
 
+/** `replace` as a pattern: its price tokens match whatever figure the page shows. */
+function served(replace: string, whole = false): RegExp {
+  const escape = (part: string) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const body = plain(replace)
+    .split(/\{\{[^}]+\}\}/)
+    .map(escape)
+    .join("\\d{1,3}(?:,\\d{3})+");
+  return new RegExp(whole ? `^${body}$` : body);
+}
+
 /*
  * Every fix in `lib/seo/fixes.ts` must show on the served page: the new text
  * present and, outside table rows, the old text gone. A fix whose `find` no
@@ -221,13 +257,13 @@ async function checkFixes(base: string): Promise<void> {
       if (f.row) {
         const row = rows.find((cells) => f.row!.every((cell, i) => cells[i] === cell));
         check(
-          `${path} row "${f.row.join(" / ")}" shows ${f.replace}`,
-          Boolean(row?.includes(f.replace)) && !row?.includes(f.find),
+          `${path} row "${f.row.join(" / ")}" shows the live price`,
+          Boolean(row?.some((cell) => served(f.replace, true).test(cell))) && !row?.includes(f.find),
           row ? `serves ${row.join(" | ")}` : "no such row",
         );
       } else {
         const label = `${path} fix "${plain(f.replace).slice(0, 48)}…"`;
-        check(label, text.includes(plain(f.replace)) && !text.includes(plain(f.find)),
+        check(label, served(f.replace).test(text) && !text.includes(plain(f.find)),
           text.includes(plain(f.find)) ? "old text still served" : "new text not served (has the panel copy changed?)");
       }
     }

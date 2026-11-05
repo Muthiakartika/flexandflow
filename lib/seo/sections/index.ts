@@ -17,6 +17,7 @@
  * the same catch applies: moving a page in the panel orphans its entry.
  * `npm run check:seo` validates every block and every internal link.
  */
+import { resolveBlockPrices, type PriceBook } from "@/lib/seo/price-tokens";
 import type { ContentBlock, Seo } from "@/types";
 
 import assistedStretching from "./assisted-stretching";
@@ -55,10 +56,19 @@ export const PAGE_SECTIONS: Record<string, ContentBlock[]> = {
   "/uluwatu-bali/yoga/": yoga,
 };
 
-/** The page with its code sections appended to the body. */
+/**
+ * The page with its code sections appended to the body, every price token in
+ * them filled from `prices` (see `lib/seo/price-tokens.ts`).
+ */
 export function withPageSections<T extends { seo: Seo; body: ContentBlock[] }>(
   entry: T,
+  prices: PriceBook,
 ): T {
   const extra = PAGE_SECTIONS[entry.seo.canonicalPath];
-  return extra ? { ...entry, body: [...entry.body, ...extra] } : entry;
+  return extra
+    ? {
+        ...entry,
+        body: [...entry.body, ...extra.map((block) => resolveBlockPrices(block, prices))],
+      }
+    : entry;
 }

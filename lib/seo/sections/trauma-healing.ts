@@ -22,7 +22,7 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "A trauma healing session in Uluwatu at Flex & Flow lasts **90 minutes and costs IDR 1,800,000**. It is only given by Ginny, our founder and master therapist, whose background covers nursing, professional fitness training and bodywork. If you are deciding between this and a shorter, more familiar treatment, this comparison may help:",
+    text: "A trauma healing session in Uluwatu at Flex & Flow lasts **90 minutes and costs IDR {{price:trauma-healing:90:master}}**. It is only given by Ginny, our founder and master therapist, whose background covers nursing, professional fitness training and bodywork. If you are deciding between this and a shorter, more familiar treatment, this comparison may help:",
   },
   {
     type: "table",
@@ -32,19 +32,19 @@ const blocks: ContentBlock[] = [
         "Trauma healing",
         "Long-held tension, tight fascia and stored physical stress",
         "Slow, sustained, deeper pressure",
-        "90 min, 1,800,000 (Ginny only)",
+        "90 min, {{price:trauma-healing:90:master}} (Ginny only)",
       ],
       [
         "[Sport massage](/uluwatu-bali/sport-massage/)",
         "Muscle recovery after surfing, training or travel",
         "Recovery-focused, adjusted to your body",
-        "60 min 500,000 / 750,000; 90 min 750,000 / 1,000,000",
+        "60 min {{price:sport-massage:60:standard}} / {{price:sport-massage:60:master}}; 90 min {{price:sport-massage:90:standard}} / {{price:sport-massage:90:master}}",
       ],
       [
         "[Assisted stretching](/uluwatu-bali/assisted-stretching/)",
         "Stiffness and restricted movement",
         "A therapist moves you through stretches",
-        "60 min, 500,000 / 750,000",
+        "60 min, {{price:assisted-stretching:60:standard}} / {{price:assisted-stretching:60:master}}",
       ],
     ],
   },
@@ -66,7 +66,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "How much does trauma healing cost in Bali at Flex & Flow?",
-        answer: "Trauma healing at Flex & Flow costs **IDR 1,800,000 for a 90-minute session** at the studio in Ungasan, Uluwatu. It is only offered with Ginny, the founder and master therapist. It costs more than a sport massage because the work is slower, needs more preparation and extra time before and after, and Ginny limits how many of these sessions she gives.",
+        answer: "Trauma healing at Flex & Flow costs **IDR {{price:trauma-healing:90:master}} for a 90-minute session** at the studio in Ungasan, Uluwatu. It is only offered with Ginny, the founder and master therapist. It costs more than a sport massage because the work is slower, needs more preparation and extra time before and after, and Ginny limits how many of these sessions she gives.",
       },
       {
         question: "What does trauma release mean in bodywork?",

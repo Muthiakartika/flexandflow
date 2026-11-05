@@ -9,7 +9,7 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "The lymphatic detox massage for men at Flex & Flow in Uluwatu costs IDR 600,000 for 60 minutes or IDR 900,000 for 90 minutes with Yuni, our Javanese massage and lymphatic specialist. With Ginny, our founder and master therapist, it costs IDR 800,000 or IDR 1,100,000.",
+    text: "The lymphatic detox massage for men at Flex & Flow in Uluwatu costs IDR {{price:lymphatic-detox-massage-for-men:60:standard}} for 60 minutes or IDR {{price:lymphatic-detox-massage-for-men:90:standard}} for 90 minutes with Yuni, our Javanese massage and lymphatic specialist. With Ginny, our founder and master therapist, it costs IDR {{price:lymphatic-detox-massage-for-men:60:master}} or IDR {{price:lymphatic-detox-massage-for-men:90:master}}.",
   },
   {
     type: "table",
@@ -17,19 +17,29 @@ const blocks: ContentBlock[] = [
     rows: [
       [
         "Lymphatic detox massage for men, 60 min",
-        "IDR 600,000",
-        "IDR 800,000",
+        "IDR {{price:lymphatic-detox-massage-for-men:60:standard}}",
+        "IDR {{price:lymphatic-detox-massage-for-men:60:master}}",
       ],
       [
         "Lymphatic detox massage for men, 90 min",
-        "IDR 900,000",
-        "IDR 1,100,000",
+        "IDR {{price:lymphatic-detox-massage-for-men:90:standard}}",
+        "IDR {{price:lymphatic-detox-massage-for-men:90:master}}",
+      ],
+      [
+        "60 min at your villa (incl. home service fee)",
+        "IDR {{villa:lymphatic-detox-massage-for-men:60:standard}}",
+        "IDR {{villa:lymphatic-detox-massage-for-men:60:master}}",
+      ],
+      [
+        "90 min at your villa (incl. home service fee)",
+        "IDR {{villa:lymphatic-detox-massage-for-men:90:standard}}",
+        "IDR {{villa:lymphatic-detox-massage-for-men:90:master}}",
       ],
     ],
   },
   {
     type: "paragraph",
-    text: "Sessions run at the studio on Jl. Toya Ning II, Ungasan, Monday to Saturday from 09:00 to 17:00. If you would rather not travel, a therapist can come to your villa or hotel in the Uluwatu area through our [home service](/uluwatu-bali/outcall-home-service-massage/) for an extra IDR 100,000 per visit.",
+    text: "Sessions run at the studio on Jl. Toya Ning II, Ungasan, Monday to Saturday from 09:00 to 17:00. If you would rather not travel, a therapist can come to your villa or hotel in the Uluwatu area through our [home service](/uluwatu-bali/outcall-home-service-massage/) for an extra IDR {{fee}} per visit.",
   },
   {
     type: "heading",
@@ -50,8 +60,16 @@ const blocks: ContentBlock[] = [
         "Full body, plus face, scalp, head and neck",
       ],
       ["Pressure", "Light and slow", "Light and slow"],
-      ["60 min", "From IDR 500,000", "From IDR 600,000"],
-      ["90 min", "From IDR 750,000", "From IDR 900,000"],
+      [
+        "60 min",
+        "From IDR {{price:lymphatic-drainage:60:standard}}",
+        "From IDR {{price:lymphatic-detox-massage-for-men:60:standard}}",
+      ],
+      [
+        "90 min",
+        "From IDR {{price:lymphatic-drainage:90:standard}}",
+        "From IDR {{price:lymphatic-detox-massage-for-men:90:standard}}",
+      ],
     ],
   },
   {
@@ -86,7 +104,7 @@ const blocks: ContentBlock[] = [
     items: [
       {
         question: "How much is a men's lymphatic drainage massage in Uluwatu?",
-        answer: "At Flex & Flow in Ungasan, Uluwatu, the lymphatic detox massage for men costs IDR 600,000 for 60 minutes or IDR 900,000 for 90 minutes with our therapist, Yuni. With Ginny, the founder and master therapist, it is IDR 800,000 for 60 minutes or IDR 1,100,000 for 90 minutes. A home visit to your villa or hotel in the Uluwatu area adds IDR 100,000.",
+        answer: "At Flex & Flow in Ungasan, Uluwatu, the lymphatic detox massage for men costs IDR {{price:lymphatic-detox-massage-for-men:60:standard}} for 60 minutes or IDR {{price:lymphatic-detox-massage-for-men:90:standard}} for 90 minutes with our therapist, Yuni. With Ginny, the founder and master therapist, it is IDR {{price:lymphatic-detox-massage-for-men:60:master}} for 60 minutes or IDR {{price:lymphatic-detox-massage-for-men:90:master}} for 90 minutes. A home visit to your villa or hotel in the Uluwatu area adds IDR {{fee}}.",
       },
       {
         question: "Is a men's lymphatic massage firmer than a normal lymphatic massage?",
@@ -102,11 +120,11 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Should I book 60 or 90 minutes for a men's lymphatic massage?",
-        answer: "The men's session at Flex & Flow in Uluwatu combines full-body lymphatic drainage with face, scalp, head and neck work. Sixty minutes, from IDR 600,000, suits a first try or a quick reset. Ninety minutes, from IDR 900,000, gives a slower pace and more time on the areas that feel heaviest. Tell your therapist your priorities at the start of the session.",
+        answer: "The men's session at Flex & Flow in Uluwatu combines full-body lymphatic drainage with face, scalp, head and neck work. Sixty minutes, from IDR {{price:lymphatic-detox-massage-for-men:60:standard}}, suits a first try or a quick reset. Ninety minutes, from IDR {{price:lymphatic-detox-massage-for-men:90:standard}}, gives a slower pace and more time on the areas that feel heaviest. Tell your therapist your priorities at the start of the session.",
       },
       {
         question: "Who gives the men's lymphatic massage at Flex & Flow?",
-        answer: "Two therapists offer it at Flex & Flow in Uluwatu. [Yuni](/therapist/yuni/), our Javanese massage and lymphatic specialist, works at the Therapist rate, from IDR 600,000 for 60 minutes. [Ginny](/therapist/ginny/), the founder and master therapist, has a background in nursing, professional fitness training and bodywork, and works at the Master therapist rate, from IDR 800,000. The treatment is the same with either.",
+        answer: "Two therapists offer it at Flex & Flow in Uluwatu. [Yuni](/therapist/yuni/), our Javanese massage and lymphatic specialist, works at the Therapist rate, from IDR {{price:lymphatic-detox-massage-for-men:60:standard}} for 60 minutes. [Ginny](/therapist/ginny/), the founder and master therapist, has a background in nursing, professional fitness training and bodywork, and works at the Master therapist rate, from IDR {{price:lymphatic-detox-massage-for-men:60:master}}. The treatment is the same with either.",
       },
     ],
   },

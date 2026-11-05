@@ -73,16 +73,16 @@ const blocks: ContentBlock[] = [
     type: "table",
     head: ["Session", "Length", "Therapist (IDR)", "Master therapist (IDR)"],
     rows: [
-      ["Sport massage", "60 min", "500,000", "750,000"],
-      ["Sport massage", "90 min", "750,000", "1,000,000"],
-      ["Assisted stretching", "60 min", "500,000", "750,000"],
-      ["Stretching and massage combo", "90 min", "750,000", "1,000,000"],
-      ["Cupping", "30 min", "300,000", "300,000"],
+      ["Sport massage", "60 min", "{{price:sport-massage:60:standard}}", "{{price:sport-massage:60:master}}"],
+      ["Sport massage", "90 min", "{{price:sport-massage:90:standard}}", "{{price:sport-massage:90:master}}"],
+      ["Assisted stretching", "60 min", "{{price:assisted-stretching:60:standard}}", "{{price:assisted-stretching:60:master}}"],
+      ["Stretching and massage combo", "90 min", "{{price:combo-stretching-and-massage:90:standard}}", "{{price:combo-stretching-and-massage:90:master}}"],
+      ["Cupping", "30 min", "{{price:cupping-therapy:30:standard}}", "{{price:cupping-therapy:30:master}}"],
     ],
   },
   {
     type: "paragraph",
-    text: "At your villa or hotel in the Uluwatu area, add IDR 100,000 per visit for [home service](/uluwatu-bali/outcall-home-service-massage/). Prices as listed on 4 November 2026. Book at [booking.flexandflow.fit](https://booking.flexandflow.fit/).",
+    text: "At your villa or hotel in the Uluwatu area, add IDR {{fee}} per visit for [home service](/uluwatu-bali/outcall-home-service-massage/). Book at [booking.flexandflow.fit](https://booking.flexandflow.fit/).",
   },
   {
     type: "heading",
@@ -102,7 +102,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Can a massage therapist come to my villa in Bingin or Padang Padang after a surf?",
-        answer: "Yes. Flex & Flow's home service covers villas, hotels and homes in the Uluwatu area, including Bingin, Padang Padang, Balangan, Pecatu and Ungasan, Monday to Saturday from 09:00 to 17:00. Sport massage, assisted stretching, the stretching and massage combo and cupping are all available at home, at studio prices plus IDR 100,000 per visit.",
+        answer: "Yes. Flex & Flow's home service covers villas, hotels and homes in the Uluwatu area, including Bingin, Padang Padang, Balangan, Pecatu and Ungasan, Monday to Saturday from 09:00 to 17:00. Sport massage, assisted stretching, the stretching and massage combo and cupping are all available at home, at studio prices plus IDR {{fee}} per visit.",
       },
       {
         question: "Does Flex & Flow treat surfing injuries?",
