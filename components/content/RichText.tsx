@@ -390,9 +390,10 @@ export default function RichText({
             );
           }
 
-          /* Scrolls sideways on a phone rather than squeezing a four-column
-             price table into 360px. The wrapper is focusable so that scroll
-             is reachable from the keyboard too. */
+          /* On a phone each row is a small card, its first cell the title
+             and the rest labelled by their column (CSS in globals.css), in
+             place of a table that scrolled sideways. From 640px it is a
+             table; the wrapper stays focusable for the keyboard. */
           case "table":
             /* On the scannable layout a price table reads as a menu: one line
                per session, a dotted leader to its price, the other columns
@@ -451,7 +452,12 @@ export default function RichText({
                               {renderInline(cell)}
                             </th>
                           ) : (
-                            <td key={j}>{renderInline(cell)}</td>
+                            /* The column's heading, shown as the value's
+                               label where a phone stacks each row as a card
+                               (`.prose-table` in globals.css). */
+                            <td key={j} data-label={block.head[j] || undefined}>
+                              {renderInline(cell)}
+                            </td>
                           ),
                         )}
                       </tr>

@@ -11,22 +11,23 @@ const blocks: ContentBlock[] = [
     type: "paragraph",
     text: "Cupping therapy in Bali at Flex & Flow is a **30-minute dry cupping session for IDR {{price:cupping-therapy:30:standard}}**, the same price with Ginny, our founder and master therapist, or with Yuni. You can book it on its own or alongside a massage, at the studio on Jl. Toya Ning II, Ungasan, or at your villa or hotel in the Uluwatu area.",
   },
+  /* One way to book per row, so the scannable layout sets it as a price
+     menu (`RichText`): studio price, villa price under it. Added to a
+     massage it is the cupping price on top of the massage; the home
+     service fee is per visit, so it is not charged twice. */
   {
     type: "table",
-    head: ["Option", "Where", "Length", "Price (IDR)"],
+    head: ["Session", "At the studio", "At your villa"],
     rows: [
-      ["Cupping on its own", "Ungasan studio", "30 min", "{{price:cupping-therapy:30:standard}}"],
       [
-        "Cupping on its own",
-        "Your villa or hotel in the Uluwatu area",
-        "30 min",
-        "{{villa:cupping-therapy:30:standard}}, including the {{fee}} home service fee per visit",
+        "Cupping on its own, 30 minutes",
+        "IDR {{price:cupping-therapy:30:standard}}",
+        "IDR {{villa:cupping-therapy:30:standard}}",
       ],
       [
-        "Cupping with a sport massage",
-        "Studio, or villa plus the home service fee",
-        "30 min + 60 min",
-        "{{price:cupping-therapy:30:standard}} for cupping, plus {{price:sport-massage:60:standard}} (therapist) or {{price:sport-massage:60:master}} (Ginny) for the massage",
+        "Added to a sports massage, 30 minutes",
+        "+ IDR {{price:cupping-therapy:30:standard}}",
+        "+ IDR {{price:cupping-therapy:30:standard}}",
       ],
     ],
   },
