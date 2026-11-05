@@ -90,7 +90,7 @@ const academyPage = (label: string, path: string): NavItem => ({
 });
 
 export const contact = {
-  address: "Jl. Toya Ning II, Ungasan, Kec. Kuta Sel., Denpasar, Bali",
+  address: "Jl. Toya Ning II, Ungasan, Kec. Kuta Sel., Kabupaten Badung, Bali 80361",
   email: "Flexandflow06@gmail.com",
   phone: "+6285858887777",
   phoneHref: "tel:+6285858887777",

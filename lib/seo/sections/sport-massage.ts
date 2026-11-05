@@ -31,7 +31,7 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "If you are looking for a sports massage in Bali, Flex & Flow is a bodywork and recovery studio in Ungasan, Uluwatu, on the island's southern Bukit Peninsula. The address is Jl. Toya Ning II, Ungasan, Kec. Kuta Sel., Denpasar, Bali, and we are open Monday to Saturday, 09:00 to 17:00.",
+    text: "If you are looking for a sports massage in Bali, Flex & Flow is a bodywork and recovery studio in Ungasan, Uluwatu, on the island's southern Bukit Peninsula. The address is Jl. Toya Ning II, Ungasan, Kec. Kuta Sel., Kabupaten Badung, Bali 80361, and we are open Monday to Saturday, 09:00 to 17:00.",
   },
   {
     type: "list",
