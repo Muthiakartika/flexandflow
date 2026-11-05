@@ -138,7 +138,37 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
                       <span aria-hidden className="mobile-menu-num">
                         {String(n + 1).padStart(2, "0")}
                       </span>
-                      {item.external ? (
+                      {hasChildren ? (
+                        /* A row with a list under it opens the list wherever
+                           it is tapped, which is what a thumb expects: the
+                           name used to be a link to the landing page and only
+                           the small + opened the list. The landing page is
+                           still one tap away, at the foot of the list. */
+                        <button
+                          type="button"
+                          onClick={() => setExpanded(isExpanded ? null : item.label)}
+                          aria-expanded={isExpanded}
+                          aria-controls={`${panelId}-${n}`}
+                          className={`group flex min-w-0 flex-1 items-center gap-3 rounded-[6px] text-left ${FOCUS}`}
+                        >
+                          <span className={`mobile-menu-link ${active ? "is-active" : ""}`}>{item.label}</span>
+                          <span
+                            aria-hidden
+                            className={`ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-full border transition-colors duration-300 ${
+                              isExpanded
+                                ? "border-primary bg-primary text-white"
+                                : "border-primary/40 text-primary group-hover:border-primary"
+                            }`}
+                          >
+                            <span
+                              className={`relative block h-3.5 w-3.5 transition-transform duration-300 ${isExpanded ? "rotate-45" : ""}`}
+                            >
+                              <span className="absolute top-1/2 left-0 h-[2px] w-3.5 -translate-y-1/2 bg-current" />
+                              <span className="absolute top-0 left-1/2 h-3.5 w-[2px] -translate-x-1/2 bg-current" />
+                            </span>
+                          </span>
+                        </button>
+                      ) : item.external ? (
                         <a href={item.href} target="_blank" rel="noopener noreferrer" onClick={close} className={linkClass}>
                           {item.label}
                         </a>
@@ -152,32 +182,10 @@ export default function MobileNav({ items }: { items: NavItem[] }) {
                           {item.label}
                         </Link>
                       )}
-
-                      {hasChildren ? (
-                        <button
-                          type="button"
-                          onClick={() => setExpanded(isExpanded ? null : item.label)}
-                          aria-expanded={isExpanded}
-                          aria-label={`Toggle ${item.label} submenu`}
-                          className={`ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-full border transition-colors duration-300 ${
-                            isExpanded
-                              ? "border-primary bg-primary text-white"
-                              : "border-primary/40 text-primary"
-                          } ${FOCUS}`}
-                        >
-                          <span
-                            aria-hidden
-                            className={`relative block h-3.5 w-3.5 transition-transform duration-300 ${isExpanded ? "rotate-45" : ""}`}
-                          >
-                            <span className="absolute top-1/2 left-0 h-[2px] w-3.5 -translate-y-1/2 bg-current" />
-                            <span className="absolute top-0 left-1/2 h-3.5 w-[2px] -translate-x-1/2 bg-current" />
-                          </span>
-                        </button>
-                      ) : null}
                     </div>
 
                     {hasChildren && isExpanded ? (
-                      <div className="pb-4">
+                      <div id={`${panelId}-${n}`} className="pb-4">
                         {withPhotos ? (
                           /* Treatments as a swipeable row of photos. */
                           <ul className="mobile-menu-photos">
