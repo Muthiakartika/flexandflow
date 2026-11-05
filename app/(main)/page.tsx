@@ -6,6 +6,7 @@ import { formatIdr, lowestHourlyRate } from "@/lib/pricing";
 import Approach from "@/sections/home/Approach";
 import Faqs from "@/sections/home/Faqs";
 import Gallery from "@/sections/home/Gallery";
+import Guides from "@/sections/home/Guides";
 import Hero from "@/sections/home/Hero";
 import Reviews from "@/sections/home/Reviews";
 import Treatments from "@/sections/home/Treatments";
@@ -58,6 +59,7 @@ export default async function HomePage() {
       <WhoTreatsYou services={services} />
       <Reviews />
       <Gallery />
+      <Guides />
       <Faqs />
       <StickyBookBar from={from !== null ? formatIdr(from) : null} />
     </>

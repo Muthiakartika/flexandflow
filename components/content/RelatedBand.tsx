@@ -92,43 +92,54 @@ export default function RelatedBand({
             href="/blog"
             link="All articles"
           />
-          <ul className="related-row related-row-3">
-            {posts.map((post) => (
-              <li key={post.href}>
-                <Link
-                  href={post.href}
-                  className={`${CARD} group flex h-full flex-col overflow-hidden ${FOCUS}`}
-                >
-                  <span className="block overflow-hidden bg-secondary/5">
-                    {post.image ? (
-                      <Image
-                        src={post.image}
-                        alt=""
-                        width={800}
-                        height={500}
-                        sizes="(max-width: 639px) 82vw, (max-width: 1023px) 44vw, 380px"
-                        className="aspect-[16/10] w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] motion-reduce:transition-none"
-                      />
-                    ) : (
-                      <span className="block aspect-[16/10]" />
-                    )}
-                  </span>
-                  <span className="flex flex-1 items-end justify-between gap-3 p-4">
-                    <span>
-                      <span className="page-label block">{post.label}</span>
-                      <span className="mt-1.5 block font-body text-[15px] leading-snug font-bold transition-colors duration-300 group-hover:text-primary">
-                        {post.title}
-                      </span>
-                    </span>
-                    <Arrow />
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <PostRow posts={posts} />
         </nav>
       ) : null}
     </section>
+  );
+}
+
+/**
+ * Articles as photo cards: a swipeable deck on a phone, three across from
+ * 1024px (`.related-row` in `globals.css`). Used under every treatment
+ * page and on the home page.
+ */
+export function PostRow({ posts }: { posts: RelatedPost[] }) {
+  return (
+    <ul className="related-row related-row-3">
+      {posts.map((post) => (
+        <li key={post.href}>
+          <Link
+            href={post.href}
+            className={`${CARD} group flex h-full flex-col overflow-hidden ${FOCUS}`}
+          >
+            <span className="block overflow-hidden bg-secondary/5">
+              {post.image ? (
+                <Image
+                  src={post.image}
+                  alt=""
+                  width={800}
+                  height={500}
+                  sizes="(max-width: 639px) 82vw, (max-width: 1023px) 44vw, 380px"
+                  className="aspect-[16/10] w-full object-cover transition-transform duration-500 group-hover:scale-[1.04] motion-reduce:transition-none"
+                />
+              ) : (
+                <span className="block aspect-[16/10]" />
+              )}
+            </span>
+            <span className="flex flex-1 items-end justify-between gap-3 p-4">
+              <span>
+                <span className="page-label block">{post.label}</span>
+                <span className="mt-1.5 block font-body text-[15px] leading-snug font-bold transition-colors duration-300 group-hover:text-primary">
+                  {post.title}
+                </span>
+              </span>
+              <Arrow />
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }
 
