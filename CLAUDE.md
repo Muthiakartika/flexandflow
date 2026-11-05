@@ -557,6 +557,15 @@ change one, edit the file. `check:seo` validates them against `blocksSchema`
 and checks every internal link. Written from Search Console, Ahrefs and Brand
 Radar data on 4 Nov 2026, using only facts the site already states.
 
+**`lib/seo/fixes.ts` corrects wrong panel copy in code**, so the agency never
+has to edit through `/admin`: exact find/replace pairs per page (a `row` scope
+for table cells), applied in `read.ts` before the sections are appended. The
+database keeps the old wording, so the panel still shows it. First used on
+2026-11-05 for sport massage prices typed in before the repricing (400k →
+500k), the men's lymphatic "750K", and hidden full-body/facial massage named
+on the home service page. `check:seo <url>` fails if a fix stops matching,
+which means the owner rewrote that sentence: delete or move the fix.
+
 ## Phase 5 — the CMS (in progress)
 
 The owner wants to edit treatment pages and blog posts without opening the

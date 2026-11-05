@@ -45,6 +45,7 @@ import {
   type PostCategory,
 } from "@/lib/cms/shape";
 import { prisma } from "@/lib/db";
+import { withPageFixes } from "@/lib/seo/fixes";
 import { withPageSeo } from "@/lib/seo/pages";
 import { withPageSections } from "@/lib/seo/sections";
 import type { Post, Service } from "@/types";
@@ -107,15 +108,17 @@ async function load(
 }
 
 /*
- * Every function below passes the row through `fromCode`, which lays
- * `lib/seo/pages.ts` over its SEO and appends `lib/seo/sections` to its body.
+ * Every function below passes the row through `fromCode`, which corrects the
+ * panel's copy with `lib/seo/fixes.ts`, appends `lib/seo/sections` to its body
+ * and lays `lib/seo/pages.ts` over its SEO. Fixes go first so they only ever
+ * touch the panel's blocks, never the code's own sections.
  * After the cache rather than inside it: the cache holds database rows, so a
- * deploy that changes a title or a section takes effect without anything being
+ * deploy that changes any of these takes effect without anything being
  * invalidated. Here and not in `lib/cms/shape.ts`, because the import check
  * reads through `shape.ts` and compares against what WordPress published.
  */
 function fromCode<T extends Service | Post>(entry: T): T {
-  return withPageSeo(withPageSections(entry));
+  return withPageSeo(withPageSections(withPageFixes(entry)));
 }
 
 // ── Services ──────────────────────────────────────────────────────────────

@@ -21,6 +21,7 @@
  *   npx tsx scripts/check-seo.ts https://flexandflow.fit  # plus the pages
  */
 import { blocksSchema } from "@/lib/cms/blocks";
+import { PAGE_FIXES } from "@/lib/seo/fixes";
 import { PAGE_SEO } from "@/lib/seo/pages";
 import { PAGE_SECTIONS } from "@/lib/seo/sections";
 
@@ -188,10 +189,58 @@ async function checkServed(base: string): Promise<void> {
   }
 }
 
+/** Inline markers reduced to the text a reader sees. */
+function plain(text: string): string {
+  return text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1");
+}
+
+/** The page's visible text, one string, with whitespace collapsed. */
+function visible(html: string): string {
+  return decode(html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]+>/g, " "))
+    .replace(/\s+/g, " ");
+}
+
+/*
+ * Every fix in `lib/seo/fixes.ts` must show on the served page: the new text
+ * present and, outside table rows, the old text gone. A fix whose `find` no
+ * longer matches the panel's copy fails here, because the page then serves
+ * neither the replacement nor, usually, the old text.
+ */
+async function checkFixes(base: string): Promise<void> {
+  for (const [path, fixes] of Object.entries(PAGE_FIXES)) {
+    const html = await (await fetch(`${base}${path}`)).text();
+    const text = visible(html);
+    const rows = [...html.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)].map((m) =>
+      [...m[1].matchAll(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi)].map((c) => visible(c[1]).trim()),
+    );
+
+    for (const f of fixes) {
+      if (f.row) {
+        const row = rows.find((cells) => f.row!.every((cell, i) => cells[i] === cell));
+        check(
+          `${path} row "${f.row.join(" / ")}" shows ${f.replace}`,
+          Boolean(row?.includes(f.replace)) && !row?.includes(f.find),
+          row ? `serves ${row.join(" | ")}` : "no such row",
+        );
+      } else {
+        const label = `${path} fix "${plain(f.replace).slice(0, 48)}…"`;
+        check(label, text.includes(plain(f.replace)) && !text.includes(plain(f.find)),
+          text.includes(plain(f.find)) ? "old text still served" : "new text not served (has the panel copy changed?)");
+      }
+    }
+  }
+}
+
 async function main(): Promise<void> {
   checkFile();
   checkSections();
-  if (BASE) await checkServed(BASE);
+  if (BASE) {
+    await checkServed(BASE);
+    await checkFixes(BASE);
+  }
 
   console.log(`\n${failures} failed, ${warnings} warnings`);
   process.exit(failures === 0 ? 0 : 1);
