@@ -1,0 +1,258 @@
+/* ==========================================================================
+   Home page (`app/(main)/page.tsx`, `sections/home/*`)
+
+   The treatment pages' system carried over: white cards on cream with a
+   hairline, a 10px corner, no shadow, depth from overlap, one olive region.
+   Plain CSS rather than Tailwind arbitrary breakpoint variants, which have
+   silently failed in this project (CLAUDE.md, gotcha 2). Unlayered, so no
+   utility or `.prose-flex` rule in `@layer components` can outrank it. The
+   `.prose-flex` wrappers are there only because `CardSlider` and
+   `TierChooser` keep their styles under that class in `globals.css`.
+   ========================================================================== */
+
+/* The page's vertical step: `.page-band`'s, a touch tighter on a phone. */
+.home-band {
+  padding-block: clamp(2.5rem, 4.4vw, 4.25rem);
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────────────
+   The two practitioners hang off the foot of the footage on a phone, side by
+   side, and sit on it, stacked, from 1024px (as the treatment hero's rate
+   card does). */
+.home-hero-media {
+  position: relative;
+}
+
+.home-hero-team {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: -30px 10px 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media only screen and (min-width: 1024px) {
+  .home-hero-team {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    grid-template-columns: minmax(0, 1fr);
+    width: 17rem;
+    margin: 0;
+  }
+}
+
+/* ── Treatments ─────────────────────────────────────────────────────────────
+   A swipeable row on a phone that runs to the screen's edge (the negative
+   margin undoes `.page-wrap`'s gutter, the padding puts it back inside the
+   scroller), so the next card peeks in from the edge rather than being cut
+   at the gutter. Two at a time from 640px, a grid of three from 1024px. */
+.home-deck {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 78%;
+  gap: 12px;
+  margin: 24px -24px 0;
+  padding: 0 24px 2px;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 24px;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.home-deck::-webkit-scrollbar {
+  display: none;
+}
+
+.home-deck > li {
+  scroll-snap-align: start;
+}
+
+@media only screen and (max-width: 640px) {
+  .home-deck {
+    margin-inline: -20px;
+    padding-inline: 20px;
+    scroll-padding-inline: 20px;
+  }
+}
+
+@media only screen and (min-width: 641px) {
+  .home-deck {
+    grid-auto-columns: calc(50% - 6px);
+  }
+}
+
+@media only screen and (min-width: 1024px) {
+  .home-deck {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin: 28px 0 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  /* Wider frames in the grid: at 4:3 two rows of three ran 1,350px. */
+  .home-deck-img {
+    aspect-ratio: 16 / 10;
+  }
+}
+
+/* ── Two-column bands (how a session runs, who treats you) ──────────────── */
+.home-split {
+  display: grid;
+  gap: clamp(2rem, 3.6vw, 3.5rem);
+}
+
+@media only screen and (min-width: 1024px) {
+  .home-split {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    align-items: center;
+  }
+
+  /* The photo takes less: the three step cards need the width. */
+  .home-split-media-first {
+    grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  }
+}
+
+/* The room, and the hands working in it on a small frame over its corner,
+   ringed in the page cream so the seam reads. */
+.home-photo-stack {
+  position: relative;
+  margin-bottom: 26px;
+}
+
+.home-photo-inset {
+  position: absolute;
+  right: 14px;
+  bottom: -26px;
+  width: 112px;
+  height: 140px;
+  border: 4px solid var(--color-cream);
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+@media only screen and (min-width: 640px) {
+  .home-photo-inset {
+    width: 150px;
+    height: 188px;
+  }
+}
+
+@media only screen and (min-width: 1024px) {
+  .home-photo-stack {
+    margin-bottom: 0;
+  }
+
+  .home-photo-inset {
+    right: -26px;
+    bottom: -26px;
+  }
+}
+
+.prose-flex.home-steps .card-slider {
+  margin-block: 24px 0;
+}
+
+/* Room above for the avatars, which overlap each card's top edge. */
+.prose-flex.home-tiers .tier-chooser {
+  margin-block: 30px 0;
+}
+
+/* ── Google rating: the page's one olive region ─────────────────────────────
+   `--color-primary-strong`, because white on the brand olive is 3.67:1 and
+   fails AA (DESIGN.md). */
+.home-reviews {
+  display: grid;
+  gap: 26px;
+  padding: clamp(1.75rem, 4vw, 3rem) clamp(1.25rem, 3.5vw, 3rem);
+  border-radius: 10px;
+  background: var(--color-primary-strong);
+  color: #fff;
+}
+
+.home-reviews .page-label {
+  color: rgb(255 255 255 / 0.78);
+}
+
+/* `Stars` draws in the brand olive, which would vanish here. */
+.home-reviews .text-primary {
+  color: #fff;
+}
+
+.home-reviews-num {
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 4rem + 4vw, 7.5rem);
+  line-height: 0.8;
+  font-weight: 700;
+  color: #fff;
+}
+
+.home-reviews-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-body-text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.2;
+  transition: background-color 300ms;
+}
+
+.home-reviews-chip:hover {
+  background: var(--color-cream);
+  color: var(--color-body-text);
+}
+
+.home-reviews-chip > span {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary-strong);
+}
+
+@media only screen and (min-width: 768px) {
+  .home-reviews {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 48px;
+  }
+
+  .home-reviews-score {
+    padding-right: 48px;
+    border-right: 1px solid rgb(255 255 255 / 0.25);
+  }
+}
+
+/* ── FAQs: the heading beside the questions, and sticky, on a wide screen ── */
+.home-faqs {
+  display: grid;
+  gap: 24px;
+}
+
+@media only screen and (min-width: 1024px) {
+  .home-faqs {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    gap: 56px;
+  }
+
+  .home-faqs-head {
+    position: sticky;
+    top: 104px;
+    align-self: start;
+  }
+}
+
+/* The FAQ cards bring their own vertical margin for an article body; here
+   the heading beside them sets the rhythm. */
+.home-faqs-list > div {
+  margin-block: 0;
+}
