@@ -9,21 +9,22 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "A home massage in Uluwatu with Flex & Flow takes a couple of messages to arrange and runs much like a studio session, only in your own space.",
+    text: "Two messages to book, then it runs like a studio session in your own space.",
   },
+  /* A timeline on the scannable layout: short titles, one line each. */
   {
     type: "list",
     ordered: true,
     items: [
-      "**Pick a treatment and length.** Home service covers sport massage, lymphatic drainage (including the men's version), pregnancy massage, cupping, assisted stretching and the 90-minute stretching and massage combo.",
-      "**Book.** Use [booking.flexandflow.fit](https://booking.flexandflow.fit/) or send a WhatsApp to [+62 858 5888 7777](https://wa.me/6285858887777) with your preferred day and time and the name or location of your villa or hotel.",
-      "**Check you are in range.** Ungasan, Pecatu, Bingin, Padang Padang and Balangan are covered. Staying somewhere else nearby? Ask on WhatsApp before you book.",
-      "**Your therapist arrives** with what is needed for the session. Before starting, you agree on the areas to focus on, the pressure, and anything to avoid, such as a recent injury.",
+      "**Pick your treatment.** Anything in the list above, at the length you want.",
+      "**Message us.** [Book online](https://booking.flexandflow.fit/) or [WhatsApp us](https://wa.me/6285858887777) with the day, the time and where you are staying.",
+      "**We confirm.** We check you are in our area and lock in the time. Staying outside Ungasan to Balangan? Ask first.",
+      "**Your therapist arrives.** Everything comes with them. Before you start, you agree on focus, pressure and anything to avoid.",
     ],
   },
   {
     type: "paragraph",
-    text: "Searching in Bahasa Indonesia? *Pijat panggilan* means a massage therapist who comes to you, which is exactly this service. *Kami melayani pijat panggilan ke villa, hotel dan rumah di area Uluwatu, Senin sampai Sabtu pukul 09.00 sampai 17.00.* Book via [WhatsApp](https://wa.me/6285858887777).",
+    text: "In Bahasa Indonesia this is *pijat panggilan*: *pijat panggilan ke villa, hotel dan rumah di area Uluwatu, Senin sampai Sabtu, 09.00 sampai 17.00.* [WhatsApp us](https://wa.me/6285858887777) to book.",
   },
   {
     type: "heading",

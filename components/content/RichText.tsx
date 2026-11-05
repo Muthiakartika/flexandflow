@@ -74,6 +74,20 @@ function termsOf(items: string[]): { term: string; detail: string }[] | null {
     : null;
 }
 
+const STEP = /^\*\*([^*]+?)[.:]\*\*\s+([\s\S]+)$/;
+
+/**
+ * A numbered list whose every step opens with a bold title ending in a full
+ * stop or a colon ("**Book.** Use…", "**The same evening:** spend…"), split
+ * into title and detail the same way. Null when any step lacks one.
+ */
+function stepsOf(items: string[]): { term: string; detail: string }[] | null {
+  const matches = items.map((item) => item.match(STEP));
+  return items.length >= 2 && matches.every((m) => m !== null)
+    ? matches.map((m) => ({ term: m![1], detail: m![2][0].toUpperCase() + m![2].slice(1) }))
+    : null;
+}
+
 /** A section heading's anchor: "Built Around How You Train" → "built-around-how-you-train".
  *  The scannable layout gives its h2s these ids for the "On this page" list. */
 export function headingId(text: string): string {
@@ -163,6 +177,26 @@ export default function RichText({
                     </div>
                   ))}
                 </dl>
+              );
+            }
+            /* Scannable layout: titled steps read as a numbered timeline,
+               one short title per step and its detail under it. */
+            const steps = scannable && block.ordered ? stepsOf(block.items) : null;
+            if (steps) {
+              return (
+                <ol key={i} className="step-list">
+                  {steps.map((step, j) => (
+                    <li key={j}>
+                      <span aria-hidden className="step-list-num">
+                        {String(j + 1).padStart(2, "0")}
+                      </span>
+                      <div>
+                        <strong className="step-list-title">{renderInline(step.term)}</strong>
+                        <p className="step-list-detail">{renderInline(step.detail)}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
               );
             }
             return block.ordered ? (

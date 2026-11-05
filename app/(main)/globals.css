@@ -1704,6 +1704,72 @@ button.booking-step-body {
   }
 }
 
+/* Numbered lists whose every step opens with a bold title (`RichText`): a
+   timeline, each number in an olive ring joined to the next by a hairline,
+   the title in the display face and the detail under it. Not cards, so it
+   reads apart from the card slider that often sits a section above. */
+.prose-flex .step-list {
+  list-style: none;
+  margin-block: 1.25em 1.75em;
+  padding: 0;
+}
+
+.prose-flex .step-list > li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 16px;
+  margin: 0;
+  padding-bottom: 22px;
+}
+
+.prose-flex .step-list > li:last-child {
+  padding-bottom: 0;
+}
+
+/* From under one ring to the top of the next: ring 44px, 6px clear of each. */
+.prose-flex .step-list > li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 21.5px;
+  top: 50px;
+  bottom: 6px;
+  width: 1px;
+  background: color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+
+.prose-flex .step-list-num {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 55%, transparent);
+  border-radius: 999px;
+  background: #fff;
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+}
+
+.prose-flex .step-list-title {
+  display: block;
+  padding-top: 9px;
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.05;
+  font-weight: 700;
+  color: var(--color-body-text);
+}
+
+.prose-flex .step-list-detail {
+  margin: 6px 0 0;
+  line-height: 1.6;
+  color: color-mix(in oklab, var(--color-body-text) 82%, transparent);
+}
+
 .sticky-book-bar {
   position: fixed;
   inset-inline: 0;
