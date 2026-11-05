@@ -64,7 +64,14 @@ export default function PostArticle({
               />
             ) : null}
 
-            <RichText blocks={post.body} className={post.image ? "mt-7" : ""} />
+            {/* The treatment pages' building blocks: numbered FAQ cards,
+                labelled lists, card lists and price menus, and tables that
+                turn into cards on a phone. */}
+            <RichText
+              blocks={post.body}
+              layout="scannable"
+              className={post.image ? "mt-7" : ""}
+            />
 
             {/* Who wrote it. The same person the BlogPosting markup credits,
                 so the visible byline and the structured one agree. */}
