@@ -14,6 +14,14 @@ export type ColumnGroups = {
 };
 
 export const COLUMN_GROUPS: Record<string, ColumnGroups> = {
+  "/uluwatu-bali/outcall-home-service-massage/": {
+    first: "Villas, hotels and homes across the Uluwatu area",
+    groups: [
+      { title: "Where we come", items: [0, 1] },
+      { title: "What we bring", items: [2, 3] },
+      { title: "Easy to book", items: [4, 5] },
+    ],
+  },
   "/uluwatu-bali/assisted-stretching/": {
     first: "We start with how you move",
     groups: [
@@ -97,6 +105,13 @@ export type RailPhoto = {
  * Fewer photos than sections and the last one stays for the rest.
  */
 export const RAIL_PHOTOS: Record<string, RailPhoto[]> = {
+  "/uluwatu-bali/outcall-home-service-massage/": [
+    { src: "/images/2026/08/yuni-session.jpg", width: 1800, height: 1800, caption: "Same team, your space", position: "22% center" },
+    { src: "/images/2026/08/gallery-2.jpg", width: 1800, height: 900, caption: "Pressure set to you", position: "40% center" },
+    { src: "/images/2026/06/prgenancy-massage-blog-banner.jpg", width: 1770, height: 986, caption: "Pregnancy massage at home", position: "70% center" },
+    { src: "/images/2026/08/gallery-4.jpg", width: 1200, height: 857, caption: "Unhurried, start to finish", position: "50% center" },
+    { src: "/images/2026/08/ginny-session.jpg", width: 1800, height: 1800, caption: "The studio's approach", position: "30% center" },
+  ],
   "/uluwatu-bali/assisted-stretching/": [
     { src: "/images/2026/08/private-therapy-inset.jpg", width: 800, height: 1000, caption: "Every stretch supported" },
     { src: "/images/2025/02/assistant-stretch-new-.jpg", width: 1300, height: 1200, caption: "Further than you go alone", position: "45% center" },

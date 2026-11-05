@@ -35,30 +35,6 @@ export type TextFix = {
 const SPORT_PRICE = "Typed in before sport massage was repriced; now quotes the live rate.";
 
 export const PAGE_FIXES: Record<string, TextFix[]> = {
-  "/uluwatu-bali/outcall-home-service-massage/": [
-    { row: ["Sport massage", "60 min"], find: "IDR 400,000", replace: "IDR {{price:sport-massage:60:standard}}", why: SPORT_PRICE },
-    { row: ["Sport massage", "90 min"], find: "IDR 600,000", replace: "IDR {{price:sport-massage:90:standard}}", why: SPORT_PRICE },
-    {
-      find: "this may include cupping therapy, full-body massage, facial massage, sports massage, or assisted stretching.",
-      replace: "this may include sports massage, lymphatic drainage, pregnancy massage, cupping therapy, or assisted stretching.",
-      why: "Full-body and facial massage are hidden at the owner's request and not bookable.",
-    },
-    {
-      find: "Whether you book sports massage, full-body massage, cupping therapy, or another treatment,",
-      replace: "Whether you book sports massage, lymphatic drainage, cupping therapy, or another treatment,",
-      why: "Full-body massage is hidden at the owner's request and not bookable.",
-    },
-    {
-      find: "We offer a variety of massage treatments, including full body massage, sports massage, facial massage, and cupping therapy.",
-      replace: "We offer sports massage, lymphatic drainage, pregnancy massage, cupping therapy and assisted stretching at your villa, hotel or home.",
-      why: "Full-body and facial massage are hidden at the owner's request and not bookable.",
-    },
-    {
-      find: "**60 and 120 minutes**",
-      replace: "**60 and 90 minutes**",
-      why: "The longest session on the price list is 90 minutes.",
-    },
-  ],
   "/uluwatu-bali/physiotherapy/": [
     { row: ["Sport massage", "60 min"], find: "IDR 400,000", replace: "IDR {{price:sport-massage:60:standard}}", why: SPORT_PRICE },
     { row: ["Sport massage", "90 min"], find: "IDR 600,000", replace: "IDR {{price:sport-massage:90:standard}}", why: SPORT_PRICE },

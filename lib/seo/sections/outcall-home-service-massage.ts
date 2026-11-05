@@ -51,18 +51,32 @@ const blocks: ContentBlock[] = [
     type: "paragraph",
     text: "A home service massage in Uluwatu costs the studio price plus a home service fee of IDR {{fee}} per visit. A few examples:",
   },
+  /* The treatment pages' price menu: studio price, then the villa price
+     under it. Ginny's session last, as the step up. */
   {
     type: "table",
-    head: ["Treatment", "Studio price (IDR)", "At your villa (IDR)"],
+    head: ["Session", "At the studio", "At your villa"],
     rows: [
-      ["Cupping, 30 min", "{{price:cupping-therapy:30:standard}}", "{{villa:cupping-therapy:30:standard}}"],
-      ["Sport massage, 60 min, therapist", "{{price:sport-massage:60:standard}}", "{{villa:sport-massage:60:standard}}"],
       [
-        "Sport massage, 60 min, master therapist (Ginny)",
-        "{{price:sport-massage:60:master}}",
-        "{{villa:sport-massage:60:master}}",
+        "Cupping · 30 minutes",
+        "IDR {{price:cupping-therapy:30:standard}}",
+        "IDR {{villa:cupping-therapy:30:standard}}",
       ],
-      ["Pregnancy massage, 90 min, therapist", "{{price:pregnancy-massage-service:90:standard}}", "{{villa:pregnancy-massage-service:90:standard}}"],
+      [
+        "Sports massage · 60 minutes · Therapist",
+        "IDR {{price:sport-massage:60:standard}}",
+        "IDR {{villa:sport-massage:60:standard}}",
+      ],
+      [
+        "Pregnancy massage · 90 minutes · Therapist",
+        "IDR {{price:pregnancy-massage-service:90:standard}}",
+        "IDR {{villa:pregnancy-massage-service:90:standard}}",
+      ],
+      [
+        "Sports massage · 60 minutes · Ginny",
+        "IDR {{price:sport-massage:60:master}}",
+        "IDR {{villa:sport-massage:60:master}}",
+      ],
     ],
   },
   {

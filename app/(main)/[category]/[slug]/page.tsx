@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import HomeServiceArticle, { HOME_SERVICE_PATH } from "@/components/content/HomeServiceArticle";
 import PostArticle from "@/components/content/PostArticle";
 import JsonLd from "@/components/layout/JsonLd";
 import ServiceArticle from "@/components/content/ServiceArticle";
@@ -88,6 +89,17 @@ export default async function ArticlePage(
           <JsonLd data={serviceSchema(found.service)} />
         )}
         <ServiceArticle service={found.service} />
+      </>
+    );
+  }
+
+  /* The home service page is an article in the panel and a service to the
+     visitor, so it takes the treatment pages' layout. */
+  if (found.post.seo.canonicalPath === HOME_SERVICE_PATH) {
+    return (
+      <>
+        {isIndexable(found.post) && <JsonLd data={articleSchema(found.post)} />}
+        <HomeServiceArticle post={found.post} />
       </>
     );
   }

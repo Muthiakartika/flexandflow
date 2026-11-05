@@ -23,6 +23,7 @@ import assistedStretching from "./assisted-stretching";
 import cuppingTherapy from "./cupping-therapy";
 import lymphaticDetoxMassageForMen from "./lymphatic-detox-massage-for-men";
 import lymphaticDrainage from "./lymphatic-drainage";
+import outcallHomeServiceMassage from "./outcall-home-service-massage";
 import pregnancyMassageService from "./pregnancy-massage-service";
 import sportMassage from "./sport-massage";
 import traumaHealing from "./trauma-healing";
@@ -38,6 +39,7 @@ export const PAGE_COPY: Record<string, PageCopy> = {
   "/uluwatu-bali/cupping-therapy/": cuppingTherapy,
   "/uluwatu-bali/lymphatic-detox-massage-for-men/": lymphaticDetoxMassageForMen,
   "/uluwatu-bali/lymphatic-drainage/": lymphaticDrainage,
+  "/uluwatu-bali/outcall-home-service-massage/": outcallHomeServiceMassage,
   "/uluwatu-bali/pregnancy-massage-service/": pregnancyMassageService,
   "/uluwatu-bali/sport-massage/": sportMassage,
   "/uluwatu-bali/trauma-healing/": traumaHealing,

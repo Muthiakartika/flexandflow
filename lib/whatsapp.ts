@@ -24,6 +24,16 @@ export function treatmentMessage(title: string, homeService: boolean): string {
     .join("\n");
 }
 
+export function homeServiceMessage(): string {
+  return [
+    `${HELLO} I'd like to book a massage at my villa.`,
+    "",
+    "Treatment: ",
+    "Where I'm staying: ",
+    "Preferred day and time: ",
+  ].join("\n");
+}
+
 export function articleMessage(title: string): string {
   return `${HELLO} I just read "${title}" on your website and have a question: `;
 }

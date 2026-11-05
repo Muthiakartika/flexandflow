@@ -1,4 +1,4 @@
-import { Clock, House, MapPin, Tag } from "lucide-react";
+import { Clock, House, MapPin, Tag, type LucideIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -68,24 +68,34 @@ export function RateList({ rates }: { rates: Rate[] }) {
  * hangs off the bottom of the photo instead of covering it.
  *
  * Every figure is derived: the tiers from the page's rate card, the villa
- * price from `homeServiceFeeIdr`, the hours from `shortHours`. The title
- * and the lead are the studio's own copy, unchanged.
+ * price from `homeServiceFeeIdr`, the hours from `shortHours`.
+ *
+ * The home service page uses it too, with its own facts and its own card
+ * (the villa price of each treatment) in place of the rate card.
  */
+export type HeroFact = { icon: LucideIcon; term: string; detail: string; meta: string };
+
 export default function ServiceHero({
   service,
   rates,
   minutes,
   homeService,
+  facts: factsOverride,
+  card,
 }: {
-  service: Service;
+  service: Pick<Service, "title" | "excerpt" | "image" | "seo">;
   rates: Rate[];
   /** The length every tier shares, or null when they differ. */
   minutes: number | null;
   homeService: boolean;
+  /** In place of the facts worked out from the rates. */
+  facts?: HeroFact[];
+  /** In place of the rate card on the photo. */
+  card?: React.ReactNode;
 }) {
   const from = rates.length ? Math.min(...rates.map((rate) => rate.amount)) : null;
 
-  const facts = [
+  const facts = factsOverride ?? [
     minutes ? { icon: Clock, term: "Session", detail: `${minutes} min`, meta: "One to one" } : null,
     from !== null ? { icon: Tag, term: "From", detail: formatIdr(from), meta: "Per session" } : null,
     homeService
@@ -182,9 +192,9 @@ export default function ServiceHero({
               className="aspect-[4/3] w-full rounded-[10px] object-cover"
             />
 
-            {rates.length > 0 ? (
+            {card || rates.length > 0 ? (
               <div className="relative mx-3 -mt-10 rounded-[10px] border border-secondary/10 bg-white/95 p-4 backdrop-blur-sm sm:mx-4 lg:absolute lg:bottom-4 lg:left-4 lg:mx-0 lg:mt-0 lg:w-[20rem]">
-                <RateCard rates={rates} minutes={minutes} />
+                {card ?? <RateCard rates={rates} minutes={minutes} />}
               </div>
             ) : null}
           </div>

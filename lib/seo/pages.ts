@@ -123,6 +123,7 @@ export const PAGE_SEO: Record<string, PageSeo> = {
     title: "Home & Outcall Massage in Uluwatu, Bali | Flex & Flow",
     description:
       "Home massage at your villa or hotel in Uluwatu, Bali: sports, lymphatic, pregnancy, cupping and stretching. Prices, areas covered and how to book.",
+    h1: "Home & Villa Massage in Uluwatu, Bali",
   },
   "/uluwatu-bali/physiotherapy/": {
     title: "Physio or Sport Massage in Uluwatu? How to Choose | Flex & Flow",
