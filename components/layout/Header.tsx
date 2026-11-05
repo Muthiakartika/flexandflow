@@ -6,8 +6,11 @@ import MobileNav from "./MobileNav";
 import {
   bookingCtaHref,
   bookingCtaProps,
+  contact,
   primaryNav,
+  shortHours,
   siteConfig,
+  studioMapsUrl,
 } from "@/lib/site";
 
 /**
@@ -58,6 +61,21 @@ export default function Header() {
 
         <div className="ml-auto flex items-center gap-7 max-[1180px]:hidden">
           <DesktopNav items={primaryNav} />
+
+          {/* The studio's address beside the booking action, on every page, in
+              the same words as the footer and the LocalBusiness JSON-LD. Only
+              where the bar has room; narrower screens have it in the footer. */}
+          <address className="text-right font-body text-[12px] leading-[1.35] not-italic max-[1379px]:hidden">
+            <a
+              href={studioMapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block rounded-[4px] text-body-text/80 transition-colors duration-300 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              {contact.shortAddress}
+              <span className="block text-subtle">{shortHours}</span>
+            </a>
+          </address>
 
           <Link
             href={bookingCtaHref}
