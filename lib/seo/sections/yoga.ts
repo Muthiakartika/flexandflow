@@ -60,7 +60,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Is a private yoga lesson the same as assisted stretching?",
-        answer: "No. In a private yoga lesson a teacher guides you through poses that you hold with your own strength, sometimes with hands-on adjustments. In assisted stretching the therapist moves your body into each stretch while you relax. Flex & Flow in Uluwatu does not offer private yoga, but offers one-to-one assisted stretching from IDR {{price:assisted-stretching:60:standard}} for 60 minutes (prices as of 4 November 2026).",
+        answer: "No. In a private yoga lesson a teacher guides you through poses that you hold with your own strength, sometimes with hands-on adjustments. In assisted stretching the therapist moves your body into each stretch while you relax. Flex & Flow in Uluwatu does not offer private yoga, but offers one-to-one assisted stretching from IDR {{price:assisted-stretching:60:standard}} for 60 minutes.",
       },
       {
         question: "Can assisted stretching help with yoga poses I am stuck on?",

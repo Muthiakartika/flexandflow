@@ -53,7 +53,7 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "Prices as of 4 November 2026, at our studio on Jl. Toya Ning II, Ungasan, open Monday to Saturday, 09:00 to 17:00. A therapist can also come to your villa through our [home service](/uluwatu-bali/outcall-home-service-massage/) for an extra IDR {{fee}}. Bodywork is most useful alongside the breaks and strength work above, not as a replacement. If pain spreads down a leg or comes with numbness, see a doctor, or read [when to choose a physio](/uluwatu-bali/physiotherapy/).",
+    text: "Prices at our studio on Jl. Toya Ning II, Ungasan, open Monday to Saturday, 09:00 to 17:00. A therapist can also come to your villa through our [home service](/uluwatu-bali/outcall-home-service-massage/) for an extra IDR {{fee}}. Bodywork is most useful alongside the breaks and strength work above, not as a replacement. If pain spreads down a leg or comes with numbness, see a doctor, or read [when to choose a physio](/uluwatu-bali/physiotherapy/).",
   },
   {
     type: "heading",

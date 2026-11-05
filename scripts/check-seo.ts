@@ -21,6 +21,7 @@
  *   npx tsx scripts/check-seo.ts https://flexandflow.fit  # plus the pages
  */
 import { blocksSchema } from "@/lib/cms/blocks";
+import { PAGE_COPY } from "@/lib/seo/copy";
 import { PAGE_FIXES } from "@/lib/seo/fixes";
 import { PAGE_SEO } from "@/lib/seo/pages";
 import { PRICE_MISSING, PRICE_TOKEN } from "@/lib/seo/price-tokens";
@@ -115,47 +116,58 @@ function textsOf(block: (typeof PAGE_SECTIONS)[string][number]): string[] {
       return [...block.head, ...block.rows.flat()];
     case "faq":
       return block.items.flatMap((item) => [item.question, item.answer]);
+    case "gallery":
+      return block.images.flatMap((image) => (image.caption ? [image.caption] : []));
     default:
       return [];
   }
 }
 
+/** The checks every block the code writes must pass, sections and copy alike. */
+function checkBlocks(path: string, label: string, blocks: (typeof PAGE_SECTIONS)[string]): void {
+  const known = new Set([...Object.keys(PAGE_SEO), ...FIXED_PAGES]);
+  check(`${label} has an entry in lib/seo/pages.ts`, Boolean(PAGE_SEO[path]));
+
+  const parsed = blocksSchema.safeParse(blocks);
+  check(
+    `${label} blocks are valid`,
+    parsed.success,
+    parsed.success ? "" : parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
+  );
+
+  const texts = blocks.flatMap(textsOf);
+  const internal = texts.flatMap((text) =>
+    [...text.matchAll(/\]\((\/[^)]*)\)/g)].map((m) => m[1]),
+  );
+  for (const link of internal) {
+    check(`${label} links to ${link}`, known.has(link), "no such page");
+  }
+  check(
+    `${label} never nests bold and italic`,
+    !texts.some((text) => text.includes("***")),
+  );
+
+  const questions = blocks.flatMap((block) =>
+    block.type === "faq" ? block.items.map((item) => item.question.toLowerCase()) : [],
+  );
+  check(`${label} asks each question once`, new Set(questions).size === questions.length);
+
+  checkTokens(label, texts);
+  const typed = texts.filter((text) => HARD_PRICE.test(text.replace(PRICE_TOKEN, "")));
+  for (const text of typed) warn(`${label} types a price instead of a token: "${text.slice(0, 70)}…"`);
+}
+
 function checkSections(): void {
   console.log("\nlib/seo/sections");
-  const known = new Set([...Object.keys(PAGE_SEO), ...FIXED_PAGES]);
-
-  for (const [path, blocks] of Object.entries(PAGE_SECTIONS)) {
-    check(`${path} has an entry in lib/seo/pages.ts`, Boolean(PAGE_SEO[path]));
-
-    const parsed = blocksSchema.safeParse(blocks);
-    check(
-      `${path} blocks are valid`,
-      parsed.success,
-      parsed.success ? "" : parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
-    );
-
-    const texts = blocks.flatMap(textsOf);
-    const internal = texts.flatMap((text) =>
-      [...text.matchAll(/\]\((\/[^)]*)\)/g)].map((m) => m[1]),
-    );
-    for (const link of internal) {
-      check(`${path} links to ${link}`, known.has(link), "no such page");
-    }
-    check(
-      `${path} never nests bold and italic`,
-      !texts.some((text) => text.includes("***")),
-    );
-
-    const questions = blocks.flatMap((block) =>
-      block.type === "faq" ? block.items.map((item) => item.question.toLowerCase()) : [],
-    );
-    check(`${path} asks each question once`, new Set(questions).size === questions.length);
-
-    checkTokens(path, texts);
-    const typed = texts.filter((text) => HARD_PRICE.test(text.replace(PRICE_TOKEN, "")));
-    for (const text of typed) warn(`${path} types a price instead of a token: "${text.slice(0, 70)}…"`);
-  }
+  for (const [path, blocks] of Object.entries(PAGE_SECTIONS)) checkBlocks(path, path, blocks);
   console.log(`  ${Object.keys(PAGE_SECTIONS).length} pages with sections`);
+
+  console.log("\nlib/seo/copy");
+  for (const [path, copy] of Object.entries(PAGE_COPY)) {
+    checkBlocks(path, `${path} (copy)`, copy.body);
+    if (copy.excerpt) checkTokens(`${path} (copy excerpt)`, [copy.excerpt]);
+  }
+  console.log(`  ${Object.keys(PAGE_COPY).length} pages with their copy in code`);
 
   for (const [path, fixes] of Object.entries(PAGE_FIXES)) {
     checkTokens(`${path} (fixes)`, fixes.map((f) => f.replace));
@@ -190,6 +202,10 @@ async function checkServed(base: string): Promise<void> {
       shown.includes("{{") ? "an unfilled {{…}} is served" : `"${PRICE_MISSING}" is served`,
     );
     check(`${path} title`, title === seo.title, `serves "${title}"`);
+    if (seo.h1) {
+      const h1 = visible(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? "").trim();
+      check(`${path} h1`, h1 === seo.h1, `serves "${h1}"`);
+    }
     check(`${path} description`, description === seo.description, `serves "${description}"`);
     check(
       `${path} robots`,
@@ -266,6 +282,18 @@ async function checkFixes(base: string): Promise<void> {
         check(label, served(f.replace).test(text) && !text.includes(plain(f.find)),
           text.includes(plain(f.find)) ? "old text still served" : "new text not served (has the panel copy changed?)");
       }
+    }
+  }
+
+  /* A page with its copy in code serves that copy: its lead and its opening
+     paragraph, rather than the panel's. */
+  for (const [path, copy] of Object.entries(PAGE_COPY)) {
+    const text = visible(await (await fetch(`${base}${path}`)).text());
+    const opening = copy.body.find((block) => block.type === "paragraph");
+    const expected = [copy.excerpt, opening?.type === "paragraph" ? opening.text : undefined];
+    for (const value of expected) {
+      if (!value) continue;
+      check(`${path} serves its code copy "${plain(value).slice(0, 40)}…"`, served(value).test(text), "not served");
     }
   }
 }

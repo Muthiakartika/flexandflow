@@ -81,7 +81,7 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "A 60-minute [sport massage](/uluwatu-bali/sport-massage/) costs IDR {{price:sport-massage:60:standard}} with a therapist or IDR {{price:sport-massage:60:master}} with our master therapist, Ginny, and 90 minutes costs IDR {{price:sport-massage:90:standard}} or IDR {{price:sport-massage:90:master}}. A 60-minute [assisted stretching](/uluwatu-bali/assisted-stretching/) session costs IDR {{price:assisted-stretching:60:standard}} or IDR {{price:assisted-stretching:60:master}} (prices as of 4 November 2026). Surfers can also read our guide to [common surfing injuries](/injury-guide/common-surfing-injuries/).",
+    text: "A 60-minute [sport massage](/uluwatu-bali/sport-massage/) costs IDR {{price:sport-massage:60:standard}} with a therapist or IDR {{price:sport-massage:60:master}} with our master therapist, Ginny, and 90 minutes costs IDR {{price:sport-massage:90:standard}} or IDR {{price:sport-massage:90:master}}. A 60-minute [assisted stretching](/uluwatu-bali/assisted-stretching/) session costs IDR {{price:assisted-stretching:60:standard}} or IDR {{price:assisted-stretching:60:master}}. Surfers can also read our guide to [common surfing injuries](/injury-guide/common-surfing-injuries/).",
   },
   {
     type: "heading",

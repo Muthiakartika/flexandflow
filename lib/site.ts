@@ -25,7 +25,7 @@ export const siteConfig = {
   description:
     "Join wellness journeys with Flex and Flow. Our services focus on improving flexibility, reducing discomfort, and enhancement of well-being.",
   logo: "/images/2025/06/FlexnFlow_new_logo.png",
-  copyright: "All Right Reserved © 2026 Flex&Flow",
+  copyright: "© 2026 Flex & Flow. All rights reserved.",
 } as const;
 
 /**
@@ -105,8 +105,21 @@ export const workingHours = [
   { days: "Monday to Saturday", hours: "09:00 - 17:00 hrs" },
 ] as const;
 
-/** `workingHours` in the header's compact form. Change both together. */
+/** `workingHours` in the header's compact form. Change it, `workingHours` and
+ *  `openingSchedule` together. */
 export const shortHours = "Mon–Sat, 09:00–17:00";
+
+/**
+ * `workingHours` as data, for the footer's live "Open now" line
+ * (`OpenStatus`). Days are 0 = Sunday to 6 = Saturday. Bali keeps WITA,
+ * UTC+8, all year, which the IANA zone `Asia/Makassar` names.
+ */
+export const openingSchedule = {
+  timeZone: "Asia/Makassar",
+  days: [1, 2, 3, 4, 5, 6],
+  opens: "09:00",
+  closes: "17:00",
+} as const;
 
 /** Directions to the studio, the same search the booking emails link to. */
 export const studioMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
@@ -119,6 +132,20 @@ export const studioMapsUrl = `https://www.google.com/maps/search/?api=1&query=${
  * every `{{villa:…}}` figure. The home service page's own copy states it too.
  */
 export const homeServiceFeeIdr = 100_000;
+
+/**
+ * Treatments a therapist will bring to a villa, hotel or home, as the home
+ * service page lists them. Trauma healing is studio only, and the two hidden
+ * treatments are not offered at all.
+ */
+export const homeServiceSlugs: ReadonlySet<string> = new Set([
+  "sport-massage",
+  "lymphatic-drainage",
+  "lymphatic-detox-massage-for-men",
+  "pregnancy-massage-service",
+  "assisted-stretching",
+  "cupping-therapy",
+]);
 
 export type NavItem = {
   label: string;

@@ -78,6 +78,13 @@ export function resolveBlockPrices(block: ContentBlock, book: PriceBook): Conten
       };
     case "cta":
       return { ...block, label: fill(block.label) };
+    case "gallery":
+      return {
+        ...block,
+        images: block.images.map((image) =>
+          image.caption ? { ...image, caption: fill(image.caption) } : image,
+        ),
+      };
     default:
       return block;
   }

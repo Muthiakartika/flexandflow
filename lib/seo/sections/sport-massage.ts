@@ -5,42 +5,43 @@ const blocks: ContentBlock[] = [
   {
     type: "heading",
     level: 2,
-    text: "Sports Massage in Bali: Prices and Session Length",
+    text: "Sports Massage Prices in Uluwatu",
   },
-  {
-    type: "paragraph",
-    text: "A sports massage at Flex & Flow costs from IDR {{price:sport-massage:60:standard}} for 60 minutes. You choose the length and the price level: **Therapist**, or **Master therapist** with our founder [Ginny](/therapist/ginny/), who specialises in sport massage and has a background in nursing and professional fitness training. Prices as of 4 November 2026.",
-  },
+  /* The team-or-Ginny choice that opens this section on the redesign is
+     `TierChooser`, placed under this heading by `ServiceArticle` from the
+     rate card. */
+  /* One session per row, so the scannable layout can set it as a price menu
+     (`RichText`): studio price, then the villa price under it. Ginny's
+     sessions last, as the step up rather than wedged between the others. */
   {
     type: "table",
-    head: ["Session", "Therapist", "Master therapist (Ginny)"],
+    head: ["Session", "At the studio", "At your villa"],
     rows: [
       [
-        "Sport massage, 60 min",
+        "60 minutes · Therapist",
         "IDR {{price:sport-massage:60:standard}}",
-        "IDR {{price:sport-massage:60:master}}",
-      ],
-      [
-        "Sport massage, 90 min",
-        "IDR {{price:sport-massage:90:standard}}",
-        "IDR {{price:sport-massage:90:master}}",
-      ],
-      ["Home service fee, per visit", "+ IDR {{fee}}", "+ IDR {{fee}}"],
-      [
-        "Sport massage at your villa, 60 min (incl. fee)",
         "IDR {{villa:sport-massage:60:standard}}",
+      ],
+      [
+        "90 minutes · Therapist",
+        "IDR {{price:sport-massage:90:standard}}",
+        "IDR {{villa:sport-massage:90:standard}}",
+      ],
+      [
+        "60 minutes · Ginny, master therapist",
+        "IDR {{price:sport-massage:60:master}}",
         "IDR {{villa:sport-massage:60:master}}",
       ],
       [
-        "Sport massage at your villa, 90 min (incl. fee)",
-        "IDR {{villa:sport-massage:90:standard}}",
+        "90 minutes · Ginny, master therapist",
+        "IDR {{price:sport-massage:90:master}}",
         "IDR {{villa:sport-massage:90:master}}",
       ],
     ],
   },
   {
     type: "paragraph",
-    text: "**60 minutes** suits one or two problem areas, such as shoulders and upper back after a week of paddling. **90 minutes** leaves time for legs, hips, back and shoulders without rushing, which suits a full-body session after a big surf week, a long hike or a heavy training block.",
+    text: "**60 minutes** works one or two areas properly, usually shoulders and upper back. **90 minutes** covers legs, hips, back and shoulders in one session without rushing. Villa prices include the IDR {{fee}} home service fee.",
   },
   {
     type: "heading",
@@ -51,12 +52,34 @@ const blocks: ContentBlock[] = [
     type: "paragraph",
     text: "If you are looking for a sports massage in Bali, Flex & Flow is a bodywork and recovery studio in Ungasan, Uluwatu, on the island's southern Bukit Peninsula. The address is Jl. Toya Ning II, Ungasan, Kec. Kuta Sel., Kabupaten Badung, Bali 80361, and we are open Monday to Saturday, 09:00 to 17:00.",
   },
+  /* Studio or villa, as a captioned pair (`RichText`). The villa photo is a
+     stand-in, a session on the portable table, until photos taken at a
+     client's villa arrive; swap the src, size and alt then. */
+  {
+    type: "gallery",
+    images: [
+      {
+        src: "/images/2026/08/about-studio.jpg",
+        alt: "The Flex & Flow studio in Ungasan: a wooden floor, a surfboard against the wall and the studio logo painted in green",
+        width: 1920,
+        height: 1536,
+        caption: "**The studio** Ungasan, Uluwatu · Mon–Sat, 09:00–17:00",
+      },
+      {
+        src: "/images/2026/08/home-service.jpg",
+        alt: "A therapist working on a client's neck and upper back on a portable massage table",
+        width: 1920,
+        height: 1080,
+        caption: "**Your villa** Across the Uluwatu area · + IDR {{fee}}",
+      },
+    ],
+  },
   {
     type: "list",
     items: [
       "**At the studio:** anyone can book, wherever in Bali you are staying.",
       "**At your villa or hotel:** a therapist comes to you in the Uluwatu area, including Ungasan, Pecatu, Bingin, Padang Padang and Balangan, at the studio price plus IDR {{fee}}. Read how [home service massage](/uluwatu-bali/outcall-home-service-massage/) works.",
-      "**Staying further away**, for example in Canggu, Seminyak or Ubud: home visits do not reach you, so the studio is the way to book. Not sure if you are in range? [Message us on WhatsApp](https://wa.me/6285858887777).",
+      "**Staying further away:** in Canggu, Seminyak or Ubud, for example, home visits do not reach you, so book the studio. Not sure if you are in range? [Message us on WhatsApp](https://wa.me/6285858887777).",
     ],
   },
   {
@@ -87,7 +110,7 @@ const blocks: ContentBlock[] = [
     items: [
       {
         question: "How much is a sports massage in Bali at Flex & Flow?",
-        answer: "At Flex & Flow in Ungasan, Uluwatu, a 60-minute sports massage costs IDR {{price:sport-massage:60:standard}} with a therapist or IDR {{price:sport-massage:60:master}} with master therapist Ginny. A 90-minute session costs IDR {{price:sport-massage:90:standard}} or IDR {{price:sport-massage:90:master}}. Home visits in the Uluwatu area cost the same plus a home service fee of IDR {{fee}} per visit. Prices as of 4 November 2026; see the full [price list](/price-list/).",
+        answer: "At Flex & Flow in Ungasan, Uluwatu, a 60-minute sports massage costs IDR {{price:sport-massage:60:standard}} with a therapist or IDR {{price:sport-massage:60:master}} with master therapist Ginny. A 90-minute session costs IDR {{price:sport-massage:90:standard}} or IDR {{price:sport-massage:90:master}}. Home visits in the Uluwatu area cost the same plus a home service fee of IDR {{fee}} per visit. See the full [price list](/price-list/).",
       },
       {
         question: "Where can I get a sports massage in Bali if I am not staying in Uluwatu?",

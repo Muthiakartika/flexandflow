@@ -50,7 +50,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Who gives pregnancy massage at Flex & Flow in Uluwatu?",
-        answer: "You can book a therapist, at IDR {{price:pregnancy-massage-service:90:standard}} for 90 minutes, or our founder and master therapist, [Ginny](/therapist/ginny/), at IDR {{price:pregnancy-massage-service:90:master}} (prices as of 4 November 2026). Ginny has a background in nursing, professional fitness training and bodywork. Come to our Ungasan studio in Uluwatu, or have your therapist visit your villa, for a home service fee of IDR {{fee}}.",
+        answer: "You can book a therapist, at IDR {{price:pregnancy-massage-service:90:standard}} for 90 minutes, or our founder and master therapist, [Ginny](/therapist/ginny/), at IDR {{price:pregnancy-massage-service:90:master}}. Ginny has a background in nursing, professional fitness training and bodywork. Come to our Ungasan studio in Uluwatu, or have your therapist visit your villa, for a home service fee of IDR {{fee}}.",
       },
     ],
   },

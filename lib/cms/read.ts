@@ -45,6 +45,7 @@ import {
   type PostCategory,
 } from "@/lib/cms/shape";
 import { prisma } from "@/lib/db";
+import { withPageCopy } from "@/lib/seo/copy";
 import { withPageFixes } from "@/lib/seo/fixes";
 import { withPageSeo } from "@/lib/seo/pages";
 import type { PriceBook } from "@/lib/seo/price-tokens";
@@ -110,8 +111,9 @@ async function load(
 }
 
 /*
- * Every function below passes the row through `fromCode`, which corrects the
- * panel's copy with `lib/seo/fixes.ts`, appends `lib/seo/sections` to its body
+ * Every function below passes the row through `fromCode`, which swaps in the
+ * code's own copy for the pages in `lib/seo/copy`, corrects the panel's copy
+ * with `lib/seo/fixes.ts`, appends `lib/seo/sections` to its body
  * and lays `lib/seo/pages.ts` over its SEO. Fixes go first so they only ever
  * touch the panel's blocks, never the code's own sections.
  * After the cache rather than inside it: the cache holds database rows, so a
@@ -122,7 +124,9 @@ async function load(
  * that code (`lib/seo/prices.ts`).
  */
 function fromCode<T extends Service | Post>(entry: T, prices: PriceBook): T {
-  return withPageSeo(withPageSections(withPageFixes(entry, prices), prices));
+  return withPageSeo(
+    withPageSections(withPageFixes(withPageCopy(entry, prices), prices), prices),
+  );
 }
 
 // ── Services ──────────────────────────────────────────────────────────────

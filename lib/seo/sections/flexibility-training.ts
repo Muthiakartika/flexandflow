@@ -111,7 +111,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Do I need to be flexible to book assisted stretching?",
-        answer: "No. Assisted stretching is designed for people who feel stiff. At Flex & Flow in Uluwatu, your therapist starts within your current range and adjusts each stretch to how your body responds, so very tight beginners are welcome. A 60-minute session costs IDR {{price:assisted-stretching:60:standard}} with a therapist or IDR {{price:assisted-stretching:60:master}} with master therapist Ginny (prices as of 4 November 2026).",
+        answer: "No. Assisted stretching is designed for people who feel stiff. At Flex & Flow in Uluwatu, your therapist starts within your current range and adjusts each stretch to how your body responds, so very tight beginners are welcome. A 60-minute session costs IDR {{price:assisted-stretching:60:standard}} with a therapist or IDR {{price:assisted-stretching:60:master}} with master therapist Ginny.",
       },
       {
         question: "Are there flexibility classes in Uluwatu?",

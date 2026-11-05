@@ -7,10 +7,9 @@ const blocks: ContentBlock[] = [
     level: 2,
     text: "Assisted Stretching in Bali: Prices and Which Session to Book",
   },
-  {
-    type: "paragraph",
-    text: "One-to-one assisted stretching at Flex & Flow costs from IDR {{price:assisted-stretching:60:standard}} for 60 minutes at our studio on Jl. Toya Ning II, Ungasan, Uluwatu, open Monday to Saturday, 09:00 to 17:00. Our founder [Ginny](/therapist/ginny/) specialises in assisted stretching and has a background in nursing and professional fitness training. Prices as of 4 November 2026.",
-  },
+  /* The therapist-or-Ginny choice that opens this section on the redesign
+     is `TierChooser`, placed under this heading by `ServiceArticle` from the
+     rate card. */
   {
     type: "table",
     head: ["Session", "Therapist", "Master therapist (Ginny)"],

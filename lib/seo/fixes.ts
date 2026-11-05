@@ -17,6 +17,9 @@
  * these sentences the fix stops matching and does nothing, and
  * `npm run check:seo <url>` fails on it, which is the signal to delete the
  * fix or move it to the new wording.
+ *
+ * A page whose copy needed rewriting as a whole has it in `lib/seo/copy`
+ * instead, which replaces the panel body before these fixes run.
  */
 import { resolvePrices, type PriceBook } from "@/lib/seo/price-tokens";
 import type { ContentBlock, Seo } from "@/types";
@@ -78,20 +81,6 @@ export const PAGE_FIXES: Record<string, TextFix[]> = {
       find: "A 60-minute sport massage costs IDR 400,000 to IDR 750,000 depending on the therapist (prices as of 29 October 2026).",
       replace: "A 60-minute sport massage costs IDR {{price:sport-massage:60:standard}} to IDR {{price:sport-massage:60:master}} depending on the therapist.",
       why: SPORT_PRICE,
-    },
-  ],
-  "/uluwatu-bali/lymphatic-detox-massage-for-men/": [
-    {
-      find: "Each 60-minute Lymphatic Detox Massage for Men is priced at IDR 750K and combines",
-      replace: "Each 60-minute Lymphatic Detox Massage for Men is priced at IDR {{price:lymphatic-detox-massage-for-men:60:standard}} with a therapist or IDR {{price:lymphatic-detox-massage-for-men:60:master}} with Ginny, our master therapist, and combines",
-      why: "The price list and the page's own rate card say 600,000 / 800,000; IDR 750K matches neither.",
-    },
-  ],
-  "/uluwatu-bali/pregnancy-massage-service/": [
-    {
-      find: "as a home service in Uluwatu and surrounding Bali areas.",
-      replace: "as a home service in the Uluwatu area, including Ungasan, Pecatu, Bingin, Padang Padang and Balangan.",
-      why: "Home service covers the Uluwatu area only, as the home service page says.",
     },
   ],
 };

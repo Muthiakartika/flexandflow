@@ -32,6 +32,12 @@ export type PageSeo = {
   noindex?: boolean;
   /** Only changes the robots meta tag. */
   nofollow?: boolean;
+  /**
+   * The page's visible `<h1>`, when it should carry the search phrase the
+   * panel's title leaves out. Only the treatment hero reads it; the menu,
+   * cards and breadcrumb keep the panel's shorter title.
+   */
+  h1?: string;
 };
 
 export const PAGE_SEO: Record<string, PageSeo> = {
@@ -40,11 +46,13 @@ export const PAGE_SEO: Record<string, PageSeo> = {
     title: "Assisted Stretching in Uluwatu, Bali | Flex & Flow",
     description:
       "One-to-one assisted stretching in Uluwatu, Bali. A therapist guides deep stretches to free tight muscles and improve mobility. 60 min from IDR 500,000.",
+    h1: "Assisted Stretching in Uluwatu, Bali",
   },
   "/uluwatu-bali/sport-massage/": {
     title: "Sports Massage in Uluwatu, Bali | Flex & Flow",
     description:
       "Sports massage in Uluwatu, Bali to ease sore muscles, improve mobility and recover faster after surfing or training. 60 min from IDR 500,000.",
+    h1: "Sports Massage in Uluwatu, Bali",
   },
   /* Hidden from search at the owner’s request (27 Oct 2026). Still answers
      at its address; leave it hidden unless the owner says otherwise. */
@@ -59,26 +67,31 @@ export const PAGE_SEO: Record<string, PageSeo> = {
     title: "Cupping Therapy in Uluwatu, Bali | Flex & Flow",
     description:
       "Cupping therapy in Uluwatu, Bali to release deep muscle tension and improve blood flow. 30 min for IDR 300,000, on its own or alongside a massage.",
+    h1: "Cupping Therapy in Uluwatu, Bali",
   },
   "/uluwatu-bali/lymphatic-drainage/": {
     title: "Lymphatic Drainage Massage in Uluwatu, Bali | Flex & Flow",
     description:
       "Gentle lymphatic drainage massage in Uluwatu to ease swelling and help your body feel lighter. 60 min from IDR 500,000, at our studio or your villa.",
+    h1: "Lymphatic Drainage Massage in Uluwatu, Bali",
   },
   "/uluwatu-bali/trauma-healing/": {
     title: "Trauma Healing & Release in Uluwatu, Bali | Flex & Flow",
     description:
       "Deep therapeutic bodywork in Uluwatu, Bali for releasing chronic tension and stored physical stress, more focused than a massage. 90 min, IDR 1,800,000.",
+    h1: "Trauma Healing in Uluwatu, Bali",
   },
   "/uluwatu-bali/lymphatic-detox-massage-for-men/": {
     title: "Men's Lymphatic Drainage Massage in Uluwatu | Flex & Flow",
     description:
       "Lymphatic detox massage for men in Uluwatu, Bali to reduce swelling, improve circulation and leave your body feeling lighter. 60 min from IDR 600,000.",
+    h1: "Lymphatic Detox Massage for Men in Uluwatu",
   },
   "/uluwatu-bali/pregnancy-massage-service/": {
     title: "Pregnancy Massage in Uluwatu, Bali | Flex & Flow",
     description:
       "Gentle pregnancy massage in Uluwatu, Bali to help mums-to-be relax, ease tension and feel more comfortable. 90 min from IDR 750,000.",
+    h1: "Pregnancy Massage in Uluwatu, Bali",
   },
   /* Hidden from search at the owner’s request (27 Oct 2026). Still answers
      at its address; leave it hidden unless the owner says otherwise. */

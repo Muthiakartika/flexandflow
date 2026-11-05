@@ -5,6 +5,52 @@ import { BAND_LINE, FOCUS, H1, WRAP } from "./tokens";
 
 export type Crumb = { label: string; href?: string };
 
+/** The "Home / …" trail. Shared with the treatment hero, which has its own band. */
+export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
+  return (
+    <nav aria-label="Breadcrumb">
+      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        {/* Flex like the crumbs after it: as a plain block the link sat on
+            the body's taller line box and dropped below them. */}
+        <li className="flex items-center">
+          <Link
+            href="/"
+            className={`page-label transition-colors duration-300 hover:text-primary ${FOCUS}`}
+          >
+            Home
+          </Link>
+        </li>
+
+        {crumbs.map((crumb, i) => {
+          const isLast = i === crumbs.length - 1;
+          return (
+            <li key={crumb.label} className="flex min-w-0 max-w-full items-center gap-2">
+              <span aria-hidden className="page-label">
+                /
+              </span>
+              {crumb.href && !isLast ? (
+                <Link
+                  href={crumb.href}
+                  className={`page-label transition-colors duration-300 hover:text-primary ${FOCUS}`}
+                >
+                  {crumb.label}
+                </Link>
+              ) : (
+                <span
+                  aria-current={isLast ? "page" : undefined}
+                  className="page-label min-w-0 max-w-[46ch] truncate text-body-text"
+                >
+                  {crumb.label}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
+
 /**
  * Inner-page title band.
  *
@@ -35,44 +81,7 @@ export default function PageHero({
       <div
         className={`${WRAP} pt-[clamp(1.25rem,2.4vw,2rem)] pb-[clamp(1.75rem,3vw,2.5rem)]`}
       >
-        <nav aria-label="Breadcrumb">
-          <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <li>
-              <Link
-                href="/"
-                className={`page-label transition-colors duration-300 hover:text-primary ${FOCUS}`}
-              >
-                Home
-              </Link>
-            </li>
-
-            {crumbs.map((crumb, i) => {
-              const isLast = i === crumbs.length - 1;
-              return (
-                <li key={crumb.label} className="flex min-w-0 max-w-full items-center gap-2">
-                  <span aria-hidden className="page-label">
-                    /
-                  </span>
-                  {crumb.href && !isLast ? (
-                    <Link
-                      href={crumb.href}
-                      className={`page-label transition-colors duration-300 hover:text-primary ${FOCUS}`}
-                    >
-                      {crumb.label}
-                    </Link>
-                  ) : (
-                    <span
-                      aria-current={isLast ? "page" : undefined}
-                      className="page-label min-w-0 max-w-[46ch] truncate text-body-text"
-                    >
-                      {crumb.label}
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-        </nav>
+        <Breadcrumbs crumbs={crumbs} />
 
         <div className="mt-4 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
           <div>

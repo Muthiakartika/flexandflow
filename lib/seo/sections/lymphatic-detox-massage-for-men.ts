@@ -7,10 +7,9 @@ const blocks: ContentBlock[] = [
     level: 2,
     text: "Men's lymphatic drainage massage in Uluwatu: prices and session length",
   },
-  {
-    type: "paragraph",
-    text: "The lymphatic detox massage for men at Flex & Flow in Uluwatu costs IDR {{price:lymphatic-detox-massage-for-men:60:standard}} for 60 minutes or IDR {{price:lymphatic-detox-massage-for-men:90:standard}} for 90 minutes with Yuni, our Javanese massage and lymphatic specialist. With Ginny, our founder and master therapist, it costs IDR {{price:lymphatic-detox-massage-for-men:60:master}} or IDR {{price:lymphatic-detox-massage-for-men:90:master}}.",
-  },
+  /* The therapist-or-Ginny choice that opens this section on the redesign
+     is `TierChooser`, placed under this heading by `ServiceArticle` from the
+     rate card. */
   {
     type: "table",
     head: ["Session", "Therapist (Yuni)", "Master therapist (Ginny)"],

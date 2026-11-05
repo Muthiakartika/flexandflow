@@ -7,10 +7,9 @@ const blocks: ContentBlock[] = [
     level: 2,
     text: "Pregnancy massage in Uluwatu: price and session length",
   },
-  {
-    type: "paragraph",
-    text: "A pregnancy massage at Flex & Flow in Uluwatu is a 90-minute session. It costs IDR {{price:pregnancy-massage-service:90:standard}} with a therapist, or IDR {{price:pregnancy-massage-service:90:master}} with Ginny, our founder and master therapist, who has a background in nursing, professional fitness training and bodywork.",
-  },
+  /* The therapist-or-Ginny choice that opens this section on the redesign
+     is `TierChooser`, placed under this heading by `ServiceArticle` from the
+     rate card. */
   {
     type: "table",
     head: ["Pregnancy massage, 90 min", "Therapist", "Master therapist (Ginny)"],

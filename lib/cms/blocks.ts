@@ -30,6 +30,7 @@ const image = {
   alt: z.string().default(""),
   width: z.number().int().positive(),
   height: z.number().int().positive(),
+  caption: z.string().optional(),
 };
 
 const headingBlock = z.object({

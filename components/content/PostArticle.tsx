@@ -6,6 +6,8 @@ import PageHero from "@/components/ui/PageHero";
 import { BAND, FOCUS, WRAP } from "@/components/ui/tokens";
 import { POST_AUTHOR } from "@/lib/structured-data";
 import RichText from "./RichText";
+import { WhatsAppMessage } from "@/components/layout/WhatsAppLinks";
+import { articleMessage } from "@/lib/whatsapp";
 import type { Post } from "@/types";
 
 /** `2026-10-30` → "October 30, 2026", the format `post.date` already uses. */
@@ -30,6 +32,7 @@ export default function PostArticle({
 }) {
   return (
     <>
+      <WhatsAppMessage text={articleMessage(post.title)} />
       <PageHero
         title={post.title}
         eyebrow={[

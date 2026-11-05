@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties, ReactNode } from "react";
+import { Fragment, type CSSProperties, type ReactNode } from "react";
 
 import { BTN_GHOST, BTN_SOLID } from "@/components/ui/tokens";
+import { groupsFor, type ColumnGroups } from "@/lib/seo/layouts";
+import CardSlider from "./CardSlider";
 import InlineFaq from "./InlineFaq";
 import type { ContentBlock } from "@/types";
 
@@ -57,14 +59,70 @@ export function renderInline(text: string): ReactNode[] {
   return nodes;
 }
 
-/** Renders the ported body content of a service or blog post page. */
+const TERM = /^\*\*([^*]+?):\*\*\s+([\s\S]+)$/;
+
+/**
+ * A bullet list whose every point opens with a bold label and a colon
+ * ("**After a surf:** rinse off…"), split into label and detail, the detail
+ * capitalised now that it starts its own line. Null when any point lacks
+ * one, so a mixed list stays an ordinary list.
+ */
+function termsOf(items: string[]): { term: string; detail: string }[] | null {
+  const matches = items.map((item) => item.match(TERM));
+  return items.length >= 2 && matches.every((m) => m !== null)
+    ? matches.map((m) => ({ term: m![1], detail: m![2][0].toUpperCase() + m![2].slice(1) }))
+    : null;
+}
+
+/** A section heading's anchor: "Built Around How You Train" → "built-around-how-you-train".
+ *  The scannable layout gives its h2s these ids for the "On this page" list. */
+export function headingId(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/[\s-]+/g, "-");
+}
+
+/** A table of prices: a label per row and nothing but figures after it. */
+function isPriceTable(block: Extract<ContentBlock, { type: "table" }>): boolean {
+  return (
+    block.head.length >= 2 &&
+    block.rows.length <= 8 &&
+    block.rows.every((row) => row.slice(1).every((cell) => /IDR\s?\d/.test(cell)))
+  );
+}
+
+/**
+ * Renders the ported body content of a service or blog post page.
+ *
+ * `layout="scannable"` is the treatment-page redesign, on its pilot pages
+ * first: two-column bullets become white cards, labelled lists become label
+ * and detail, price tables a menu and FAQs numbered cards, so a long article
+ * can be skimmed. The words and their order are unchanged.
+ */
 export default function RichText({
   blocks,
   className = "",
+  layout = "article",
+  columnGroups,
+  before,
+  after,
 }: {
   blocks: ContentBlock[];
   className?: string;
+  layout?: "article" | "scannable";
+  /** How the scannable layout groups this page's two-column list
+   *  (`lib/seo/layouts.ts`). */
+  columnGroups?: ColumnGroups;
+  /** Built elements to place straight before, or straight after, the heading
+   *  with this exact text, for pieces that need live data (`ReviewsBand`,
+   *  `TierChooser`). */
+  before?: Record<string, ReactNode>;
+  after?: Record<string, ReactNode>;
 }) {
+  const scannable = layout === "scannable";
   return (
     <div className={`prose-flex ${className}`.trim()}>
       {blocks.map((block, i) => {
@@ -77,13 +135,36 @@ export default function RichText({
               | "h4"
               | "h5"
               | "h6";
-            return <Tag key={i}>{block.text}</Tag>;
+            return (
+              <Fragment key={i}>
+                {before?.[block.text]}
+                <Tag id={scannable && block.level === 2 ? headingId(block.text) : undefined}>
+                  {block.text}
+                </Tag>
+                {after?.[block.text]}
+              </Fragment>
+            );
           }
 
           case "paragraph":
             return <p key={i}>{renderInline(block.text)}</p>;
 
-          case "list":
+          case "list": {
+            /* Scannable layout: a labelled list reads as label and detail,
+               ruled like the price menu. */
+            const terms = scannable && !block.ordered ? termsOf(block.items) : null;
+            if (terms) {
+              return (
+                <dl key={i} className="term-list">
+                  {terms.map((item, j) => (
+                    <div key={j}>
+                      <dt>{renderInline(item.term)}</dt>
+                      <dd>{renderInline(item.detail)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              );
+            }
             return block.ordered ? (
               <ol key={i}>
                 {block.items.map((item, j) => (
@@ -97,16 +178,35 @@ export default function RichText({
                 ))}
               </ul>
             );
+          }
 
           /* The theme lays these bullets out in two columns. */
-          case "columns":
+          case "columns": {
+            /* Scannable layout: when the page groups this list, one numbered
+               card per group, a slider on phones. The deck is named after
+               the heading just above it. */
+            const groups = scannable ? groupsFor(block.items, columnGroups) : null;
+            if (groups) {
+              const heading = [...blocks.slice(0, i)].reverse().find((b) => b.type === "heading");
+              return (
+                <CardSlider
+                  key={i}
+                  label={heading?.type === "heading" ? heading.text : "Cards"}
+                  slides={groups.map((group) => ({
+                    title: group.title,
+                    points: group.items.map((n) => renderInline(block.items[n])),
+                  }))}
+                />
+              );
+            }
             return (
-              <ul key={i} className="icon-list list-none! pl-0!">
+              <ul key={i} className={scannable ? "benefit-grid" : "icon-list list-none! pl-0!"}>
                 {block.items.map((item, j) => (
                   <li key={j}>{renderInline(item)}</li>
                 ))}
               </ul>
             );
+          }
 
           case "image":
             return (
@@ -121,7 +221,7 @@ export default function RichText({
             );
 
           case "faq":
-            return <InlineFaq key={i} items={block.items} />;
+            return <InlineFaq key={i} items={block.items} variant={scannable ? "cards" : "plain"} />;
 
           /* Olive pull-quote callout box some posts drop mid-article, with a
              quote-mark glyph pinned to the bottom-right corner. */
@@ -171,6 +271,31 @@ export default function RichText({
             );
 
           case "gallery":
+            /* Scannable layout: two captioned photos are a choice of two
+               (studio or villa), set as an overlapping pair with an olive
+               "or" on the seam and each caption as a tag on its photo. */
+            if (scannable && block.images.length === 2 && block.images.every((image) => image.caption)) {
+              return (
+                <div key={i} className="photo-pair">
+                  {block.images.map((image, j) => (
+                    <figure key={j} className="photo-pair-item">
+                      <Image
+                        src={image.src}
+                        alt={image.alt}
+                        width={image.width}
+                        height={image.height}
+                        sizes="(max-width: 639px) 80vw, 400px"
+                        className="photo-pair-img"
+                      />
+                      <figcaption className="photo-pair-tag">{renderInline(image.caption!)}</figcaption>
+                    </figure>
+                  ))}
+                  <span aria-hidden className="photo-pair-or">
+                    or
+                  </span>
+                </div>
+              );
+            }
             return block.images.length === 0 ? null : (
               <ul
                 key={i}
@@ -269,6 +394,33 @@ export default function RichText({
              price table into 360px. The wrapper is focusable so that scroll
              is reachable from the keyboard too. */
           case "table":
+            /* On the scannable layout a price table reads as a menu: one line
+               per session, a dotted leader to its price, the other columns
+               under it in small type labelled by their heading. The hero
+               already carries the rate card, so this stays text, not cards. */
+            if (scannable && isPriceTable(block)) {
+              return (
+                <dl key={i} className="price-menu">
+                  {block.rows.map((row, r) => (
+                    <div key={r} className="price-menu-row">
+                      <dt>{renderInline(row[0])}</dt>
+                      <span aria-hidden className="price-menu-leader" />
+                      <dd>
+                        <span className="price-menu-price">
+                          <span className="sr-only">{block.head[1]}: </span>
+                          {renderInline(row[1])}
+                        </span>
+                        {row.slice(2).map((cell, j) => (
+                          <span key={j} className="price-menu-note">
+                            {block.head[j + 2]} {renderInline(cell)}
+                          </span>
+                        ))}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              );
+            }
             return (
               <div
                 key={i}
