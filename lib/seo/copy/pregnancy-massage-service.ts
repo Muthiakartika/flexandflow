@@ -3,17 +3,14 @@
  * panel's. See ./index.ts and the voice notes in ./sport-massage.ts. Facts
  * from the panel copy (gentle controlled pressure, supportive positioning,
  * adapted by stage, studio or home service) and the page's own sections
- * (90 minutes; Ginny's nursing background).
- *
- * The photos are the studio's own (November 2026), in place of the panel's
- * stock photo.
+ * (90 minutes; Ginny's nursing background). The page's photo is in
+ * `lib/seo/photos.ts`.
  */
 import type { PageCopy } from "./index";
 
 const copy: PageCopy = {
   excerpt:
     "Gentle, carefully positioned massage for each stage of pregnancy, 90 minutes at our studio in Ungasan or at your villa.",
-  image: "/images/2026/11/pregnancy-massage-side-lying.jpg",
   body: [
     {
       type: "paragraph",

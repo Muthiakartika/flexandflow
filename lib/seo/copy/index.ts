@@ -31,9 +31,6 @@ import traumaHealing from "./trauma-healing";
 export type PageCopy = {
   /** Replaces the panel's excerpt. Left out, the panel's stays. */
   excerpt?: string;
-  /** Replaces the panel's photo (the hero, the treatment cards and the
-   *  structured data). Left out, the panel's stays. */
-  image?: string;
   body: ContentBlock[];
 };
 
@@ -49,15 +46,15 @@ export const PAGE_COPY: Record<string, PageCopy> = {
 };
 
 /** The page with its code copy in place of the panel's, price tokens filled. */
-export function withPageCopy<
-  T extends { seo: Seo; excerpt: string; image?: string; body: ContentBlock[] },
->(entry: T, prices: PriceBook): T {
+export function withPageCopy<T extends { seo: Seo; excerpt: string; body: ContentBlock[] }>(
+  entry: T,
+  prices: PriceBook,
+): T {
   const copy = PAGE_COPY[entry.seo.canonicalPath];
   return copy
     ? {
         ...entry,
         excerpt: copy.excerpt ? resolvePrices(copy.excerpt, prices) : entry.excerpt,
-        image: copy.image ?? entry.image,
         body: copy.body.map((block) => resolveBlockPrices(block, prices)),
       }
     : entry;

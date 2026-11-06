@@ -48,6 +48,7 @@ import { prisma } from "@/lib/db";
 import { withPageCopy } from "@/lib/seo/copy";
 import { withPageFixes } from "@/lib/seo/fixes";
 import { withPageSeo } from "@/lib/seo/pages";
+import { withPagePhoto } from "@/lib/seo/photos";
 import type { PriceBook } from "@/lib/seo/price-tokens";
 import { loadPriceBook } from "@/lib/seo/prices";
 import { withPageSections } from "@/lib/seo/sections";
@@ -113,9 +114,11 @@ async function load(
 /*
  * Every function below passes the row through `fromCode`, which swaps in the
  * code's own copy for the pages in `lib/seo/copy`, corrects the panel's copy
- * with `lib/seo/fixes.ts`, appends `lib/seo/sections` to its body
- * and lays `lib/seo/pages.ts` over its SEO. Fixes go first so they only ever
- * touch the panel's blocks, never the code's own sections.
+ * with `lib/seo/fixes.ts`, appends `lib/seo/sections` to its body, swaps in
+ * the studio's own photo from `lib/seo/photos.ts` and lays `lib/seo/pages.ts`
+ * over its SEO. Fixes go first so they only ever touch the panel's blocks,
+ * never the code's own sections; the photo goes before the SEO, which keeps
+ * the link preview it sets.
  * After the cache rather than inside it: the cache holds database rows, so a
  * deploy that changes any of these takes effect without anything being
  * invalidated. Here and not in `lib/cms/shape.ts`, because the import check
@@ -125,7 +128,9 @@ async function load(
  */
 function fromCode<T extends Service | Post>(entry: T, prices: PriceBook): T {
   return withPageSeo(
-    withPageSections(withPageFixes(withPageCopy(entry, prices), prices), prices),
+    withPagePhoto(
+      withPageSections(withPageFixes(withPageCopy(entry, prices), prices), prices),
+    ),
   );
 }
 

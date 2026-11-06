@@ -20,10 +20,14 @@
  *   npx tsx scripts/check-seo.ts                          # the file only
  *   npx tsx scripts/check-seo.ts https://flexandflow.fit  # plus the pages
  */
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+
 import { blocksSchema } from "@/lib/cms/blocks";
 import { PAGE_COPY } from "@/lib/seo/copy";
 import { PAGE_FIXES } from "@/lib/seo/fixes";
 import { PAGE_SEO } from "@/lib/seo/pages";
+import { PAGE_PHOTOS } from "@/lib/seo/photos";
 import { PRICE_MISSING, PRICE_TOKEN } from "@/lib/seo/price-tokens";
 import { PAGE_SECTIONS } from "@/lib/seo/sections";
 
@@ -172,6 +176,11 @@ function checkSections(): void {
   for (const [path, fixes] of Object.entries(PAGE_FIXES)) {
     checkTokens(`${path} (fixes)`, fixes.map((f) => f.replace));
   }
+
+  console.log("\nlib/seo/photos");
+  for (const [path, photo] of Object.entries(PAGE_PHOTOS)) {
+    check(`${path} photo ${photo.src} is in public/`, existsSync(join("public", photo.src)));
+  }
 }
 
 /* A price written as a figure: "IDR 500,000", or a bare "500,000" table cell. */
@@ -295,6 +304,13 @@ async function checkFixes(base: string): Promise<void> {
       if (!value) continue;
       check(`${path} serves its code copy "${plain(value).slice(0, 40)}…"`, served(value).test(text), "not served");
     }
+  }
+
+  /* A page with its photo in code previews with it when the link is shared. */
+  for (const [path, photo] of Object.entries(PAGE_PHOTOS)) {
+    const html = await (await fetch(`${base}${path}`)).text();
+    const preview = html.match(/<meta property="og:image" content="([^"]*)"/)?.[1] ?? "";
+    check(`${path} link preview is ${photo.src}`, preview.endsWith(photo.src), preview || "no og:image");
   }
 }
 

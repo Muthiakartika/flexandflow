@@ -108,7 +108,7 @@ export const RAIL_PHOTOS: Record<string, RailPhoto[]> = {
   "/uluwatu-bali/outcall-home-service-massage/": [
     { src: "/images/2026/08/yuni-session.jpg", width: 1800, height: 1800, caption: "Same team, your space", position: "22% center" },
     { src: "/images/2026/08/gallery-2.jpg", width: 1800, height: 900, caption: "Pressure set to you", position: "40% center" },
-    { src: "/images/2026/11/pregnancy-massage-hips.jpg", width: 1376, height: 768, caption: "Pregnancy massage, side-lying", position: "55% center" },
+    { src: "/images/2026/11/pregnancy-massage-legs.jpg", width: 1376, height: 768, caption: "Tired legs, light strokes", position: "40% center" },
     { src: "/images/2026/08/gallery-4.jpg", width: 1200, height: 857, caption: "Unhurried, start to finish", position: "50% center" },
     { src: "/images/2026/08/ginny-session.jpg", width: 1800, height: 1800, caption: "The studio's approach", position: "30% center" },
   ],

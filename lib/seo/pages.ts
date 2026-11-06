@@ -161,8 +161,9 @@ export function pageSeoFor(canonicalPath: string): PageSeo | undefined {
  *
  * The panel’s `noindex` and `nofollow` are dropped rather than merged: for a
  * page listed here, an index switch left on in the panel must not hide it.
- * `canonicalPath` and `ogImage` stay the panel’s, because they follow the
- * page’s address and picture, which the panel owns.
+ * `canonicalPath` and `ogImage` stay the entry’s, because they follow the
+ * page’s address and picture: the panel’s, or for a picture in
+ * `lib/seo/photos.ts`, that one.
  */
 export function withPageSeo<T extends { seo: Seo }>(entry: T): T {
   const code = PAGE_SEO[entry.seo.canonicalPath];
