@@ -66,6 +66,13 @@ const blocks: ContentBlock[] = [
     text: "Swollen feet and ankles are common in later pregnancy, and Bali's heat can make them feel worse. If swelling is your main concern, book a pregnancy massage rather than a standard [lymphatic drainage](/uluwatu-bali/lymphatic-drainage/) session. It is adapted for pregnancy, with supportive positioning and light pressure, and can include the legs and feet. If you would still like lymphatic work, ask your midwife first.",
   },
   {
+    type: "image",
+    src: "/images/2026/11/pregnancy-massage-legs.jpg",
+    alt: "A Flex & Flow therapist working on a client's calf with both hands, her leg resting on a rolled towel",
+    width: 1376,
+    height: 768,
+  },
+  {
     type: "paragraph",
     text: "Some swelling needs a doctor, not a massage. Contact your midwife or doctor straight away if swelling comes on suddenly, particularly in your face or hands, or arrives with a bad headache or problems with your vision. These can be signs of [pre-eclampsia](https://www.nhs.uk/conditions/pre-eclampsia/). The same goes for one calf that is painful, red, warm or swollen.",
   },

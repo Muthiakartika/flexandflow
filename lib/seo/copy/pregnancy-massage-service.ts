@@ -4,12 +4,16 @@
  * from the panel copy (gentle controlled pressure, supportive positioning,
  * adapted by stage, studio or home service) and the page's own sections
  * (90 minutes; Ginny's nursing background).
+ *
+ * The photos are the studio's own (November 2026), in place of the panel's
+ * stock photo.
  */
 import type { PageCopy } from "./index";
 
 const copy: PageCopy = {
   excerpt:
     "Gentle, carefully positioned massage for each stage of pregnancy, 90 minutes at our studio in Ungasan or at your villa.",
+  image: "/images/2026/11/pregnancy-massage-side-lying.jpg",
   body: [
     {
       type: "paragraph",
@@ -41,6 +45,13 @@ const copy: PageCopy = {
         "**Shoulders and neck:** tension from a changing posture.",
         "**Legs and feet:** heavy legs and puffy ankles, worked with lighter strokes.",
       ],
+    },
+    {
+      type: "image",
+      src: "/images/2026/11/pregnancy-massage-hips.jpg",
+      alt: "A Flex & Flow therapist's hands on the hip and bump of a pregnant client lying on her side, a rolled towel under her",
+      width: 1376,
+      height: 768,
     },
   ],
 };

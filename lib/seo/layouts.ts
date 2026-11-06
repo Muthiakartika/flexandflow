@@ -108,7 +108,7 @@ export const RAIL_PHOTOS: Record<string, RailPhoto[]> = {
   "/uluwatu-bali/outcall-home-service-massage/": [
     { src: "/images/2026/08/yuni-session.jpg", width: 1800, height: 1800, caption: "Same team, your space", position: "22% center" },
     { src: "/images/2026/08/gallery-2.jpg", width: 1800, height: 900, caption: "Pressure set to you", position: "40% center" },
-    { src: "/images/2026/06/prgenancy-massage-blog-banner.jpg", width: 1770, height: 986, caption: "Pregnancy massage at home", position: "70% center" },
+    { src: "/images/2026/11/pregnancy-massage-hips.jpg", width: 1376, height: 768, caption: "Pregnancy massage, side-lying", position: "55% center" },
     { src: "/images/2026/08/gallery-4.jpg", width: 1200, height: 857, caption: "Unhurried, start to finish", position: "50% center" },
     { src: "/images/2026/08/ginny-session.jpg", width: 1800, height: 1800, caption: "The studio's approach", position: "30% center" },
   ],
@@ -139,11 +139,13 @@ export const RAIL_PHOTOS: Record<string, RailPhoto[]> = {
     { src: "/images/2026/08/gallery-5.jpg", width: 1800, height: 900, caption: "A calm room", position: "45% center" },
     { src: "/images/2026/06/studio-new.jpg", width: 1300, height: 1200, caption: "Stretch · Release · Recover", position: "50% center" },
   ],
+  /* The studio's own pregnancy photos are the hero and two photos in the
+     copy, so the margins carry the studio's other photos: nothing twice. */
   "/uluwatu-bali/pregnancy-massage-service/": [
-    { src: "/images/2026/06/prgenancy-massage-blog-banner.jpg", width: 1770, height: 986, caption: "Positioned for comfort", position: "70% center" },
-    { src: "/images/2026/06/theraphy-section-with-client-ginny.jpg", width: 1300, height: 1200, caption: "Gentle, controlled pressure", position: "40% center" },
-    { src: "/images/2026/08/gallery-5.jpg", width: 1800, height: 900, caption: "Calm and private", position: "45% center" },
+    { src: "/images/2026/08/gallery-2.jpg", width: 1800, height: 900, caption: "Gentle, controlled pressure", position: "40% center" },
+    { src: "/images/2026/08/ginny-session.jpg", width: 1800, height: 1800, caption: "Shoulders and neck, too", position: "30% center" },
     { src: "/images/2026/08/home-service.jpg", width: 1920, height: 1080, caption: "Or at your villa", position: "55% center" },
+    { src: "/images/2026/08/gallery-5.jpg", width: 1800, height: 900, caption: "Calm and private", position: "45% center" },
     { src: "/images/2026/06/studio-new.jpg", width: 1300, height: 1200, caption: "Stretch · Release · Recover", position: "50% center" },
   ],
   "/uluwatu-bali/trauma-healing/": [
