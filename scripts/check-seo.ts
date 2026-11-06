@@ -277,13 +277,20 @@ async function checkFixes(base: string): Promise<void> {
     const rows = [...html.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)].map((m) =>
       [...m[1].matchAll(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi)].map((c) => visible(c[1]).trim()),
     );
+    /* A price table on the scannable layout is a menu: its label, then each
+       price, the column headings dropped. */
+    const menuRows = [...html.matchAll(/<div class="price-menu-row">([\s\S]*?)<\/dd>/gi)].map((m) => [
+      visible(m[1].match(/<dt[^>]*>([\s\S]*?)<\/dt>/i)?.[1] ?? "").trim(),
+      ...[...visible(m[1]).matchAll(/IDR\s?\d{1,3}(?:,\d{3})+/g)].map((price) => price[0]),
+    ]);
 
     for (const f of fixes) {
       if (f.row) {
-        const row = rows.find((cells) => f.row!.every((cell, i) => cells[i] === cell));
+        const row = [...rows, ...menuRows].find((cells) => f.row!.every((cell, i) => cells[i] === cell));
         check(
           `${path} row "${f.row.join(" / ")}" shows the live price`,
-          Boolean(row?.some((cell) => served(f.replace, true).test(cell))) && !row?.includes(f.find),
+          Boolean(row?.some((cell) => served(f.replace, true).test(cell))) &&
+            (f.stillCurrent || !row?.includes(f.find)),
           row ? `serves ${row.join(" | ")}` : "no such row",
         );
       } else {

@@ -28,11 +28,16 @@ export type TextFix = {
   find: string;
   replace: string;
   row?: string[];
+  /** The panel's figure is still today's rate: the fix keeps it current when
+   *  the rate changes, so `check:seo` can confirm only that the row shows a
+   *  price, not that the fix applied. */
+  stillCurrent?: true;
   /** For the reviewer: what was wrong. */
   why: string;
 };
 
 const SPORT_PRICE = "Typed in before sport massage was repriced; now quotes the live rate.";
+const TYPED_PRICE = "Typed in as a figure with an as-of date; now quotes the live rate.";
 
 export const PAGE_FIXES: Record<string, TextFix[]> = {
   "/uluwatu-bali/physiotherapy/": [
@@ -58,6 +63,25 @@ export const PAGE_FIXES: Record<string, TextFix[]> = {
       replace: "A 60-minute sport massage costs IDR {{price:sport-massage:60:standard}} to IDR {{price:sport-massage:60:master}} depending on the therapist.",
       why: SPORT_PRICE,
     },
+  ],
+  "/uluwatu-bali/what-is-a-pregnancy-massage/": [
+    {
+      find: "a 90-minute pregnancy massage costs IDR 750,000 with a therapist or IDR 1,000,000 with our master therapist, Ginny (prices as of 29 October 2026).",
+      replace: "a 90-minute pregnancy massage costs IDR {{price:pregnancy-massage-service:90:standard}} with a therapist or IDR {{price:pregnancy-massage-service:90:master}} with our master therapist, Ginny.",
+      why: TYPED_PRICE,
+    },
+    {
+      find: "Prices as of 29 October 2026. Sessions take place at our studio on Jl. Toya Ning II, Ungasan, or at your villa or hotel in the Uluwatu area for an extra home service fee of IDR 100,000.",
+      replace: "Sessions take place at our studio on Jl. Toya Ning II, Ungasan, or at your villa or hotel in the Uluwatu area for an extra home service fee of IDR {{fee}}.",
+      why: TYPED_PRICE,
+    },
+    {
+      find: "a 90-minute pregnancy massage costs IDR 750,000 with a therapist or IDR 1,000,000 with our master therapist (prices as of 29 October 2026).",
+      replace: "a 90-minute pregnancy massage costs IDR {{price:pregnancy-massage-service:90:standard}} with a therapist or IDR {{price:pregnancy-massage-service:90:master}} with our master therapist.",
+      why: TYPED_PRICE,
+    },
+    { row: ["Pregnancy massage, 90 minutes"], find: "IDR 750,000", replace: "IDR {{price:pregnancy-massage-service:90:standard}}", stillCurrent: true, why: TYPED_PRICE },
+    { row: ["Pregnancy massage, 90 minutes"], find: "IDR 1,000,000", replace: "IDR {{price:pregnancy-massage-service:90:master}}", stillCurrent: true, why: TYPED_PRICE },
   ],
 };
 
