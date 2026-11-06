@@ -1885,6 +1885,227 @@ button.booking-step-body {
   }
 }
 
+/* `/price-list/` (`PriceMenus`): the shortcuts and the studio / villa switch,
+   then one white card per treatment holding a menu like `.price-menu`
+   above, one session to a line. Two columns from 1024px. The shortcut row
+   scrolls sideways on a phone; `contain: inline-size` keeps its width out of
+   the page's, which would otherwise swing sideways. */
+.pl-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pl-jump {
+  contain: inline-size;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pl-jump::-webkit-scrollbar {
+  display: none;
+}
+
+.pl-jump ul {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pl-jump a {
+  display: block;
+  padding: 9px 14px;
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 16%, transparent);
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--color-body-text);
+  transition:
+    border-color 300ms ease,
+    color 300ms ease;
+}
+
+.pl-jump a:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary-strong);
+}
+
+.pl-where {
+  margin-top: 12px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--color-body-text) 60%, transparent);
+}
+
+.pl-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.pl-card {
+  display: flex;
+  flex-direction: column;
+  scroll-margin-top: 96px;
+  padding: 20px 20px 22px;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  border-radius: 10px;
+}
+
+.pl-name {
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.pl-line {
+  margin-top: 6px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--color-body-text) 65%, transparent);
+}
+
+.pl-menu {
+  margin-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+}
+
+.pl-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-block: 11px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+}
+
+.pl-row > dt {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 21px;
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--color-body-text);
+}
+
+/* Who the session is with, small and quiet after its length. */
+.pl-who {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-body-text) 55%, transparent);
+}
+
+.pl-leader {
+  flex: 1 1 20px;
+  min-width: 20px;
+  align-self: center;
+  border-bottom: 2px dotted color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+
+.pl-row > dd {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-body-text);
+}
+
+.pl-note {
+  margin-top: 10px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.4;
+  color: color-mix(in oklab, var(--color-body-text) 60%, transparent);
+}
+
+.pl-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: auto;
+  padding-top: 18px;
+}
+
+/* The villa facts: label over value, three across from 768px. */
+.pl-facts {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.pl-facts > div {
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  border-radius: 10px;
+}
+
+.pl-facts dt {
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-body-text) 55%, transparent);
+}
+
+.pl-facts dd {
+  margin: 4px 0 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-body-text);
+}
+
+@media only screen and (min-width: 768px) {
+  .pl-controls {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  /* Contained, the row has no width of its own to bring; it takes what the
+     switch leaves. */
+  .pl-jump {
+    flex: 1 1 0%;
+    min-width: 0;
+  }
+
+  .pl-facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media only screen and (min-width: 1024px) {
+  .pl-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .pl-card {
+    padding: 24px 26px 26px;
+  }
+}
+
 /* `CardSlider`: the scannable layout's grouped two-column list
    (`lib/seo/layouts.ts`). Numbered white cards joined by one olive rule that
    runs from each number across the gap into the next card, so the three read

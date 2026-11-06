@@ -16,6 +16,7 @@ import { isIndexable } from "@/lib/content";
 import { formatIdr, priceAmount, serviceMinutes } from "@/lib/pricing";
 import { COLUMN_GROUPS, RAIL_PHOTOS } from "@/lib/seo/layouts";
 import { bookingCtaHref, contact, homeServiceFeeIdr, homeServiceSlugs } from "@/lib/site";
+import { TREATMENT_NAMES } from "@/lib/treatments";
 import { homeServiceMessage } from "@/lib/whatsapp";
 import type { Post, Service } from "@/types";
 
@@ -23,17 +24,6 @@ import type { Post, Service } from "@/types";
 export const HOME_SERVICE_PATH = "/uluwatu-bali/outcall-home-service-massage/";
 
 const PHOTO = "/images/2026/08/home-service.jpg";
-
-/* The villa card's names: the panel titles carry search words ("Assisted
-   Stretching Bali", "Pregnancy Massage Service") that read badly in a list. */
-const SHORT_NAME: Record<string, string> = {
-  "sport-massage": "Sports massage",
-  "lymphatic-drainage": "Lymphatic drainage",
-  "lymphatic-detox-massage-for-men": "Men's lymphatic detox",
-  "pregnancy-massage-service": "Pregnancy massage",
-  "assisted-stretching": "Assisted stretching",
-  "cupping-therapy": "Cupping",
-};
 
 /* The reviews card goes where the treatment pages put it, just before the
    prices: here, the worked costs in the page's own sections. */
@@ -74,7 +64,7 @@ export default async function HomeServiceArticle({ post }: { post: Post }) {
       : [
           {
             slug: service.slug,
-            title: SHORT_NAME[service.slug] ?? service.title,
+            title: TREATMENT_NAMES[service.slug] ?? service.title,
             minutes: serviceMinutes(service),
             amount: from + homeServiceFeeIdr,
           },

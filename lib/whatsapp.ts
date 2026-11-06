@@ -14,8 +14,9 @@
 const HELLO = "Hi Flex & Flow!";
 
 export function treatmentMessage(title: string, homeService: boolean): string {
+  const article = /^[aeiou]/i.test(title) ? "an" : "a";
   return [
-    `${HELLO} I'd like to book a ${title} session.`,
+    `${HELLO} I'd like to book ${article} ${title} session.`,
     "",
     homeService ? "Studio or villa: " : null,
     "Preferred day and time: ",
