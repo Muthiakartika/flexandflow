@@ -9,7 +9,7 @@ import {
   formatIdr,
   priceAmount,
   serviceMinutes,
-  tierMinutes,
+  teamFirstRates,
 } from "@/lib/pricing";
 import {
   bookingCtaHref,
@@ -76,36 +76,12 @@ export default async function ServiceArticle({
   const uniform = serviceMinutes(service);
   const homeService = homeServiceSlugs.has(service.slug);
   const pilot = REDESIGN_PILOT.has(service.slug);
-  /* The team first and Ginny's tier last, with notes that say what the
-     choice is: she is the master therapist, and her sessions are the limited
-     ones (DESIGN.md, copy rule). The panel's own notes ("More Affordable")
-     sold the team as the cheap option. */
-  const bothTiers =
-    service.tiers.some((tier) => /master/i.test(tier.label)) &&
-    service.tiers.some((tier) => !/master/i.test(tier.label));
-  const rates: Rate[] = service.tiers.flatMap((tier) => {
-    const amount = priceAmount(tier);
-    const ginny = /master/i.test(tier.label);
-    /* Only where the reader has the choice. A treatment with one tier
-       (cupping, trauma healing) keeps the panel's note. */
-    const note = !bothTiers
-      ? tier.note.replace(/[()]/g, "")
-      : ginny
-        ? "Ginny · limited sessions"
-        : "Easiest to book";
-    return amount === null
-      ? []
-      : [
-          {
-            label: tier.label,
-            note,
-            amount,
-            minutes: uniform ? null : tierMinutes(service, tier),
-            villa: homeService ? amount + homeServiceFeeIdr : null,
-          },
-        ];
-  });
-  rates.sort((a, b) => Number(/master/i.test(a.label)) - Number(/master/i.test(b.label)));
+  /* The team first and Ginny's tier last (`teamFirstRates`), each with its
+     villa price where a therapist brings the treatment home. */
+  const rates: Rate[] = teamFirstRates(service).map((rate) => ({
+    ...rate,
+    villa: homeService ? rate.amount + homeServiceFeeIdr : null,
+  }));
 
   /* Who treats you, under the price heading on the pilot: the team's and
      Ginny's starting prices from the rate card. Only when both are priced. */

@@ -47,6 +47,40 @@ export function serviceMinutes(service: Service): number | null {
 
 export type Rate = { label: string; note: string; amount: number };
 
+export type TierRate = Rate & {
+  /** Set only when the tiers differ in length; otherwise a card states it once. */
+  minutes: number | null;
+};
+
+/**
+ * A service's tiers as the site shows them: the team first and Ginny's
+ * after, with notes that say what the choice is. She is the master
+ * therapist and her sessions are the limited ones (DESIGN.md, copy rule);
+ * the panel's own notes ("More Affordable") sold the team as the cheap
+ * option. Only where the reader has the choice: a treatment with one tier
+ * (cupping, trauma healing) keeps the panel's note.
+ */
+export function teamFirstRates(service: Service): TierRate[] {
+  const isGinny = (label: string) => /master/i.test(label);
+  const bothTiers =
+    service.tiers.some((tier) => isGinny(tier.label)) &&
+    service.tiers.some((tier) => !isGinny(tier.label));
+  const uniform = serviceMinutes(service);
+
+  const rates = service.tiers.flatMap((tier) => {
+    const amount = priceAmount(tier);
+    const note = !bothTiers
+      ? tier.note.replace(/[()]/g, "")
+      : isGinny(tier.label)
+        ? "Ginny · limited sessions"
+        : "Easiest to book";
+    return amount === null
+      ? []
+      : [{ label: tier.label, note, amount, minutes: uniform ? null : tierMinutes(service, tier) }];
+  });
+  return rates.sort((a, b) => Number(isGinny(a.label)) - Number(isGinny(b.label)));
+}
+
 /** A service's tiers as displayable rates, in source order. */
 export function ratesFor(service: Service): Rate[] {
   return service.tiers.flatMap((tier) => {

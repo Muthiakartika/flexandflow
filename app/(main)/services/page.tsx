@@ -8,6 +8,7 @@ import Link from "next/link";
 
 import { listPricedServices } from "@/lib/cms/read";
 import { contact } from "@/lib/site";
+import { TREATMENT_ORDER } from "@/lib/treatments";
 
 const description =
   "Massage and bodywork in Uluwatu, Bali: sports massage, assisted stretching, lymphatic drainage, cupping, pregnancy massage and home service.";
@@ -26,15 +27,21 @@ export const metadata: Metadata = {
 };
 
 export default async function ServicesPage() {
-  const services = await listPricedServices();
+  /* In the price list's order, sports massage first and trauma healing last,
+     rather than the panel's old WordPress grid order. */
+  const rank = (slug: string) => {
+    const i = TREATMENT_ORDER.indexOf(slug);
+    return i === -1 ? TREATMENT_ORDER.length : i;
+  };
+  const services = (await listPricedServices()).sort((a, b) => rank(a.slug) - rank(b.slug));
 
   return (
     <>
       <PageHero
         title="Massage & Treatments"
-        eyebrow="Come & Explore!"
+        eyebrow="Treatments"
         crumbs={[{ label: "Services" }]}
-        lead="Experience pure relaxation with our range of massages and treatments, thoughtfully designed to rejuvenate your body and mind."
+        lead="Hands-on bodywork for bodies that surf, train and travel hard, at the studio in Ungasan or at your villa. Pick what you need; our therapists are the easiest to book, and Ginny's own sessions are the limited step up."
         actions={
           <ButtonLink href={contact.whatsapp} external variant="solid">
             Book on WhatsApp
@@ -43,13 +50,12 @@ export default async function ServicesPage() {
       />
 
       <section className={`${WRAP} ${BAND}`}>
-        {/* Every card carries both rates, so this grid is the price list in
-            miniature; the full one — including the per-therapist rates — is
-            its own page. */}
+        {/* Each card carries its starting rates; every length, the villa
+            prices and the add-ons are on the price list. */}
         <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
-          <p className="page-label">Every treatment, both tiers, prices in IDR</p>
+          <p className="page-label">Every treatment, prices in IDR</p>
           <Link href="/price-list" className={LINK}>
-            Full price list
+            Every length and villa price &rarr;
           </Link>
         </div>
 
