@@ -30,6 +30,7 @@ import { PAGE_SEO } from "@/lib/seo/pages";
 import { PAGE_PHOTOS } from "@/lib/seo/photos";
 import { PRICE_MISSING, PRICE_TOKEN } from "@/lib/seo/price-tokens";
 import { PAGE_SECTIONS } from "@/lib/seo/sections";
+import { TIER_LABELS } from "@/lib/seo/tiers";
 
 /* Pages with their own route files, which sections may link to beside the
    treatments and articles in `PAGE_SEO`. */
@@ -318,6 +319,14 @@ async function checkFixes(base: string): Promise<void> {
     const html = await (await fetch(`${base}${path}`)).text();
     const preview = html.match(/<meta property="og:image" content="([^"]*)"/)?.[1] ?? "";
     check(`${path} link preview is ${photo.src}`, preview.endsWith(photo.src), preview || "no og:image");
+  }
+
+  /* A relabelled rate-card row shows its new label; the panel's absent means
+     the treatment gained a second row, and the entry should go. */
+  for (const [path, relabel] of Object.entries(TIER_LABELS)) {
+    const text = visible(await (await fetch(`${base}${path}`)).text());
+    check(`${path} rate card reads "${relabel.label}"`, text.includes(relabel.label),
+      "not served (has the panel's rate card gained a row?)");
   }
 }
 

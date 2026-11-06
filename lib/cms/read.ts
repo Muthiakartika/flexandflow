@@ -52,6 +52,7 @@ import { withPagePhoto } from "@/lib/seo/photos";
 import type { PriceBook } from "@/lib/seo/price-tokens";
 import { loadPriceBook } from "@/lib/seo/prices";
 import { withPageSections } from "@/lib/seo/sections";
+import { withTierLabels } from "@/lib/seo/tiers";
 import type { Post, Service } from "@/types";
 
 /** Invalidated by `lib/cms/write.ts` on every publish. */
@@ -115,8 +116,8 @@ async function load(
  * Every function below passes the row through `fromCode`, which swaps in the
  * code's own copy for the pages in `lib/seo/copy`, corrects the panel's copy
  * with `lib/seo/fixes.ts`, appends `lib/seo/sections` to its body, swaps in
- * the studio's own photo from `lib/seo/photos.ts` and lays `lib/seo/pages.ts`
- * over its SEO. Fixes go first so they only ever touch the panel's blocks,
+ * the studio's own photo from `lib/seo/photos.ts`, relabels a rate-card row
+ * from `lib/seo/tiers.ts` and lays `lib/seo/pages.ts` over its SEO. Fixes go first so they only ever touch the panel's blocks,
  * never the code's own sections; the photo goes before the SEO, which keeps
  * the link preview it sets.
  * After the cache rather than inside it: the cache holds database rows, so a
@@ -128,8 +129,10 @@ async function load(
  */
 function fromCode<T extends Service | Post>(entry: T, prices: PriceBook): T {
   return withPageSeo(
-    withPagePhoto(
-      withPageSections(withPageFixes(withPageCopy(entry, prices), prices), prices),
+    withTierLabels(
+      withPagePhoto(
+        withPageSections(withPageFixes(withPageCopy(entry, prices), prices), prices),
+      ),
     ),
   );
 }
