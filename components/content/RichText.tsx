@@ -99,6 +99,18 @@ export function headingId(text: string): string {
     .replace(/[\s-]+/g, "-");
 }
 
+const FIGURE = /^(IDR\s?)?\d{1,3}(,\d{3})+$/;
+
+/** A comparison whose last column, and only that one, is a price on every
+ *  row: on a phone the price sits beside the row's title, so each card reads
+ *  name and price at a glance. With two price columns (team and Ginny) the
+ *  team's must not lose its place, so those stay as they are. */
+function isPricedTable(block: Extract<ContentBlock, { type: "table" }>): boolean {
+  const last = block.head.length - 1;
+  const prices = (j: number) => block.rows.every((row) => FIGURE.test(row[j]?.trim() ?? ""));
+  return last >= 2 && prices(last) && !block.head.slice(1, last).some((_, k) => prices(k + 1));
+}
+
 /** A table of prices: a label per row and nothing but figures after it. */
 function isPriceTable(block: Extract<ContentBlock, { type: "table" }>): boolean {
   return (
@@ -459,7 +471,7 @@ export default function RichText({
             return (
               <div
                 key={i}
-                className="prose-table"
+                className={isPricedTable(block) ? "prose-table is-priced" : "prose-table"}
                 role="region"
                 aria-label="Table"
                 tabIndex={0}

@@ -22,35 +22,37 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "A trauma healing session in Uluwatu at Flex & Flow lasts **90 minutes and costs IDR {{price:trauma-healing:90:master}}**. It is only given by Ginny, our founder and master therapist, whose background covers nursing, professional fitness training and bodywork. If you are deciding between this and a shorter, more familiar treatment, this comparison may help:",
+    text: "A trauma healing session in Uluwatu lasts **90 minutes and costs IDR {{price:trauma-healing:90:master}}**. Only Ginny gives it: our founder, with a background in nursing, fitness training and bodywork. Choosing between this and something more familiar? Here is how they compare:",
   },
+  /* Short values and one "from" price each: on a phone every row is a card,
+     its price beside its name (`.is-priced`). */
   {
     type: "table",
-    head: ["Session", "Best for", "Pace", "Length and price (IDR)"],
+    head: ["Session", "Best for", "Pace", "From (IDR)"],
     rows: [
       [
         "Trauma healing",
-        "Long-held tension, tight fascia and stored physical stress",
-        "Slow, sustained, deeper pressure",
-        "90 min, {{price:trauma-healing:90:master}} (Ginny only)",
+        "Long-held tension and stored physical stress",
+        "Slow and sustained · 90 min",
+        "{{price:trauma-healing:90:master}}",
       ],
       [
         "[Sport massage](/uluwatu-bali/sport-massage/)",
-        "Muscle recovery after surfing, training or travel",
-        "Recovery-focused, adjusted to your body",
-        "60 min {{price:sport-massage:60:standard}} / {{price:sport-massage:60:master}}; 90 min {{price:sport-massage:90:standard}} / {{price:sport-massage:90:master}}",
+        "Recovery after surfing, training or travel",
+        "Set to your body · 60 or 90 min",
+        "{{price:sport-massage:60:standard}}",
       ],
       [
         "[Assisted stretching](/uluwatu-bali/assisted-stretching/)",
         "Stiffness and restricted movement",
-        "A therapist moves you through stretches",
-        "60 min, {{price:assisted-stretching:60:standard}} / {{price:assisted-stretching:60:master}}",
+        "Guided stretches · 60 min",
+        "{{price:assisted-stretching:60:standard}}",
       ],
     ],
   },
   {
     type: "paragraph",
-    text: "Sport massage and stretching prices are shown as therapist / master therapist. Trauma healing takes place at the studio on Jl. Toya Ning II, Ungasan, Monday to Saturday between 09:00 and 17:00; it is not part of the [home service](/uluwatu-bali/outcall-home-service-massage/) menu. Because Ginny limits how many of these sessions she offers, it helps to book ahead at [booking.flexandflow.fit](https://booking.flexandflow.fit/) or on [WhatsApp](https://wa.me/6285858887777).",
+    text: "Trauma healing is at the studio in Ungasan only, not on the [home service](/uluwatu-bali/outcall-home-service-massage/) menu. Ginny takes a limited number of these sessions, so book ahead [online](https://booking.flexandflow.fit/) or on [WhatsApp](https://wa.me/6285858887777).",
   },
   {
     type: "heading",

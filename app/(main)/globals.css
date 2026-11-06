@@ -3180,4 +3180,36 @@ button.booking-step-body {
     text-transform: uppercase;
     color: color-mix(in oklab, var(--color-body-text) 55%, transparent);
   }
+
+  /* A comparison ending in a price (`.is-priced`): the price moves up beside
+     the title, its label over it, and the other values follow full width. */
+  .prose-flex .prose-table.is-priced tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 14px;
+  }
+
+  .prose-flex .prose-table.is-priced tbody tr > * {
+    grid-column: 1 / -1;
+  }
+
+  .prose-flex .prose-table.is-priced tbody tr > :first-child {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: end;
+    margin-bottom: 6px;
+  }
+
+  .prose-flex .prose-table.is-priced tbody tr > :last-child {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    margin-bottom: 6px;
+    padding: 0;
+    border-top: 0;
+    text-align: right;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
 }
