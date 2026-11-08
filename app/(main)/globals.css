@@ -2429,15 +2429,16 @@ button.booking-step-body {
 }
 
 /* ── Footer ──────────────────────────────────────────────────────────────────
-   The closing wordmark: the studio's name in the display face, near full
-   width on a phone and capped at a signature's size on a wide screen, whole (an earlier version let the footer's edge cut its foot off,
-   which read as a mistake). Decoration only; it is `aria-hidden` and the
-   logo above is the link home. */
+   The closing wordmark: the studio's name in the display face, a signature
+   rather than a banner (about half a phone's width; at near full width it
+   outweighed the footer it signs), and whole (an earlier version let the
+   footer's edge cut its foot off, which read as a mistake). Decoration only;
+   it is `aria-hidden` and the logo above is the link home. */
 .footer-mark {
   margin: 0;
   padding: 0.04em 12px 0.14em;
   font-family: var(--font-display);
-  font-size: clamp(5rem, 28vw, 8.5rem);
+  font-size: clamp(3.25rem, 16vw, 4.75rem);
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.01em;
@@ -3325,7 +3326,7 @@ button.booking-step-body {
     justify-self: start;
     margin: 0;
     padding: 0;
-    font-size: clamp(4.5rem, 7vw, 7rem);
+    font-size: clamp(3rem, 4vw, 4.25rem);
     line-height: 0.82;
     text-align: left;
   }
