@@ -10,6 +10,8 @@ import { formatIdr } from "@/lib/pricing";
 import { GOOGLE_REVIEWS } from "@/lib/seo/reviews";
 import { assets, bookingCtaHref, bookingCtaProps, contact } from "@/lib/site";
 
+import HeroVideo from "./HeroVideo";
+
 /* The chips are half a phone wide, where "Founder & Bodywork Specialist"
    and "Javanese Massage Therapist" were cut off mid-word; the short form
    wraps to a second line there rather than truncating. */
@@ -113,22 +115,12 @@ export default function Hero({ from }: { from: number | null }) {
 
         {/* ── Studio footage, with the two practitioners on its foot ─────── */}
         <div className="home-hero-media">
-          {/* Each width gets the clip cut to its own frame (`assets`); the
-              browser takes the first `<source>` whose media matches. No
-              poster: Chrome counts a poster as the page's largest paint
-              and fetches it late, which measured the home page's LCP at
-              3.5 s against 1.2 s for the headline without one. */}
-          <video
-            className="aspect-[4/3] w-full rounded-[10px] object-cover lg:aspect-square"
-            autoPlay
-            loop
-            muted
-            playsInline
-            aria-hidden
-          >
-            <source src={assets.heroVideoWide} media="(min-width: 1024px)" type="video/mp4" />
-            <source src={assets.heroVideoNarrow} type="video/mp4" />
-          </video>
+          <HeroVideo
+            wide={assets.heroVideoWide}
+            narrow={assets.heroVideoNarrow}
+            still="/images/2026/08/gallery-1.jpg"
+            className="aspect-[4/3] w-full rounded-[10px] bg-secondary/10 object-cover lg:aspect-square"
+          />
 
           <ul className="home-hero-team">
             {therapists.map((therapist) => (
