@@ -78,6 +78,11 @@ const nextConfig: NextConfig = {
    * Matching WordPress removes both problems at once.
    */
   trailingSlash: true,
+  /* Tried and measured (8 Nov 2026), so not repeated: `experimental.inlineCss`
+     put the stylesheets in every page's HTML (433 KB a page, as the CSS also
+     rides in the RSC payload) and the parsing cost more than the two
+     render-blocking requests it saved: Lighthouse mobile went from 88–93 to
+     80–85 across six pages. */
   /**
    * Fences around Vercel's Image Optimization quota.
    *

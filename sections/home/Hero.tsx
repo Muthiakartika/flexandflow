@@ -6,7 +6,6 @@ import { Stars } from "@/components/content/ReviewsBand";
 import OpenStatus from "@/components/layout/OpenStatus";
 import { BTN_GHOST, BTN_SOLID, FOCUS, WRAP } from "@/components/ui/tokens";
 import { therapists } from "@/lib/data/therapists";
-import imageLoader from "@/lib/image-loader";
 import { formatIdr } from "@/lib/pricing";
 import { GOOGLE_REVIEWS } from "@/lib/seo/reviews";
 import { assets, bookingCtaHref, bookingCtaProps, contact } from "@/lib/site";
@@ -115,13 +114,12 @@ export default function Hero({ from }: { from: number | null }) {
         {/* ── Studio footage, with the two practitioners on its foot ─────── */}
         <div className="home-hero-media">
           {/* Each width gets the clip cut to its own frame (`assets`); the
-              browser takes the first `<source>` whose media matches. The
-              poster, a resized WebP, paints at once and stays the frame
-              where the clip cannot autoplay. */}
+              browser takes the first `<source>` whose media matches. No
+              poster: Chrome counts a poster as the page's largest paint
+              and fetches it late, which measured the home page's LCP at
+              3.5 s against 1.2 s for the headline without one. */}
           <video
             className="aspect-[4/3] w-full rounded-[10px] object-cover lg:aspect-square"
-            poster={imageLoader({ src: assets.heroPoster, width: 828 })}
-            preload="metadata"
             autoPlay
             loop
             muted
