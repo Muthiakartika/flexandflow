@@ -39,7 +39,7 @@ export const IMAGE_ALT: Record<string, string> = {
     "The Flex & Flow studio in Ungasan: a wooden floor, a surfboard against the wall and the studio logo painted in green",
 
   // ── Guides ───────────────────────────────────────────────────────────────
-  "https://media.flexandflow.fit/uploads/a192dd465696-surfing-injuries-ed8fe79c.jpg":
+  "/images/2026/11/surfing-injury-first-aid.jpg":
     "A gloved hand cleaning a cut on a surfer's knee on the beach, a first aid kit beside him",
   "/images/2026/05/how-to-make-sitting-too-long-less-painful.png":
     "A woman stretching her arms overhead beside her desk and laptop in a bright home office",
@@ -51,7 +51,7 @@ export const IMAGE_ALT: Record<string, string> = {
     "A therapist drawing a seated client's arms back to stretch his chest and shoulders",
   "/images/2025/01/flexibilty-Training-new.jpg":
     "The studio's movement room: a green mat on a wooden floor in front of two mirrors",
-  "https://media.flexandflow.fit/uploads/c7e5110c22b3-lymphatic-drainage-164384c2.jpg":
+  "/images/2026/11/lymphatic-drainage-neck.jpg":
     "A therapist's hands on the neck and collarbone of a woman lying on a massage table",
 
   // ── The studio and sessions (margins and the home mosaic) ────────────────

@@ -23,7 +23,20 @@ import type { Service } from "@/types";
  * stated once as a chip on the photo. "Book Session" goes to
  * booking.flexandflow.fit, a separate deployment from this site.
  */
-export default function ServicePriceCard({ service }: { service: Service }) {
+/**
+ * `priority` for the cards in the first row, which are on screen as the page
+ * opens: preloaded rather than lazy, and the very first fetched first. On
+ * `/services/` the first card's photo is the page's largest paint.
+ */
+export default function ServicePriceCard({
+  service,
+  priority = false,
+  first = false,
+}: {
+  service: Service;
+  priority?: boolean;
+  first?: boolean;
+}) {
   const href = `/uluwatu-bali/${service.slug}`;
   const uniform = serviceMinutes(service);
   const tiers = teamFirstRates(service);
@@ -43,6 +56,8 @@ export default function ServicePriceCard({ service }: { service: Service }) {
           alt=""
           width={600}
           height={420}
+          priority={priority}
+          fetchPriority={first ? "high" : undefined}
           sizes="(max-width: 768px) 92vw, (max-width: 1200px) 46vw, 30vw"
           className="aspect-[16/10] w-full object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.04]"
         />

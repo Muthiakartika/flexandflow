@@ -27,6 +27,20 @@ export const PAGE_PHOTOS: Record<string, PagePhoto> = {
     width: 1376,
     height: 768,
   },
+  /* The panel's own photos, copied from the media host into `public/` (8
+     Nov 2026) so they get resized WebP like every other photo
+     (`lib/image-loader.ts`); from the media host every phone downloaded the
+     full 1376px JPEG, and the lymphatic one is the blog's first card. */
+  "/injury-guide/common-surfing-injuries/": {
+    src: "/images/2026/11/surfing-injury-first-aid.jpg",
+    width: 1376,
+    height: 768,
+  },
+  "/uluwatu-bali/lymphatic-drainage-massage-what-it-can-do/": {
+    src: "/images/2026/11/lymphatic-drainage-neck.jpg",
+    width: 1376,
+    height: 768,
+  },
 };
 
 /** The page with its code photo in place of the panel's. */

@@ -361,5 +361,12 @@ export const paymentIcons = [
 /** Shared art. */
 export const assets = {
   pageHeroBackground: "/images/2024/11/Page-1-Yoga-Class.jpg",
-  heroVideo: "/video/home-hero.mp4",
+  /* The home hero's studio footage, cut to the shape it is shown in: a 4:3
+     strip below 1024px, a square above. The source (`home-hero.mp4`) is a
+     1080x1920 portrait clip, 2.4 MB, most of whose frame was cropped away
+     on screen; these are 0.46 MB and 0.94 MB (re-encoded 8 Nov 2026). The
+     poster is the square's first frame, shown until the clip can play. */
+  heroVideoNarrow: "/video/home-hero-4x3.mp4",
+  heroVideoWide: "/video/home-hero-square.mp4",
+  heroPoster: "/images/2026/11/home-hero-poster.jpg",
 } as const;

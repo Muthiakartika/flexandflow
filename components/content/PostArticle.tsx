@@ -59,6 +59,7 @@ export default function PostArticle({
                 width={1024}
                 height={621}
                 priority
+                fetchPriority="high"
                 sizes="(max-width: 1023px) 92vw, 1024px"
                 className="aspect-[16/8] w-full rounded-[10px] object-cover"
               />

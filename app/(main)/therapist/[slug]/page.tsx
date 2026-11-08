@@ -97,6 +97,7 @@ export default async function TherapistPage(
                 width={1600}
                 height={2000}
                 priority
+                fetchPriority="high"
                 sizes="(max-width: 640px) 92vw, 506px"
                 className="aspect-[4/5] w-full rounded-[10px] object-cover object-top"
               />

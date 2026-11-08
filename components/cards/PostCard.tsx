@@ -50,6 +50,7 @@ export default function PostCard({ post, feature = false }: { post: Post; featur
               width={post.imageWidth ?? 1024}
               height={post.imageHeight ?? 621}
               priority
+              fetchPriority="high"
               sizes="(max-width: 767px) 92vw, 50vw"
               className="aspect-[16/10] h-full w-full object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03] md:aspect-auto"
             />

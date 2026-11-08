@@ -60,9 +60,9 @@ export default async function ServicesPage() {
         </div>
 
         <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {services.map((service) => (
+          {services.map((service, i) => (
             <li key={service.slug}>
-              <ServicePriceCard service={service} />
+              <ServicePriceCard service={service} priority={i < 3} first={i === 0} />
             </li>
           ))}
         </ul>

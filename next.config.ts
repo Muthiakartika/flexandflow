@@ -129,8 +129,22 @@ const nextConfig: NextConfig = {
      * Note this **overrides the `unoptimized` prop on individual components** —
      * the config wins, and the relationship cannot be inverted. The CMS
      * editor's previews already pass that prop, so they are unaffected.
+     *
+     * ── SELF-SERVED VARIANTS — 2026-11-08 ───────────────────────────────
+     *
+     * The optimizer stays off, but phones get resized WebP again: a custom
+     * loader (`lib/image-loader.ts`) points `srcset` at variants that
+     * `scripts/image-variants.mjs` writes into `public/images/_v/` before
+     * every build, at the widths in `lib/image-widths.ts`. They are static
+     * files, so there is no `/_next/image`, no quota and no 402. Measured on
+     * the live home page before this: a 36px avatar downloaded its 1600px,
+     * 232 KB source. A custom loader also bypasses `minimumCacheTTL`,
+     * `formats`, `qualities` and `remotePatterns` below, which only the
+     * default loader reads; they are kept for the day the optimizer returns
+     * (remove `loader` and `loaderFile` to switch back to it).
      */
-    unoptimized: true,
+    loader: "custom",
+    loaderFile: "./lib/image-loader.ts",
 
     /**
      * Next's default is 14400 — four hours. That means every variant can go

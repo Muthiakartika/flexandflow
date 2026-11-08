@@ -70,3 +70,6 @@ next-env.d.ts
 # One-off credential handovers written by `npm run admin:create`. Passwords in
 # plain text: read it, pass it on, delete it.
 .admin-accounts.txt
+
+# Resized WebP variants, written before every build (scripts/image-variants.mjs)
+/public/images/_v/

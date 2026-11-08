@@ -192,6 +192,9 @@ export default function ServiceHero({
               width={1300}
               height={975}
               priority
+              /* Next 16 preloads a `priority` image but leaves its fetch
+                 priority alone; this is the page's largest paint. */
+              fetchPriority="high"
               sizes="(max-width: 1023px) 92vw, 46vw"
               className="aspect-[4/3] w-full rounded-[10px] object-cover"
             />
