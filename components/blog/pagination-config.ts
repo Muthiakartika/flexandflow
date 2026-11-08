@@ -1,5 +1,7 @@
 /**
- * Posts per page, matching the WordPress listing.
+ * Posts per page. Was 6, the WordPress listing's; with compact cards every
+ * guide fits on the first page, and `/blog/page/[page]` sends a page past
+ * the end back to the blog rather than a 404.
  *
  * In its own module because `SearchableGrid` is a client component and needs
  * it: importing it from `BlogListing`, where it used to live, would pull that
@@ -8,7 +10,7 @@
  * existing `import { POSTS_PER_PAGE } from "@/components/blog/BlogListing"`
  * call sites keep working.
  */
-export const POSTS_PER_PAGE = 6;
+export const POSTS_PER_PAGE = 12;
 
 /**
  * Where page *n* of a listing lives. Page 1 is the bare listing URL — that is

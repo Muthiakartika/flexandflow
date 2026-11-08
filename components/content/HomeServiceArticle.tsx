@@ -15,13 +15,19 @@ import { listPosts, listServices } from "@/lib/cms/read";
 import { isIndexable } from "@/lib/content";
 import { formatIdr, priceAmount, serviceMinutes } from "@/lib/pricing";
 import { COLUMN_GROUPS, RAIL_PHOTOS } from "@/lib/seo/layouts";
-import { bookingCtaHref, contact, homeServiceFeeIdr, homeServiceSlugs } from "@/lib/site";
+import {
+  bookingCtaHref,
+  contact,
+  homeServiceFeeIdr,
+  homeServicePath,
+  homeServiceSlugs,
+} from "@/lib/site";
 import { TREATMENT_NAMES } from "@/lib/treatments";
 import { homeServiceMessage } from "@/lib/whatsapp";
 import type { Post, Service } from "@/types";
 
 /** The home service page: an article in the panel, a service on the site. */
-export const HOME_SERVICE_PATH = "/uluwatu-bali/outcall-home-service-massage/";
+export const HOME_SERVICE_PATH = homeServicePath;
 
 const PHOTO = "/images/2026/08/home-service.jpg";
 

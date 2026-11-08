@@ -133,6 +133,9 @@ export const studioMapsUrl = `https://www.google.com/maps/search/?api=1&query=${
  */
 export const homeServiceFeeIdr = 100_000;
 
+/** The home service page: an article in the panel, a service on the site. */
+export const homeServicePath = "/uluwatu-bali/outcall-home-service-massage/";
+
 /**
  * Treatments a therapist will bring to a villa, hotel or home, as the home
  * service page lists them. Trauma healing is studio only, and the two hidden

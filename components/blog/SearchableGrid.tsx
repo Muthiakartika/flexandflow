@@ -31,10 +31,13 @@ export default function SearchableGrid({
   posts,
   basePath,
   emptyMessage,
+  featureFirst = false,
 }: {
   posts: Post[];
   basePath: string;
   emptyMessage: string;
+  /** The newest guide as the wide card, until someone searches. */
+  featureFirst?: boolean;
 }) {
   const keyword = useSearchParams().get("s")?.toLowerCase().trim();
 
@@ -53,6 +56,7 @@ export default function SearchableGrid({
       emptyMessage={
         keyword ? `No posts match “${keyword}”.` : emptyMessage
       }
+      featureFirst={featureFirst && !keyword}
     />
   );
 }

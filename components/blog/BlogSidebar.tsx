@@ -3,26 +3,28 @@ import Link from "next/link";
 import { BTN_SOLID, CARD, FOCUS } from "@/components/ui/tokens";
 import { listCategories } from "@/lib/cms/category-store";
 import { listPosts, listServices } from "@/lib/cms/read";
-import { isIndexable } from "@/lib/content";
+import { isGuide, isIndexable } from "@/lib/content";
 import { contact } from "@/lib/site";
+import { TREATMENT_NAMES } from "@/lib/treatments";
 import SearchForm from "./SearchForm";
-
-
 
 /**
  * Sidebar for the blog listing and single posts: search, categories, and the
  * one thing a reader of a recovery article might actually want next — a way to
  * book. The theme's decorative vertical stock photo is gone; it filled the
  * column without saying anything.
+ *
+ * `search` is off on the blog index, whose search box sits in its hero.
  */
-export default async function BlogSidebar() {
+export default async function BlogSidebar({ search = true }: { search?: boolean }) {
   /* Read together: the sidebar shows every category with a count beside it, so
      one without the other is half a list. */
-  const [posts, blogCategories, services] = await Promise.all([
+  const [allPosts, blogCategories, services] = await Promise.all([
     listPosts(),
     listCategories(),
     listServices(),
   ]);
+  const posts = allPosts.filter(isGuide);
 
   /* A reader of a recovery article is one step from a treatment, and the
      treatments are what the studio sells — so every article links to each one
@@ -31,10 +33,12 @@ export default async function BlogSidebar() {
 
   return (
     <aside className="flex flex-col gap-3 lg:sticky lg:top-[92px] lg:h-fit">
-      <section className={`${CARD} p-5`}>
-        <h2 className="page-label">Search</h2>
-        <SearchForm />
-      </section>
+      {search ? (
+        <section className={`${CARD} p-5`}>
+          <h2 className="page-label">Search</h2>
+          <SearchForm />
+        </section>
+      ) : null}
 
       <section className={`${CARD} p-5`}>
         <h2 className="page-label">Categories</h2>
@@ -64,7 +68,7 @@ export default async function BlogSidebar() {
                 href={service.seo.canonicalPath}
                 className={`block py-2.5 font-body text-[14px] transition-colors duration-300 hover:text-primary ${FOCUS}`}
               >
-                {service.title}
+                {TREATMENT_NAMES[service.slug] ?? service.title}
               </Link>
             </li>
           ))}
