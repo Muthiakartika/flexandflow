@@ -215,31 +215,21 @@ const nextConfig: NextConfig = {
     ],
   },
   /**
-   * How long browsers keep the photos and the video. Vercel serves `public/`
-   * with no lifetime of its own, which reached visitors as two hours, so a
-   * client coming back the next day downloaded every photo again. Fonts and
-   * scripts already carry a year (`/_next/static`, content-hashed).
+   * How long browsers keep the photos and the video: 12 hours (the studio's
+   * choice, 8 Nov 2026). Vercel serves `public/` with no lifetime of its own,
+   * which reached visitors as two hours, so a client coming back later the
+   * same day downloaded every photo again. Fonts and scripts already carry a
+   * year (`/_next/static`, content-hashed).
    *
-   * Not `immutable`: a file in `public/` keeps its name when it is replaced
-   * (and a resized variant keeps its name when its source changes), so the
-   * lifetime is long but finite, and `stale-while-revalidate` lets a visitor
-   * past it see the page at once while the browser checks in the
-   * background. Later rules win where two match, so the variants come last.
+   * `stale-while-revalidate` covers the day after: a visitor past the 12
+   * hours sees the saved copy at once while the browser fetches a fresh one
+   * in the background. `/images/` includes the resized variants in `_v/`.
    */
   async headers() {
+    const twelveHours = "public, max-age=43200, stale-while-revalidate=86400";
     return [
-      {
-        source: "/images/:path*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }],
-      },
-      {
-        source: "/video/:path*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=604800" }],
-      },
-      {
-        source: "/images/_v/:path*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=604800" }],
-      },
+      { source: "/images/:path*", headers: [{ key: "Cache-Control", value: twelveHours }] },
+      { source: "/video/:path*", headers: [{ key: "Cache-Control", value: twelveHours }] },
     ];
   },
   async redirects() {
