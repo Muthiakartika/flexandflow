@@ -1885,6 +1885,86 @@ button.booking-step-body {
   }
 }
 
+/* `/about-us/`: Ginny's own words as a white card with an olive rule, in the
+   body face (the display face is too condensed for a full sentence), and the
+   studio's photos: one wide over two on a phone, three across from 768px. */
+.about-quote {
+  margin: 24px 0 0;
+  padding: 18px 20px;
+  background: #fff;
+  border-left: 3px solid var(--color-primary);
+  border-radius: 0 10px 10px 0;
+}
+
+.about-quote blockquote {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  font-style: italic;
+  color: var(--color-body-text);
+}
+
+.about-quote figcaption {
+  margin-top: 10px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-body-text) 55%, transparent);
+}
+
+.about-space {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about-space > li:first-child {
+  grid-column: 1 / -1;
+}
+
+.about-space img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.about-space > li:first-child img {
+  aspect-ratio: 16 / 9;
+}
+
+.about-space figcaption {
+  margin-top: 8px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-body-text) 60%, transparent);
+}
+
+@media only screen and (min-width: 768px) {
+  .about-space {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .about-space > li:first-child {
+    grid-column: auto;
+  }
+
+  .about-space > li:first-child img {
+    aspect-ratio: 4 / 3;
+  }
+}
+
 /* `/price-list/` (`PriceMenus`): the shortcuts and the studio / villa switch,
    then one white card per treatment holding a menu like `.price-menu`
    above, one session to a line. Two columns from 1024px. The shortcut row

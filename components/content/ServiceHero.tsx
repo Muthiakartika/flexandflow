@@ -2,7 +2,7 @@ import { Clock, House, MapPin, Tag, type LucideIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { Breadcrumbs } from "@/components/ui/PageHero";
+import { Breadcrumbs, type Crumb } from "@/components/ui/PageHero";
 import { BAND_LINE, BTN_GHOST, BTN_SOLID, WRAP } from "@/components/ui/tokens";
 import { formatIdr } from "@/lib/pricing";
 import { pageSeoFor } from "@/lib/seo/pages";
@@ -82,6 +82,7 @@ export default function ServiceHero({
   homeService,
   facts: factsOverride,
   card,
+  crumbs,
 }: {
   service: Pick<Service, "title" | "excerpt" | "image" | "seo">;
   rates: Rate[];
@@ -92,6 +93,8 @@ export default function ServiceHero({
   facts?: HeroFact[];
   /** In place of the rate card on the photo. */
   card?: React.ReactNode;
+  /** In place of Services › the treatment, for a page that is not one. */
+  crumbs?: Crumb[];
 }) {
   const from = rates.length ? Math.min(...rates.map((rate) => rate.amount)) : null;
 
@@ -106,7 +109,7 @@ export default function ServiceHero({
   return (
     <section className={BAND_LINE} data-hero>
       <div className={`${WRAP} pt-[clamp(1.25rem,2.4vw,2rem)] pb-[clamp(1.75rem,3vw,2.75rem)]`}>
-        <Breadcrumbs crumbs={[{ label: "Services", href: "/services" }, { label: service.title }]} />
+        <Breadcrumbs crumbs={crumbs ?? [{ label: "Services", href: "/services" }, { label: service.title }]} />
 
         <div className="mt-5 grid items-center gap-[clamp(1.75rem,3.2vw,3.25rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
           {/* ── Claim ─────────────────────────────────────────────────── */}
