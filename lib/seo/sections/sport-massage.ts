@@ -118,19 +118,19 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Should I get a sports massage before or after surfing?",
-        answer: "Usually after: later the same day once you have eaten and rehydrated, or on a rest day. Before a big session, keep the massage shorter and lighter so your muscles do not feel heavy in the water. At Flex & Flow in Uluwatu, tell your therapist when you next plan to surf and the pressure and focus can be adjusted to suit.",
+        answer: "Usually after: later the same day once you have eaten and rehydrated, or on a rest day. Before a big session, keep the massage shorter and lighter so your muscles do not feel heavy in the water. Tell your therapist when you next plan to surf and the pressure and focus can be adjusted to suit.",
       },
       {
         question: "Is sports massage the same as deep tissue massage?",
-        answer: "Not quite. Deep tissue massage describes slow, firm pressure on deeper muscle layers. Sports massage is defined by its goal: recovery and easier movement for active people. It often uses deeper pressure, but adds stretching and mobility work and focuses on the areas your sport loads. A relaxation massage uses lighter, flowing strokes mainly to help you unwind. At Flex & Flow in Uluwatu, sport massage pressure is adjusted to how your body responds.",
+        answer: "Not quite. Deep tissue massage describes slow, firm pressure on deeper muscle layers. Sports massage is defined by its goal: recovery and easier movement for active people. It often uses deeper pressure, but adds stretching and mobility work and focuses on the areas your sport loads. A relaxation massage uses lighter, flowing strokes mainly to help you unwind. Sport massage pressure is adjusted to how your body responds.",
       },
       {
         question: "Is sports massage painful?",
-        answer: "It can feel firm, and very tight areas may feel intense for a moment, but it should not be painful. Tell your therapist if the pressure is too much; at Flex & Flow in Uluwatu the work is adjusted to how your body responds. Some people feel a little tender for a day or two after deeper work. Sharp pain during or after a session is a reason to stop and get checked.",
+        answer: "It can feel firm, and very tight areas may feel intense for a moment, but it should not be painful. Tell your therapist if the pressure is too much; the work is adjusted to how your body responds. Some people feel a little tender for a day or two after deeper work. Sharp pain during or after a session is a reason to stop and get checked.",
       },
       {
         question: "How often should I get a sports massage on a surf trip in Bali?",
-        answer: "There is no fixed rule. On a one- or two-week surf trip, a practical approach is one session midway, when your shoulders and lower back start to feel the paddling, and another before you fly home. On a longer stay with daily surfing or training, a weekly session is a sensible rhythm. Your therapist at Flex & Flow in Uluwatu can also share simple recovery guidance for between sessions.",
+        answer: "There is no fixed rule. On a one- or two-week surf trip, a practical approach is one session midway, when your shoulders and lower back start to feel the paddling, and another before you fly home. On a longer stay with daily surfing or training, a weekly session is a sensible rhythm. Your therapist can also share simple recovery guidance for between sessions.",
       },
       {
         question: "When should I not book a sports massage?",

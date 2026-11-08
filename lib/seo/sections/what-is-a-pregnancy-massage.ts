@@ -34,7 +34,7 @@ const blocks: ContentBlock[] = [
     items: [
       {
         question: "Is lymphatic drainage safe during pregnancy?",
-        answer: "Check with your midwife or doctor before any lymphatic drainage while pregnant. At Flex & Flow in Uluwatu, the treatment adapted for pregnancy is our pregnancy massage, which can include light, rhythmic strokes for swollen feet and ankles. Swelling that comes on suddenly, or affects your face or hands, can be a sign of pre-eclampsia, so contact your midwife or doctor straight away rather than booking a massage.",
+        answer: "Check with your midwife or doctor before any lymphatic drainage while pregnant. The treatment adapted for pregnancy is our pregnancy massage, which can include light, rhythmic strokes for swollen feet and ankles. Swelling that comes on suddenly, or affects your face or hands, can be a sign of pre-eclampsia, so contact your midwife or doctor straight away rather than booking a massage.",
       },
       {
         question: "Can I have a pregnancy massage after a long flight to Bali?",
@@ -46,7 +46,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "What should I tell my therapist before a pregnancy massage?",
-        answer: "Tell them how many weeks pregnant you are, about any complications or advice from your midwife or doctor, and where you feel aches or swelling. Mention any position that feels uncomfortable, any dizziness, and anything you would rather they avoid. At Flex & Flow in Uluwatu, you can say at any point if the pressure or position does not feel right.",
+        answer: "Tell them how many weeks pregnant you are, about any complications or advice from your midwife or doctor, and where you feel aches or swelling. Mention any position that feels uncomfortable, any dizziness, and anything you would rather they avoid. You can say at any point if the pressure or position does not feel right.",
       },
       {
         question: "Who gives pregnancy massage at Flex & Flow in Uluwatu?",

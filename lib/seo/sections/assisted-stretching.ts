@@ -107,7 +107,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Should assisted stretching hurt?",
-        answer: "No. A good assisted stretch feels strong and deep, but never sharp, pinching or numb. At Flex & Flow in Uluwatu your therapist controls each stretch, works within your current range and adjusts as you give feedback. Tell them straight away if anything feels wrong. Some people feel mild tightness the next day after deeper work; sharp or lasting pain is a reason to get checked.",
+        answer: "No. A good assisted stretch feels strong and deep, but never sharp, pinching or numb. Your therapist controls each stretch, works within your current range and adjusts as you give feedback. Tell them straight away if anything feels wrong. Some people feel mild tightness the next day after deeper work; sharp or lasting pain is a reason to get checked.",
       },
       {
         question: "How many assisted stretching sessions do I need?",
@@ -115,7 +115,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Is assisted stretching good for surfers?",
-        answer: "It can be. Paddling, duck dives and pop-ups tend to tighten the shoulders, upper back and hips, and those areas are hard to stretch well on your own. A rest day is a good time to book assisted stretching at Flex & Flow in Uluwatu, so you feel looser for your next surf. If sore muscles are the main complaint rather than tightness, a sport massage may suit you better.",
+        answer: "It can be. Paddling, duck dives and pop-ups tend to tighten the shoulders, upper back and hips, and those areas are hard to stretch well on your own. A rest day is a good time to book assisted stretching, so you feel looser for your next surf. If sore muscles are the main complaint rather than tightness, a sport massage may suit you better.",
       },
       {
         question: "Who should not book assisted stretching?",

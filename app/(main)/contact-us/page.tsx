@@ -17,9 +17,9 @@ import {
   studioMapsUrl,
 } from "@/lib/site";
 
-const title = "Contact & Booking | Flex & Flow, Uluwatu";
+const title = "Contact & Booking in Uluwatu, Bali | Flex & Flow";
 const description =
-  "WhatsApp Flex & Flow, book online or send a booking request. The studio in Ungasan, " +
+  "Message us on WhatsApp, book online or send a booking request. The studio in Ungasan, " +
   "Uluwatu is open Monday to Saturday, 09:00 to 17:00, with villa visits.";
 
 /** Studio location, embedded from Google Maps exactly as on the original. */

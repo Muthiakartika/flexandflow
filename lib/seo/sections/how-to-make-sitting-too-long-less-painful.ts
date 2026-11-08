@@ -28,7 +28,7 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "Massage and assisted stretching may both help with stiffness from long sitting, but they suit different problems. Use this as a rough guide at Flex & Flow in Uluwatu:",
+    text: "Massage and assisted stretching may both help with stiffness from long sitting, but they suit different problems. Use this as a rough guide:",
   },
   {
     type: "table",

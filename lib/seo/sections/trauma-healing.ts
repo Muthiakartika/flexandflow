@@ -9,7 +9,7 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "Trauma healing, or trauma release, at Flex & Flow in Uluwatu is **physical bodywork**. It works on chronic muscle tension, tight fascia (the connective tissue around your muscles) and stored physical stress in areas such as the back, neck, shoulders and hips. It is not psychotherapy, counselling or treatment for PTSD, and Flex & Flow is not an emotional healing centre.",
+    text: "Trauma healing, or trauma release, is **physical bodywork**. It works on chronic muscle tension, tight fascia (the connective tissue around your muscles) and stored physical stress in areas such as the back, neck, shoulders and hips. It is not psychotherapy, counselling or treatment for PTSD, and Flex & Flow is not an emotional healing centre.",
   },
   {
     type: "paragraph",
@@ -64,7 +64,7 @@ const blocks: ContentBlock[] = [
     items: [
       {
         question: "Is trauma healing at Flex & Flow a treatment for PTSD or emotional trauma?",
-        answer: "No. Trauma healing at Flex & Flow in Uluwatu is physical bodywork for chronic tension, tight fascia and stored physical stress. It is not psychotherapy and does not treat PTSD, anxiety or emotional trauma. For those, please see a qualified mental-health professional such as a psychologist or psychiatrist. Bodywork can sit alongside that care for physical tension, but it does not replace it.",
+        answer: "No. Trauma healing is physical bodywork for chronic tension, tight fascia and stored physical stress. It is not psychotherapy and does not treat PTSD, anxiety or emotional trauma. For those, please see a qualified mental-health professional such as a psychologist or psychiatrist. Bodywork can sit alongside that care for physical tension, but it does not replace it.",
       },
       {
         question: "How much does trauma healing cost in Bali at Flex & Flow?",
@@ -72,11 +72,11 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "What does trauma release mean in bodywork?",
-        answer: "At Flex & Flow in Uluwatu, trauma release means easing long-held physical tension: muscles and fascia around the back, neck, shoulders and hips that have stayed tight after repeated strain or physical stress. Ginny uses slow, sustained pressure and adjusts it to how your body responds. You do not need to talk about your personal history unless you want to.",
+        answer: "Trauma release means easing long-held physical tension: muscles and fascia around the back, neck, shoulders and hips that have stayed tight after repeated strain or physical stress. Ginny uses slow, sustained pressure and adjusts it to how your body responds. You do not need to talk about your personal history unless you want to.",
       },
       {
         question: "Will I feel sore after a trauma healing session?",
-        answer: "You might. Deep, slow bodywork can leave you tender or tired for a while afterwards, especially in areas that have been tight for a long time. After a trauma healing session at Flex & Flow in Uluwatu, plan a quiet rest of the day rather than a big surf or a heavy workout, and drink some water. If anything worries you afterwards, message the studio or see a doctor.",
+        answer: "You might. Deep, slow bodywork can leave you tender or tired for a while afterwards, especially in areas that have been tight for a long time. After a trauma healing session, plan a quiet rest of the day rather than a big surf or a heavy workout, and drink some water. If anything worries you afterwards, message the studio or see a doctor.",
       },
       {
         question: "What happens if emotions come up during the session?",

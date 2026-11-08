@@ -24,6 +24,7 @@ import {
 } from "@/lib/site";
 import { TREATMENT_NAMES } from "@/lib/treatments";
 import { homeServiceMessage } from "@/lib/whatsapp";
+import { readMinutes } from "@/lib/reading";
 import type { Post, Service } from "@/types";
 
 /** The home service page: an article in the panel, a service on the site. */
@@ -172,7 +173,9 @@ export default async function HomeServiceArticle({ post }: { post: Post }) {
           href: p.seo.canonicalPath,
           title: p.title,
           image: p.image,
-          label: p.categoryLabel ?? p.category.replace(/-/g, " "),
+          /* What a reader can use; the category ("Uluwatu Bali") said nothing
+               and repeated the place on every page. */
+            label: `Guide · ${readMinutes(p.body)} min read`,
         }))}
       />
 

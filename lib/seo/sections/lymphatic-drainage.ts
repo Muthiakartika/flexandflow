@@ -111,11 +111,11 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Can lymphatic drainage focus on just my legs?",
-        answer: "Yes. A lymphatic drainage session at Flex & Flow in Uluwatu can focus on one area where fluid tends to collect or that feels heavy, such as the legs, or cover a broader part of the body. A 60-minute session suits one focused area. Choose 90 minutes if you would like more of the body covered at a slower pace. Tell your therapist what you want at the start.",
+        answer: "Yes. A lymphatic drainage session can focus on one area where fluid tends to collect or that feels heavy, such as the legs, or cover a broader part of the body. A 60-minute session suits one focused area. Choose 90 minutes if you would like more of the body covered at a slower pace. Tell your therapist what you want at the start.",
       },
       {
         question: "Is one lymphatic drainage session enough?",
-        answer: "For a healthy person there is no research-based number of sessions. A sensible approach is to book one session at Flex & Flow in Uluwatu, see how it feels, and come back occasionally if you enjoy it. Any lighter feeling in puffy areas tends to be temporary. If you have lymphoedema, your doctor or lymphoedema specialist should decide how many treatments you need.",
+        answer: "For a healthy person there is no research-based number of sessions. A sensible approach is to book one session, see how it feels, and come back occasionally if you enjoy it. Any lighter feeling in puffy areas tends to be temporary. If you have lymphoedema, your doctor or lymphoedema specialist should decide how many treatments you need.",
       },
       {
         question: "Do I need a doctor's referral for lymphatic drainage massage?",

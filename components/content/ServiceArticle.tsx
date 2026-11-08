@@ -49,6 +49,7 @@ const REDESIGN_PILOT: ReadonlySet<string> = new Set([
 ]);
 import type { Service } from "@/types";
 import { TREATMENT_NAMES } from "@/lib/treatments";
+import { readMinutes } from "@/lib/reading";
 
 /**
  * Service detail page.
@@ -341,7 +342,9 @@ export default async function ServiceArticle({
             href: post.seo.canonicalPath,
             title: post.title,
             image: post.image,
-            label: post.categoryLabel ?? post.category.replace(/-/g, " "),
+            /* What a reader can use; the category ("Uluwatu Bali") said nothing
+               and repeated the place on every page. */
+            label: `Guide · ${readMinutes(post.body)} min read`,
           }))}
         />
       ) : null}

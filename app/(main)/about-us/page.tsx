@@ -18,7 +18,7 @@ import {
 } from "@/lib/site";
 import Approach from "@/sections/home/Approach";
 
-const title = "About Flex & Flow: Bodywork Studio in Uluwatu, Bali";
+const title = "About Us: Bodywork Studio in Uluwatu, Bali | Flex & Flow";
 const description =
   "Flex & Flow is Ginny's one-to-one bodywork studio in Ungasan, Uluwatu: massage, assisted " +
   "stretching and recovery work, at the studio or at your villa.";

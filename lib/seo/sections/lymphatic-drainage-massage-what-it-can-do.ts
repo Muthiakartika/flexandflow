@@ -103,23 +103,23 @@ const blocks: ContentBlock[] = [
     items: [
       {
         question: "How long do the effects of lymphatic drainage massage last?",
-        answer: "For a healthy person, the lighter feeling in puffy areas is temporary, and how long it lasts varies from person to person. One session does not permanently change how your body handles fluid. In lymphoedema care, massage is only one part of a plan that also includes compression, exercise and skin care. At Flex & Flow in Uluwatu, we see it as a comfort session rather than a lasting fix.",
+        answer: "For a healthy person, the lighter feeling in puffy areas is temporary, and how long it lasts varies from person to person. One session does not permanently change how your body handles fluid. In lymphoedema care, massage is only one part of a plan that also includes compression, exercise and skin care. We see it as a comfort session rather than a lasting fix.",
       },
       {
         question: "Does lymphatic drainage massage hurt?",
-        answer: "No. Lymphatic drainage uses very light, slow strokes close to the skin, so it should feel gentle and often relaxing. Pain or deep pressure means you are getting a different kind of massage, so say so. At Flex & Flow in Uluwatu, lymphatic sessions stay light from start to finish. If you would like firm pressure on tight muscles, book a [sport massage](/uluwatu-bali/sport-massage/) instead.",
+        answer: "No. Lymphatic drainage uses very light, slow strokes close to the skin, so it should feel gentle and often relaxing. Pain or deep pressure means you are getting a different kind of massage, so say so. Our lymphatic sessions stay light from start to finish. If you would like firm pressure on tight muscles, book a [sport massage](/uluwatu-bali/sport-massage/) instead.",
       },
       {
         question: "Can I have lymphatic drainage after liposuction or cosmetic surgery?",
-        answer: "Only when your surgeon says it is safe. Massage after an operation is a medical decision, and the right timing depends on the procedure and how you are healing. At Flex & Flow in Uluwatu, tell us the type and date of your surgery when you book. If it is too soon, we will ask you to wait until your surgeon has given you the go-ahead.",
+        answer: "Only when your surgeon says it is safe. Massage after an operation is a medical decision, and the right timing depends on the procedure and how you are healing. Tell us the type and date of your surgery when you book. If it is too soon, we will ask you to wait until your surgeon has given you the go-ahead.",
       },
       {
         question: "Is a spa lymphatic massage the same as medical manual lymphatic drainage?",
-        answer: "Not quite. Both use light, rhythmic strokes, but medical manual lymphatic drainage (MLD) for lymphoedema is given by specially trained therapists as part of a treatment plan a doctor oversees. A wellness session, like those at Flex & Flow in Uluwatu, is for comfort, relaxation and puffiness in otherwise healthy people. If you have lymphoedema, ask your doctor or specialist before booking any massage.",
+        answer: "Not quite. Both use light, rhythmic strokes, but medical manual lymphatic drainage (MLD) for lymphoedema is given by specially trained therapists as part of a treatment plan a doctor oversees. A wellness session, like ours, is for comfort, relaxation and puffiness in otherwise healthy people. If you have lymphoedema, ask your doctor or specialist before booking any massage.",
       },
       {
         question: "Should I drink water after a lymphatic drainage massage?",
-        answer: "Drinking enough water is sensible in Bali's heat, with or without a massage. The idea that you must drink extra to carry away toxins released by the massage is not backed by research, because lymphatic drainage has not been shown to detox the body. After a session at Flex & Flow in Uluwatu, keep drinking as you normally would and carry on with your day.",
+        answer: "Drinking enough water is sensible in Bali's heat, with or without a massage. The idea that you must drink extra to carry away toxins released by the massage is not backed by research, because lymphatic drainage has not been shown to detox the body. After a session, keep drinking as you normally would and carry on with your day.",
       },
       {
         question: "Can men have lymphatic drainage massage?",

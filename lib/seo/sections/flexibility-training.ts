@@ -50,7 +50,7 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "It can help, as long as you keep stretching between sessions. Passive and PNF stretching, two of the types in the table above, are the hardest to do well alone because they need a partner. In an assisted stretching session at Flex & Flow in Uluwatu, your therapist:",
+    text: "It can help, as long as you keep stretching between sessions. Passive and PNF stretching, two of the types in the table above, are the hardest to do well alone because they need a partner. In an assisted stretching session, your therapist:",
   },
   {
     type: "list",
