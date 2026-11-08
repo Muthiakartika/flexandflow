@@ -3,6 +3,12 @@ import Image from "next/image";
 import CardSlider from "@/components/content/CardSlider";
 import { BAND_LINE, H2, WRAP } from "@/components/ui/tokens";
 
+/* Its layout (`home-split`, `home-photo-stack`, the inset frame) lives in
+   the home page's stylesheet. Imported here as well as there, because the
+   About page uses this band too: opened straight on /about-us/, without it
+   the inset came out at its full 800px and the two columns stacked. */
+import "@/app/(main)/home.css";
+
 /* Each step is the studio's own way of working, as Ginny's profile, the old
    home FAQ and the sport massage page put it: a consultation first, the
    session guided by what she observes and what you tell her, and something
