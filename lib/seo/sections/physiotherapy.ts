@@ -101,7 +101,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "What should I tell my massage therapist if I am seeing a physio?",
-        answer: "Tell them what your physio diagnosed, which areas to avoid, which exercises you are doing and how the injury feels today. Mention any recent surgery, and any medicine that makes you bleed or bruise more easily. At Flex & Flow in Uluwatu, this helps your therapist adjust the pressure and leave alone any area your physio wants rested.",
+        answer: "Tell them what your physio diagnosed, which areas to avoid, which exercises you are doing and how the injury feels today. Mention any recent surgery, and any medicine that makes you bleed or bruise more easily. This helps your therapist adjust the pressure and leave alone any area your physio wants rested.",
       },
       {
         question: "Should I see a physio for shoulder pain from surfing?",

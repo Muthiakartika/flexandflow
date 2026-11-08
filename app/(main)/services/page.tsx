@@ -10,15 +10,16 @@ import { listPricedServices } from "@/lib/cms/read";
 import { contact } from "@/lib/site";
 import { TREATMENT_ORDER } from "@/lib/treatments";
 
+const title = "Massage Treatments in Uluwatu, Bali | Flex & Flow";
 const description =
-  "Massage and bodywork in Uluwatu, Bali: sports massage, assisted stretching, lymphatic drainage, cupping, pregnancy massage and home service.";
+  "Sports massage, assisted stretching, lymphatic drainage, cupping and pregnancy massage in Uluwatu, Bali. 60 minutes from IDR 500,000, studio or villa.";
 
 export const metadata: Metadata = {
-  title: "Massage and Treatment Services in Uluwatu Bali",
+  title,
   description,
   alternates: { canonical: "/services/" },
   openGraph: {
-    title: "Massage and Treatment Services in Uluwatu Bali",
+    title,
     description,
     url: "/services/",
     type: "website",

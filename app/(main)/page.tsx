@@ -22,8 +22,8 @@ import "./home.css";
    the old WordPress title ("Flex and Flow - Wellness Studio") never named. */
 const title = "Massage & Bodywork Studio in Uluwatu, Bali | Flex & Flow";
 const description =
-  "Private massage, assisted stretching and recovery bodywork in Uluwatu, " +
-  "Bali. One-to-one sessions with expert therapists, at our studio or your villa.";
+  "One-to-one massage, assisted stretching and recovery bodywork in Uluwatu, Bali, at the " +
+  "studio in Ungasan or your villa. Sessions from IDR 500,000.";
 
 export const metadata: Metadata = {
   title,

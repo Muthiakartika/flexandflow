@@ -18,8 +18,8 @@ import { treatmentMessage } from "@/lib/whatsapp";
 
 const title = "Massage Prices in Uluwatu, Bali | Flex & Flow";
 const description =
-  "Every Flex & Flow price in one place: sports, lymphatic, pregnancy and cupping massage, " +
-  "assisted stretching and trauma healing, at the studio or your villa.";
+  "Every price in one place: sports, lymphatic, pregnancy and cupping massage, assisted " +
+  "stretching and trauma healing in Uluwatu, at the studio or your villa.";
 
 export const metadata: Metadata = {
   title,

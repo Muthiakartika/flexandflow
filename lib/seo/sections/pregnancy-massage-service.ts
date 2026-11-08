@@ -94,11 +94,11 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Can pregnancy massage help with back and hip pain?",
-        answer: "Many people find gentle pregnancy massage eases the lower back and hip tension that builds as pregnancy progresses. At Flex & Flow in Uluwatu, sessions commonly focus on the lower back, hips, shoulders and legs, using light pressure and supportive positioning. Back pain that is severe or sudden, or comes with bleeding, cramping or a fever, needs your midwife or doctor rather than a massage.",
+        answer: "Many people find gentle pregnancy massage eases the lower back and hip tension that builds as pregnancy progresses. Sessions commonly focus on the lower back, hips, shoulders and legs, using light pressure and supportive positioning. Back pain that is severe or sudden, or comes with bleeding, cramping or a fever, needs your midwife or doctor rather than a massage.",
       },
       {
         question: "Will I lie on my back or front during a pregnancy massage?",
-        answer: "Mostly on your side. Pregnancy massage is usually given lying on your side with pillows for support, and a trained therapist does not keep you flat on your back for long in later pregnancy. At Flex & Flow in Uluwatu, positioning is adjusted to your stage of pregnancy and what feels comfortable. Tell your therapist straight away if a position stops feeling right.",
+        answer: "Mostly on your side. Pregnancy massage is usually given lying on your side with pillows for support, and a trained therapist does not keep you flat on your back for long in later pregnancy. Positioning is adjusted to your stage of pregnancy and what feels comfortable. Tell your therapist straight away if a position stops feeling right.",
       },
       {
         question: "How do I book a pregnancy massage in Uluwatu?",
@@ -106,7 +106,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Can I ask to change or stop a pregnancy massage partway through?",
-        answer: "Yes, at any point. Pregnancy massage at Flex & Flow in Uluwatu is meant to be easy to talk through. You can ask for lighter pressure, a different position, a short break for the toilet or a drink of water, or to stop altogether. Tell your therapist straight away if you feel dizzy, sick, short of breath or simply uncomfortable.",
+        answer: "Yes, at any point. Pregnancy massage is meant to be easy to talk through. You can ask for lighter pressure, a different position, a short break for the toilet or a drink of water, or to stop altogether. Tell your therapist straight away if you feel dizzy, sick, short of breath or simply uncomfortable.",
       },
     ],
   },

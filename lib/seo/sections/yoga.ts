@@ -64,7 +64,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Can assisted stretching help with yoga poses I am stuck on?",
-        answer: "It can help with the tightness behind them. If a hip opener, forward fold or shoulder pose never seems to improve, tell your therapist at Flex & Flow in Uluwatu which poses feel blocked. They can work on the hips, hamstrings or shoulders involved, using passive and PNF stretches you cannot do on your own. Strength and regular practice still matter for holding the pose.",
+        answer: "It can help with the tightness behind them. If a hip opener, forward fold or shoulder pose never seems to improve, tell your therapist which poses feel blocked. They can work on the hips, hamstrings or shoulders involved, using passive and PNF stretches you cannot do on your own. Strength and regular practice still matter for holding the pose.",
       },
       {
         question: "Can I do assisted stretching on the same day as a yoga class?",
@@ -72,7 +72,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Can I go to a yoga class in Uluwatu with an injury?",
-        answer: "If the injury is new, painful or getting worse, get it checked by a doctor or [physiotherapist](/uluwatu-bali/physiotherapy/) before any class. Once you have the all-clear, tell the teacher and skip poses that hurt. If a group class feels like too much, one-to-one assisted stretching at Flex & Flow in Uluwatu lets the therapist keep every stretch away from the injured area.",
+        answer: "If the injury is new, painful or getting worse, get it checked by a doctor or [physiotherapist](/uluwatu-bali/physiotherapy/) before any class. Once you have the all-clear, tell the teacher and skip poses that hurt. If a group class feels like too much, one-to-one assisted stretching lets the therapist keep every stretch away from the injured area.",
       },
     ],
   },

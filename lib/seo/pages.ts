@@ -47,13 +47,13 @@ export const PAGE_SEO: Record<string, PageSeo> = {
   "/uluwatu-bali/assisted-stretching/": {
     title: "Assisted Stretching in Uluwatu, Bali | Flex & Flow",
     description:
-      "One-to-one assisted stretching in Uluwatu, Bali. A therapist guides deep stretches to free tight muscles and improve mobility. 60 min from IDR 500,000.",
+      "A therapist takes you into deep stretches you cannot reach alone, for tight hips, hamstrings and shoulders. Uluwatu studio or villa, 60 min from IDR 500,000.",
     h1: "Assisted Stretching in Uluwatu, Bali",
   },
   "/uluwatu-bali/sport-massage/": {
     title: "Sports Massage in Uluwatu, Bali | Flex & Flow",
     description:
-      "Sports massage in Uluwatu, Bali to ease sore muscles, improve mobility and recover faster after surfing or training. 60 min from IDR 500,000.",
+      "Firm, focused work on the muscles surfing and training load, with stretching so you move freely again. Sports massage in Uluwatu, 60 min from IDR 500,000.",
     h1: "Sports Massage in Uluwatu, Bali",
   },
   /* Hidden from search at the owner’s request (27 Oct 2026). Still answers
@@ -68,31 +68,31 @@ export const PAGE_SEO: Record<string, PageSeo> = {
   "/uluwatu-bali/cupping-therapy/": {
     title: "Cupping Therapy in Uluwatu, Bali | Flex & Flow",
     description:
-      "Cupping therapy in Uluwatu, Bali to release deep muscle tension and improve blood flow. 30 min for IDR 300,000, on its own or alongside a massage.",
+      "Glass cups lift and loosen deep muscle tension. Cupping therapy in Uluwatu, 30 min for IDR 300,000, on its own or with a massage, at the studio or your villa.",
     h1: "Cupping Therapy in Uluwatu, Bali",
   },
   "/uluwatu-bali/lymphatic-drainage/": {
     title: "Lymphatic Drainage Massage in Uluwatu, Bali | Flex & Flow",
     description:
-      "Gentle lymphatic drainage massage in Uluwatu to ease swelling and help your body feel lighter. 60 min from IDR 500,000, at our studio or your villa.",
+      "Light, rhythmic lymphatic drainage for heavy legs, puffiness after flights and bodies needing a gentle reset. Uluwatu studio or villa, 60 min from IDR 500,000.",
     h1: "Lymphatic Drainage Massage in Uluwatu, Bali",
   },
   "/uluwatu-bali/trauma-healing/": {
     title: "Trauma Healing & Release in Uluwatu, Bali | Flex & Flow",
     description:
-      "Deep therapeutic bodywork in Uluwatu, Bali for releasing chronic tension and stored physical stress, more focused than a massage. 90 min, IDR 1,800,000.",
+      "Slow, deep bodywork for chronic tension and stored physical stress, more focused than a massage. Trauma healing with Ginny in Uluwatu, 90 min, IDR 1,800,000.",
     h1: "Trauma Healing in Uluwatu, Bali",
   },
   "/uluwatu-bali/lymphatic-detox-massage-for-men/": {
     title: "Men's Lymphatic Drainage Massage in Uluwatu | Flex & Flow",
     description:
-      "Lymphatic detox massage for men in Uluwatu, Bali to reduce swelling, improve circulation and leave your body feeling lighter. 60 min from IDR 600,000.",
+      "Full-body lymphatic drainage for men, with face, scalp and neck work, to ease swelling and leave you lighter. Uluwatu studio or villa, 60 min from IDR 600,000.",
     h1: "Lymphatic Detox Massage for Men in Uluwatu",
   },
   "/uluwatu-bali/pregnancy-massage-service/": {
     title: "Pregnancy Massage in Uluwatu, Bali | Flex & Flow",
     description:
-      "Gentle pregnancy massage in Uluwatu, Bali to help mums-to-be relax, ease tension and feel more comfortable. 90 min from IDR 750,000.",
+      "Gentle side-lying massage for the back, hips and swollen feet, with pillows for support. Pregnancy massage in Uluwatu, 90 min from IDR 750,000, studio or villa.",
     h1: "Pregnancy Massage in Uluwatu, Bali",
   },
   /* Hidden from search at the owner’s request (27 Oct 2026). Still answers
@@ -139,7 +139,7 @@ export const PAGE_SEO: Record<string, PageSeo> = {
   "/uluwatu-bali/physiotherapy/": {
     title: "Physio or Sport Massage in Uluwatu? How to Choose",
     description:
-      "Physiotherapy treats injuries; sport massage treats tightness. How to tell which you need in Uluwatu, when to see a physio first, and Flex & Flow prices.",
+      "Physiotherapy treats injuries; sport massage treats tightness. How to tell which you need in Uluwatu, when to see a physio first, and what each costs.",
   },
   "/uluwatu-bali/yoga/": {
     title: "Yoga or Assisted Stretching in Uluwatu? How to Choose",

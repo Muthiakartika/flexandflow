@@ -422,6 +422,24 @@ async function checkMarkup(base: string): Promise<void> {
   }
 }
 
+/*
+ * A price written into a meta description must be one the page itself shows
+ * (google-titles-descriptions.md: real numbers only). Descriptions are typed
+ * by hand, in `lib/seo/pages.ts` and the fixed pages' route files, so a
+ * price change in the booking admin leaves them behind; this catches it.
+ */
+async function checkDescriptionPrices(base: string): Promise<void> {
+  const paths = [...Object.entries(PAGE_SEO).filter(([, seo]) => !seo.noindex).map(([path]) => path), ...FIXED_PAGES];
+  for (const path of paths) {
+    const html = await (await fetch(`${base}${path}`)).text();
+    const description = decode(html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? "");
+    const body = visible(html.slice(Math.max(0, html.indexOf("<body"))));
+    for (const price of description.match(/IDR\s?\d{1,3}(?:,\d{3})+/g) ?? []) {
+      check(`${path} description price ${price} is on the page`, body.includes(price), "not shown on the page: update the description");
+    }
+  }
+}
+
 async function main(): Promise<void> {
   checkFile();
   checkSections();
@@ -430,6 +448,7 @@ async function main(): Promise<void> {
     await checkFixes(BASE);
     await checkPlacement(BASE);
     await checkMarkup(BASE);
+    await checkDescriptionPrices(BASE);
   }
 
   console.log(`\n${failures} failed, ${warnings} warnings`);

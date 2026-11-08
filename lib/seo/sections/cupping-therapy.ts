@@ -93,7 +93,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Does cupping hurt?",
-        answer: "Most people describe dry cupping as a strong pulling or tightening feeling rather than pain. Areas that have been tight for a long time can feel more intense. At Flex & Flow in Uluwatu, your practitioner explains what to expect before starting and the suction can be adjusted, so say if it feels too strong. The treated area may feel tender for a short time afterwards.",
+        answer: "Most people describe dry cupping as a strong pulling or tightening feeling rather than pain. Areas that have been tight for a long time can feel more intense. Your practitioner explains what to expect before starting and the suction can be adjusted, so say if it feels too strong. The treated area may feel tender for a short time afterwards.",
       },
       {
         question: "Can I have cupping at my villa in Uluwatu?",
@@ -101,7 +101,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Is there scientific evidence that cupping works?",
-        answer: "Research on cupping is limited and of mixed quality, so it should not be seen as a medical treatment. Many people use it because tight areas feel looser and less restricted afterwards. At Flex & Flow in Uluwatu, cupping is used as part of recovery bodywork for muscle tension, not to treat illness. Cleveland Clinic has a plain-language overview of its uses and risks.",
+        answer: "Research on cupping is limited and of mixed quality, so it should not be seen as a medical treatment. Many people use it because tight areas feel looser and less restricted afterwards. Cupping is used as part of recovery bodywork for muscle tension, not to treat illness. Cleveland Clinic has a plain-language overview of its uses and risks.",
       },
     ],
   },
