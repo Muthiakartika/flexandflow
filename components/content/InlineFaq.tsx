@@ -28,7 +28,7 @@ export default function InlineFaq({
 
   if (cards) {
     return (
-      <div className="my-8 flex flex-col gap-2.5">
+      <div data-faq="" className="my-8 flex flex-col gap-2.5">
         {items.map((item, i) => {
           const isOpen = open === i;
           const panelId = `inline-faq-panel-${i}`;
@@ -97,7 +97,7 @@ export default function InlineFaq({
   }
 
   return (
-    <div className="my-8 flex max-w-[68ch] flex-col">
+    <div data-faq="" className="my-8 flex max-w-[68ch] flex-col">
       {items.map((item, i) => {
         const isOpen = open === i;
         const panelId = `inline-faq-panel-${i}`;

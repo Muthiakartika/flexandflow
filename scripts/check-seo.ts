@@ -4,7 +4,9 @@
  *
  * Sections are checked against the CMS's own block schema, for internal links
  * that point at no page, for nested bold and italic (which `RichText` cannot
- * render), and for a question asked twice on one page.
+ * render), and for a question asked twice on one page. With a URL, each
+ * page's sections must also be served inside its article: before its one
+ * FAQ list, and in front of the heading `SECTION_PLACES` names.
  *
  * Without an argument it checks the file alone: every key is a canonical path
  * with both slashes, nothing is empty, no two pages share a title or a
@@ -29,7 +31,7 @@ import { PAGE_FIXES } from "@/lib/seo/fixes";
 import { PAGE_SEO } from "@/lib/seo/pages";
 import { PAGE_PHOTOS } from "@/lib/seo/photos";
 import { PRICE_MISSING, PRICE_TOKEN } from "@/lib/seo/price-tokens";
-import { PAGE_SECTIONS } from "@/lib/seo/sections";
+import { PAGE_SECTIONS, SECTION_PLACES, sectionHeadings } from "@/lib/seo/sections";
 import { TIER_LABELS } from "@/lib/seo/tiers";
 
 /* Pages with their own route files, which sections may link to beside the
@@ -333,12 +335,64 @@ async function checkFixes(base: string): Promise<void> {
   }
 }
 
+/*
+ * A page's sections are served inside its article (`placeSections`): every
+ * heading they add comes before the page's one FAQ list, and on a page in
+ * `SECTION_PLACES` the panel heading named there follows them directly. If
+ * the owner renames that heading, the sections fall back to the FAQ and the
+ * last check here fails. The page's questions, the owner's and the code's
+ * together, are each asked once.
+ */
+async function checkPlacement(base: string): Promise<void> {
+  for (const [path, blocks] of Object.entries(PAGE_SECTIONS)) {
+    const html = await (await fetch(`${base}${path}`)).text();
+    const lists = html.split('data-faq=""').length - 1;
+    check(`${path} serves one FAQ list`, lists <= 1, `serves ${lists}`);
+
+    const faqAt = html.indexOf('data-faq=""');
+    const headings = [...html.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/gi)].map((m) => ({
+      text: visible(m[1]).trim(),
+      at: m.index ?? 0,
+    }));
+    const added = sectionHeadings(blocks).map(plain);
+    const misplaced = added.filter((text) => {
+      const heading = headings.find((h) => h.text === text);
+      return !heading || (faqAt !== -1 && heading.at > faqAt);
+    });
+    check(
+      `${path} sections sit before the FAQ`,
+      misplaced.length === 0,
+      `${misplaced.map((text) => `"${text}"`).join(", ")} missing or after it`,
+    );
+
+    const place = SECTION_PLACES[path];
+    if (place && added.length) {
+      const last = headings.findIndex((h) => h.text === added[added.length - 1]);
+      const next = last === -1 ? "" : (headings[last + 1]?.text ?? "");
+      check(
+        `${path} sections sit before "${place}"`,
+        next.toLowerCase() === place.toLowerCase(),
+        `followed by "${next}" (renamed in the panel?)`,
+      );
+    }
+
+    const questions = [...html.matchAll(/"@type":"Question","name":"((?:[^"\\]|\\.)*)"/g)].map((m) =>
+      m[1].toLowerCase(),
+    );
+    check(
+      `${path} asks each of its ${questions.length} questions once`,
+      new Set(questions).size === questions.length,
+    );
+  }
+}
+
 async function main(): Promise<void> {
   checkFile();
   checkSections();
   if (BASE) {
     await checkServed(BASE);
     await checkFixes(BASE);
+    await checkPlacement(BASE);
   }
 
   console.log(`\n${failures} failed, ${warnings} warnings`);

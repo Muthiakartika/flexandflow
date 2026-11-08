@@ -47,7 +47,7 @@ import {
 import { prisma } from "@/lib/db";
 import { withPageCopy } from "@/lib/seo/copy";
 import { withPageFixes } from "@/lib/seo/fixes";
-import { withPageSeo } from "@/lib/seo/pages";
+import { withGuideTitle, withPageSeo } from "@/lib/seo/pages";
 import { withPagePhoto } from "@/lib/seo/photos";
 import type { PriceBook } from "@/lib/seo/price-tokens";
 import { loadPriceBook } from "@/lib/seo/prices";
@@ -119,7 +119,8 @@ async function load(
  * the studio's own photo from `lib/seo/photos.ts`, relabels a rate-card row
  * from `lib/seo/tiers.ts` and lays `lib/seo/pages.ts` over its SEO. Fixes go first so they only ever touch the panel's blocks,
  * never the code's own sections; the photo goes before the SEO, which keeps
- * the link preview it sets.
+ * the link preview it sets. A post then takes its guide title from
+ * `lib/seo/pages.ts` (`withGuideTitle`).
  * After the cache rather than inside it: the cache holds database rows, so a
  * deploy that changes any of these takes effect without anything being
  * invalidated. Here and not in `lib/cms/shape.ts`, because the import check
@@ -184,7 +185,7 @@ export async function listPosts(): Promise<Post[]> {
     categoryLabels(),
     loadPriceBook(),
   ]);
-  return rows.map((row) => fromCode(toPost(row, labels), prices));
+  return rows.map((row) => withGuideTitle(fromCode(toPost(row, labels), prices)));
 }
 
 export async function listPostsInCategory(
@@ -195,7 +196,7 @@ export async function listPostsInCategory(
     categoryLabels(),
     loadPriceBook(),
   ]);
-  return rows.map((row) => fromCode(toPost(row, labels), prices));
+  return rows.map((row) => withGuideTitle(fromCode(toPost(row, labels), prices)));
 }
 
 export async function getPost(
@@ -210,7 +211,7 @@ export async function getPost(
     categoryLabels(),
     loadPriceBook(),
   ]);
-  return rows.length ? fromCode(toPost(rows[0], labels), prices) : null;
+  return rows.length ? withGuideTitle(fromCode(toPost(rows[0], labels), prices)) : null;
 }
 
 // ── Static params ─────────────────────────────────────────────────────────
