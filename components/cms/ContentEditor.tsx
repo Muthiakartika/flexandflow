@@ -15,6 +15,7 @@ import {
 import { BLOCK_LABEL, type BlockType } from "@/lib/cms/blocks";
 import { slugify } from "@/lib/cms/content-schema";
 import type { EditorDoc } from "@/lib/cms/admin";
+import { pageSeoFor, type PageSeo } from "@/lib/seo/pages";
 import type { ContentBlock, TherapistTier } from "@/types";
 
 /**
@@ -67,6 +68,9 @@ export function ContentEditor({
   const [seoDescription, setSeoDescription] = useState(doc.seoDescription);
   const [seoNoindex, setSeoNoindex] = useState(doc.seoNoindex);
   const [seoNofollow, setSeoNofollow] = useState(doc.seoNofollow);
+  /* Set when `lib/seo/pages.ts` owns this page's search fields. Keyed by the
+     saved address, not the one being typed: the live page is what it governs. */
+  const codeSeo = pageSeoFor(`/${doc.urlPrefix}/${doc.slug}/`);
 
   const [durationLabel, setDurationLabel] = useState(doc.durationLabel ?? "");
   const [displayDate, setDisplayDate] = useState(doc.displayDate ?? "");
@@ -359,59 +363,65 @@ export function ContentEditor({
           <BlockEditor blocks={blocks} onChange={edited(setBlocks)} />
         </section>
 
-        <section className="admin-card mb-3 p-4">
-          <h2 className="text-[15px] font-bold text-ink">Search results</h2>
-          <p className="mt-1 mb-3 text-[13px] text-muted">
-            What Google shows. Kept separate from the page title on purpose —
-            renaming a heading should not quietly change the search result.
-          </p>
+        {codeSeo ? (
+          <CodeSeoSection seo={codeSeo} />
+        ) : (
+          <>
+            <section className="admin-card mb-3 p-4">
+              <h2 className="text-[15px] font-bold text-ink">Search results</h2>
+              <p className="mt-1 mb-3 text-[13px] text-muted">
+                What Google shows. Kept separate from the page title on purpose —
+                renaming a heading should not quietly change the search result.
+              </p>
 
-          <label className="admin-label" htmlFor="cms-seo-title">
-            SEO title
-          </label>
-          <input
-            id="cms-seo-title"
-            type="text"
-            value={seoTitle}
-            onChange={(event) => {
-              setDirty(true);
-              setSeoTitle(event.target.value);
-            }}
-            className="admin-input"
-          />
-          {fields.seoTitle ? <FieldError message={fields.seoTitle} /> : null}
+              <label className="admin-label" htmlFor="cms-seo-title">
+                SEO title
+              </label>
+              <input
+                id="cms-seo-title"
+                type="text"
+                value={seoTitle}
+                onChange={(event) => {
+                  setDirty(true);
+                  setSeoTitle(event.target.value);
+                }}
+                className="admin-input"
+              />
+              {fields.seoTitle ? <FieldError message={fields.seoTitle} /> : null}
 
-          <label className="admin-label mt-3" htmlFor="cms-seo-description">
-            SEO description
-          </label>
-          <textarea
-            id="cms-seo-description"
-            value={seoDescription}
-            onChange={(event) => {
-              setDirty(true);
-              setSeoDescription(event.target.value);
-            }}
-            rows={3}
-            className="admin-input resize-y"
-          />
-          <p className="mt-1 text-[12px] text-faint">
-            {seoDescription.length} characters. Google usually shows about 155.
-          </p>
-          {fields.seoDescription ? (
-            <FieldError message={fields.seoDescription} />
-          ) : null}
-        </section>
+              <label className="admin-label mt-3" htmlFor="cms-seo-description">
+                SEO description
+              </label>
+              <textarea
+                id="cms-seo-description"
+                value={seoDescription}
+                onChange={(event) => {
+                  setDirty(true);
+                  setSeoDescription(event.target.value);
+                }}
+                rows={3}
+                className="admin-input resize-y"
+              />
+              <p className="mt-1 text-[12px] text-faint">
+                {seoDescription.length} characters. Google usually shows about 155.
+              </p>
+              {fields.seoDescription ? (
+                <FieldError message={fields.seoDescription} />
+              ) : null}
+            </section>
 
-        <RobotsSection
-          noindex={seoNoindex}
-          nofollow={seoNofollow}
-          onNoindex={edited(setSeoNoindex)}
-          onNofollow={edited(setSeoNofollow)}
-          isService={isService}
-          live={doc.status === "PUBLISHED"}
-          liveNoindex={doc.liveNoindex}
-          liveNofollow={doc.liveNofollow}
-        />
+            <RobotsSection
+              noindex={seoNoindex}
+              nofollow={seoNofollow}
+              onNoindex={edited(setSeoNoindex)}
+              onNofollow={edited(setSeoNofollow)}
+              isService={isService}
+              live={doc.status === "PUBLISHED"}
+              liveNoindex={doc.liveNoindex}
+              liveNofollow={doc.liveNofollow}
+            />
+          </>
+        )}
       </div>
 
       {/* ── Actions and preview ───────────────────────────────────────── */}
@@ -648,6 +658,32 @@ function describeProblems(
 
       return `${FIELD_LABEL[head] ?? path}: ${message}`;
     });
+}
+
+/**
+ * "Search results" for a page whose SEO is set in `lib/seo/pages.ts`.
+ *
+ * Read-only on purpose: the site ignores the panel's values for such a page,
+ * so an editable field here would save and change nothing.
+ */
+function CodeSeoSection({ seo }: { seo: PageSeo }) {
+  return (
+    <section className="admin-card mb-3 p-4">
+      <h2 className="text-[15px] font-bold text-ink">Search results</h2>
+      <p className="mt-1 mb-3 text-[13px] text-muted">
+        Set in the website&apos;s code for this page, so every change is
+        reviewed before Google sees it. Ask your developer to change these.
+      </p>
+      <dl className="text-[13px]">
+        <dt className="admin-label">SEO title</dt>
+        <dd className="mb-3 text-ink">{seo.title}</dd>
+        <dt className="admin-label">SEO description</dt>
+        <dd className="mb-3 text-ink">{seo.description}</dd>
+        <dt className="admin-label">Show this page in search results?</dt>
+        <dd className="text-ink">{seo.noindex ? "No" : "Yes"}</dd>
+      </dl>
+    </section>
+  );
 }
 
 /**

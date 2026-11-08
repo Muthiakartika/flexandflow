@@ -216,12 +216,11 @@ the sitemap and in search. Both are therefore absent from the `order` array in
 `app/(main)/services/page.tsx` and from `primaryNav`, on purpose. Neither has published
 rates, so both carry `tiers: []` and render the aside with no price rows.
 **Since 2026-10-27 both are `noindex, nofollow`** at the owner's request.
-That is now a per-page CMS setting ("Search engine visibility" in the editor,
-`seoNoindex` / `seoNofollow` on `ContentRevision`), not a hard-coded list:
-`isIndexable` in `lib/content.ts` drops a noindex page from the sitemap, its
-JSON-LD, the "Other treatments" / blog-sidebar treatment lists and the
-"From the blog" lists, and puts it back when switched on. Like the SEO title,
-it takes effect on publish. They still answer at their URLs. The body copy
+Since 2026-11-04 that is set in `lib/seo/pages.ts` (see "SEO lives in code"
+below), not in the panel: `isIndexable` in `lib/content.ts` drops a noindex
+page from the sitemap, its JSON-LD, the "Other treatments" / blog-sidebar
+treatment lists and the "From the blog" lists, and puts it back when the
+flag goes. They still answer at their URLs. The body copy
 of the full-body page was taken from the live HTML verbatim, stray comma and "Let us to
 transform" included; do not tidy it.
 
@@ -525,6 +524,28 @@ migrations *have* been applied. Treat every code path as unverified.
   rather than from a tested call.
 
 ---
+
+## SEO lives in code (since 2026-11-04)
+
+**`lib/seo/pages.ts` decides the title, description and noindex/nofollow of
+every treatment and article it lists. The panel does not.** The agency runs
+SEO and wants every change reviewed before Google sees it; the owner keeps
+the panel for headings, body copy, pictures and rates.
+
+- `lib/cms/read.ts` lays the file over each row with `withPageSeo`, after the
+  cache, so a deploy changes a title with nothing to invalidate. Not in
+  `lib/cms/shape.ts`: `scripts/cms-import.ts` reads through that and compares
+  against WordPress.
+- For a listed page the editor shows "Search results" read-only and hides the
+  visibility switches. The panel's own values stay in the database, ignored.
+- A published page **not** listed falls back to the panel's values, so a new
+  article is never untitled. `npm run check:seo <url>` lists those pages.
+- Keys are the canonical path with both slashes. **Moving a page in the panel
+  orphans its entry**: the new address falls back to the panel and the old
+  key matches nothing. Move the key in the same change.
+- Workflow: branch → `npm run check:seo` → PR → Vercel preview →
+  `npm run check:seo <preview-url>` → review → merge. Seeded from what the
+  live site served, so the change that introduced it altered nothing visible.
 
 ## Phase 5 — the CMS (in progress)
 

@@ -243,6 +243,17 @@ const nextConfig: NextConfig = {
         destination: "/blog/:path*/",
         permanent: true,
       },
+      /**
+       * The surfing-injuries article's old WordPress URL, filed under the
+       * `shiatsu-massage` category. Search Console still shows impressions for
+       * it, and this app answers it with a 404, so send it to the article's
+       * current home.
+       */
+      {
+        source: "/shiatsu-massage/common-surfing-injuries-in-bali-and-how-to-avoid-them",
+        destination: "/injury-guide/common-surfing-injuries/",
+        permanent: true,
+      },
       ...academyRedirects,
       ...intakeRedirects,
     ];
