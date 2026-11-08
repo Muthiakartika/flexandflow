@@ -48,6 +48,7 @@ const REDESIGN_PILOT: ReadonlySet<string> = new Set([
   "trauma-healing",
 ]);
 import type { Service } from "@/types";
+import { TREATMENT_NAMES } from "@/lib/treatments";
 
 /**
  * Service detail page.
@@ -331,7 +332,7 @@ export default async function ServiceArticle({
               .filter((amount): amount is number => amount !== null);
             return {
               href: `/uluwatu-bali/${other.slug}`,
-              title: other.title,
+              title: TREATMENT_NAMES[other.slug] ?? other.title,
               image: other.image,
               from: amounts.length ? Math.min(...amounts) : null,
             };

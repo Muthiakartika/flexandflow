@@ -30,7 +30,7 @@ const andika = Andika({
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Flex and Flow - Wellness Studio",
+    default: "Flex & Flow | Bodywork Studio in Uluwatu, Bali",
     template: "%s",
   },
   description: siteConfig.description,
@@ -57,7 +57,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: siteConfig.locale,
-    siteName: siteConfig.name,
+    /* "Flex & Flow", as the logo, the titles and the WebSite markup
+       (`websiteSchema`) write it. */
+    siteName: siteConfig.shortName,
     url: siteConfig.url,
   },
   twitter: { card: "summary_large_image" },

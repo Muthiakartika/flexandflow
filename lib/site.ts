@@ -23,7 +23,7 @@ export const siteConfig = {
   url: "https://flexandflow.fit",
   locale: "en_US",
   description:
-    "Join wellness journeys with Flex and Flow. Our services focus on improving flexibility, reducing discomfort, and enhancement of well-being.",
+    "One-to-one bodywork studio in Ungasan, Uluwatu, Bali: sports massage, assisted stretching, lymphatic drainage and recovery work, at the studio or your villa.",
   logo: "/images/2025/06/FlexnFlow_new_logo.png",
   copyright: "© 2026 Flex & Flow. All rights reserved.",
 } as const;
@@ -122,6 +122,9 @@ export const openingSchedule = {
 } as const;
 
 /** Directions to the studio, the same search the booking emails link to. */
+/** Where a therapist visits, as the contact and home service pages list it. */
+export const homeServiceAreas = ["Ungasan", "Pecatu", "Bingin", "Padang Padang", "Balangan"];
+
 export const studioMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
   contact.address,
 )}`;
@@ -191,7 +194,7 @@ const allNavItems: NavItem[] = [
     children: [
       { label: "Assisted Stretching", href: "/uluwatu-bali/assisted-stretching" },
       { label: "Cupping Therapy", href: "/uluwatu-bali/cupping-therapy" },
-      { label: "Sport Massage", href: "/uluwatu-bali/sport-massage" },
+      { label: "Sports Massage", href: "/uluwatu-bali/sport-massage" },
       {
         label: "Home Massage",
         href: "/uluwatu-bali/outcall-home-service-massage",
@@ -294,7 +297,7 @@ export const slideMenuServices = [
     image: "/images/2026/08/assisted-stretching.jpg",
   },
   {
-    label: "Sport Massage",
+    label: "Sports Massage",
     href: "/uluwatu-bali/sport-massage",
     image: "/images/2026/08/sport-massage.jpg",
   },

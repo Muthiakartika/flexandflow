@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     title: "Massage and Treatment Services in Uluwatu Bali",
     description,
     url: "/services/",
-    type: "article",
+    type: "website",
     images: ["/images/2026/08/private-therapy.jpg"],
   },
 };

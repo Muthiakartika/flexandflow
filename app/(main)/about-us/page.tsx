@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     title,
     description,
     url: "/about-us/",
-    type: "article",
+    type: "website",
     images: ["/images/2026/08/about-studio.jpg"],
   },
 };

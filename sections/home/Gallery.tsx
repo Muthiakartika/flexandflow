@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { H2, LINK, WRAP } from "@/components/ui/tokens";
 import { formatIdr } from "@/lib/pricing";
+import { altFor } from "@/lib/seo/alts";
 import { homeServiceFeeIdr } from "@/lib/site";
 
 /** The six studio photographs, in the original's order. */
@@ -52,8 +53,7 @@ export default function Gallery() {
             <li key={photo.src} className="overflow-hidden rounded-[10px]">
               <Image
                 src={photo.src}
-                alt=""
-                aria-hidden
+                alt={altFor(photo.src)}
                 width={photo.width}
                 height={photo.height}
                 sizes="(max-width: 640px) 46vw, (max-width: 1024px) 46vw, 30vw"

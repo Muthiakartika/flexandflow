@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { CARD, FOCUS, H2, LINK, WRAP } from "@/components/ui/tokens";
 import { formatIdr, ratesFor, serviceMinutes } from "@/lib/pricing";
+import { TREATMENT_NAMES } from "@/lib/treatments";
 import type { Service } from "@/types";
 
 /* Ordered by how many Google reviews name each treatment
@@ -92,7 +93,7 @@ export default function Treatments({ services }: { services: Service[] }) {
                 <span className="flex flex-1 flex-col p-4">
                   <span className="flex items-start justify-between gap-3">
                     <span className="font-display text-[26px] leading-[1.02] font-bold transition-colors duration-300 group-hover:text-primary">
-                      {service.title}
+                      {TREATMENT_NAMES[service.slug] ?? service.title}
                     </span>
                     <Arrow />
                   </span>

@@ -3,11 +3,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import JsonLd from "@/components/layout/JsonLd";
 import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
 import { BAND, CARD, FOCUS, H3, WRAP } from "@/components/ui/tokens";
 import { therapistBySlug, therapists } from "@/lib/data/therapists";
 import { WhatsAppMessage } from "@/components/layout/WhatsAppLinks";
+import { profileSchema } from "@/lib/structured-data";
 import { therapistMessage } from "@/lib/whatsapp";
 import {
   bookingCtaHref,
@@ -27,19 +29,15 @@ export async function generateMetadata(
   const therapist = therapistBySlug.get(slug);
   if (!therapist) return {};
 
-  /* Mirrors the live WordPress head: therapist profiles are `noindex, follow`
-     there and carry no meta description, only an og:description. Keep both —
-     dropping the profiles out of the index is deliberate on the source site. */
+  /* Indexed, with the root layout's robots (WordPress had them `noindex`):
+     Ginny's profile is the author page every guide credits. */
   return {
     title: therapist.seoTitle,
-    /* `null`, not omitted: an absent field inherits the root layout's
-       description, which would put the home page's wording on every profile. */
-    description: null,
+    description: therapist.seoDescription,
     alternates: { canonical: `/therapist/${therapist.slug}/` },
-    robots: { index: false, follow: true },
     openGraph: {
       title: therapist.seoTitle,
-      description: therapist.approach,
+      description: therapist.seoDescription,
       url: `/therapist/${therapist.slug}/`,
       type: "profile",
       images: [therapist.portrait],
@@ -73,6 +71,7 @@ export default async function TherapistPage(
 
   return (
     <>
+      <JsonLd data={profileSchema(therapist)} />
       <WhatsAppMessage text={therapistMessage(therapist.name, therapist.slug === "ginny")} />
       <PageHero
         title={therapist.name}

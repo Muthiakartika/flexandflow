@@ -164,7 +164,7 @@ export default async function HomeServiceArticle({ post }: { post: Post }) {
       <RelatedBand
         treatments={atHome.map((service) => ({
           href: `/uluwatu-bali/${service.slug}`,
-          title: service.title,
+          title: TREATMENT_NAMES[service.slug] ?? service.title,
           image: service.image,
           from: lowestPrice(service),
         }))}

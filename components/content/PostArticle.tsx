@@ -4,6 +4,7 @@ import Link from "next/link";
 import BlogSidebar from "@/components/blog/BlogSidebar";
 import PageHero from "@/components/ui/PageHero";
 import { BAND, FOCUS, WRAP } from "@/components/ui/tokens";
+import { altFor } from "@/lib/seo/alts";
 import { POST_AUTHOR } from "@/lib/structured-data";
 import RichText from "./RichText";
 import { WhatsAppMessage } from "@/components/layout/WhatsAppLinks";
@@ -54,8 +55,7 @@ export default function PostArticle({
             {post.image ? (
               <Image
                 src={post.image}
-                alt=""
-                aria-hidden
+                alt={altFor(post.image)}
                 width={1024}
                 height={621}
                 priority

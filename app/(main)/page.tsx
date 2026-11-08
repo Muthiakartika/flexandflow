@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 
 import StickyBookBar from "@/components/content/StickyBookBar";
+import JsonLd from "@/components/layout/JsonLd";
 import { listServices } from "@/lib/cms/read";
 import { formatIdr, lowestHourlyRate } from "@/lib/pricing";
+import { websiteSchema } from "@/lib/structured-data";
 import Approach from "@/sections/home/Approach";
 import Faqs from "@/sections/home/Faqs";
 import Gallery from "@/sections/home/Gallery";
@@ -18,7 +20,7 @@ import "./home.css";
    at "massage uluwatu" (600 searches a month in Indonesia, KD 12 — Ahrefs,
    2026-10-27), the largest query this studio can realistically win and one
    the old WordPress title ("Flex and Flow - Wellness Studio") never named. */
-const title = "Massage & Bodywork Studio in Uluwatu, Bali - Flex and Flow";
+const title = "Massage & Bodywork Studio in Uluwatu, Bali | Flex & Flow";
 const description =
   "Private massage, assisted stretching and recovery bodywork in Uluwatu, " +
   "Bali. One-to-one sessions with expert therapists, at our studio or your villa.";
@@ -32,7 +34,9 @@ export const metadata: Metadata = {
     description,
     url: "/",
     type: "website",
-    images: ["/images/2023/09/slider-png-01.png"],
+    /* The studio itself. It was the theme's 2023 slider artwork, a white
+       line on a transparent PNG, which shared as a blank black card. */
+    images: ["/images/2026/08/about-studio.jpg"],
   },
 };
 
@@ -53,6 +57,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={websiteSchema()} />
       <Hero from={from} />
       <Treatments services={services} />
       <Approach />

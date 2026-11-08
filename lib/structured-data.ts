@@ -8,16 +8,40 @@
  * the studio cannot back up is a manual action waiting to happen, and this repo
  * has published a wrong price three times already (CLAUDE.md). Offers come
  * from the same `priceAmount` the visible price rows use, so the two cannot
- * disagree.
+ * disagree. The Google Maps listing (`hasMap`, `sameAs`) is the one the
+ * reviews band already links to.
+ *
+ * Beside the business on every page: `WebSite` on the home page (the name
+ * Google shows above each result), a `BreadcrumbList` wherever the visible
+ * trail is (`Breadcrumbs`), `Service` on the treatment pages and the home
+ * service page, `BlogPosting` on the guides, `ProfilePage` and `Person` on
+ * the therapist profiles, and a `FAQPage` wherever the page has questions.
  */
 
 import { therapistRates } from "@/lib/data/priceList";
+import type { Therapist } from "@/lib/data/therapists";
 import { priceAmount } from "@/lib/pricing";
-import { contact, siteConfig } from "@/lib/site";
+import { GOOGLE_REVIEWS } from "@/lib/seo/reviews";
+import { contact, homeServiceAreas, siteConfig } from "@/lib/site";
 import type { ContentBlock, Post, Service } from "@/types";
 
 /** The business node's `@id`. Services and articles point back at it. */
 export const BUSINESS_ID = `${siteConfig.url}/#business`;
+
+/** The site node's `@id` (`websiteSchema`). */
+export const WEBSITE_ID = `${siteConfig.url}/#website`;
+
+/** The studio and a session in it: what the business looks like. The logo
+ *  is `logo`; as the only image it said nothing about the place. */
+const BUSINESS_IMAGES = [
+  "/images/2026/08/about-studio.jpg",
+  "/images/2026/08/gallery-6.jpg",
+  "/images/2026/08/private-therapy.jpg",
+];
+
+/** A path as its canonical URL: absolute, with the trailing slash. */
+const canonicalUrl = (href: string) =>
+  absolute(href === "/" || href.endsWith("/") || /\.[a-z0-9]+$/i.test(href) ? href : `${href}/`);
 
 const absolute = (path: string) =>
   path.startsWith("http") ? path : `${siteConfig.url}${path}`;
@@ -43,7 +67,7 @@ export function businessSchema() {
     alternateName: siteConfig.shortName,
     url: `${siteConfig.url}/`,
     logo: absolute(siteConfig.logo),
-    image: absolute(siteConfig.logo),
+    image: BUSINESS_IMAGES.map(absolute),
     description: siteConfig.description,
     telephone: contact.phone,
     email: contact.email,
@@ -73,7 +97,45 @@ export function businessSchema() {
       opens: "09:00",
       closes: "17:00",
     },
-    sameAs: [instagram],
+    hasMap: GOOGLE_REVIEWS.url,
+    sameAs: [instagram, GOOGLE_REVIEWS.url],
+  };
+}
+
+/**
+ * The site itself, on the home page only, as Google asks. Its `name` is what
+ * Google prints above every result from the site, which matters since the
+ * guides' titles stopped repeating "| Flex & Flow" (`lib/seo/pages.ts`).
+ */
+export function websiteSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": WEBSITE_ID,
+    name: siteConfig.shortName,
+    alternateName: siteConfig.name,
+    url: `${siteConfig.url}/`,
+    inLanguage: "en",
+    publisher: { "@id": BUSINESS_ID },
+  };
+}
+
+/**
+ * The visible "Home / …" trail as a `BreadcrumbList`, rendered by
+ * `Breadcrumbs` beside it so the two cannot differ. The current page, last,
+ * carries no `item`, as Google allows.
+ */
+export function breadcrumbSchema(crumbs: { label: string; href?: string }[]) {
+  const trail = [{ label: "Home", href: "/" }, ...crumbs];
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: trail.map((crumb, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: crumb.label,
+      ...(crumb.href && i < trail.length - 1 ? { item: canonicalUrl(crumb.href) } : {}),
+    })),
   };
 }
 
@@ -174,6 +236,59 @@ function faqSchema(url: string, body: ContentBlock[]) {
   };
 }
 
+/**
+ * The home service page: a post in the panel, but a service to the visitor
+ * (`HomeServiceArticle`), so a `Service` with the areas a therapist visits,
+ * plus its questions. It was a `BlogPosting`.
+ */
+export function homeServiceSchema(post: Post) {
+  const url = absolute(post.seo.canonicalPath);
+  const node = {
+    "@type": "Service",
+    "@id": `${url}#service`,
+    name: "Home & Villa Massage",
+    serviceType: "Mobile massage",
+    description: post.seo.description,
+    url,
+    image: post.image ? absolute(post.image) : undefined,
+    provider: { "@id": BUSINESS_ID },
+    areaServed: homeServiceAreas.map((name) => ({ "@type": "Place", name: `${name}, Bali` })),
+  };
+  const faq = faqSchema(url, post.body);
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": faq ? [node, faq] : [node],
+  };
+}
+
+/**
+ * A therapist's profile: a `ProfilePage` about a `Person`. Ginny's `@id` is
+ * the one every guide's `BlogPosting` names as its author.
+ */
+export function profileSchema(therapist: Therapist) {
+  const url = absolute(`/therapist/${therapist.slug}/`);
+  const person = {
+    "@type": "Person",
+    "@id": `${url}#person`,
+    name: therapist.name,
+    jobTitle: therapist.role,
+    image: absolute(therapist.portrait),
+    url,
+    worksFor: { "@id": BUSINESS_ID },
+    knowsAbout: therapist.specializedIn.split("•").map((skill) => skill.trim()),
+    sameAs: therapist.instagram ? [therapist.instagram.split("?")[0]] : undefined,
+  };
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "ProfilePage", "@id": `${url}#page`, url, mainEntity: { "@id": person["@id"] } },
+      person,
+    ],
+  };
+}
+
 /** A `BlogPosting`, plus a `FAQPage` when the body has questions. */
 export function articleSchema(post: Post) {
   const url = absolute(post.seo.canonicalPath);
@@ -191,6 +306,7 @@ export function articleSchema(post: Post) {
     inLanguage: "en",
     author: {
       "@type": "Person",
+      "@id": `${absolute(POST_AUTHOR.profile)}#person`,
       name: POST_AUTHOR.name,
       jobTitle: POST_AUTHOR.jobTitle,
       url: absolute(POST_AUTHOR.profile),

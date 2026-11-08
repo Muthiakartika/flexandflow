@@ -2,14 +2,15 @@ import type { MetadataRoute } from "next";
 
 import { listPosts, listServices } from "@/lib/cms/read";
 import { isIndexable } from "@/lib/content";
+import { therapists } from "@/lib/data/therapists";
 import { siteConfig } from "@/lib/site";
 
 /**
  * Every URL here is meant to rank. Deliberately excluded, because WordPress
  * marks the equivalents `noindex` and this app matches that (see
  * SITE-STRUCTURE.md): the `/uluwatu-bali/` and `/injury-guide/` category
- * archives, the two therapist profiles, and any treatment or post whose
- * "show in search results" switch is off in the CMS. Listing
+ * archives, and any treatment or post whose "show in search results" switch
+ * is off in the CMS. The therapist profiles are in since 8 Nov 2026. Listing
  * a `noindex` page here would tell Google to index the very page its own
  * meta tag says not to.
  *
@@ -29,6 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteConfig.url}/price-list/` },
     { url: `${siteConfig.url}/contact-us/` },
     { url: `${siteConfig.url}/blog/` },
+    ...therapists.map((therapist) => ({ url: `${siteConfig.url}/therapist/${therapist.slug}/` })),
   ];
 
   const servicePages: MetadataRoute.Sitemap = services
@@ -41,7 +43,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter(isIndexable)
     .map((post) => ({
       url: `${siteConfig.url}${post.seo.canonicalPath}`,
-      lastModified: new Date(post.date),
+      /* The last edit when there is one, which is what Google reads this
+         for; the publish date otherwise. */
+      lastModified: new Date(post.updated ?? post.date),
     }));
 
   return [...staticPages, ...servicePages, ...postPages];

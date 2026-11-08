@@ -9,7 +9,7 @@ import { getCategory } from "@/lib/cms/category-store";
 import { getPost, getService, publishedParams } from "@/lib/cms/read";
 import { TREATMENT_PREFIX } from "@/lib/cms/categories";
 import { isIndexable, metadataFromSeo, postNeighbours } from "@/lib/content";
-import { articleSchema, serviceSchema } from "@/lib/structured-data";
+import { articleSchema, homeServiceSchema, serviceSchema } from "@/lib/structured-data";
 
 /**
  * Every article on the site: `/uluwatu-bali/…`, `/injury-guide/…`, and
@@ -98,7 +98,7 @@ export default async function ArticlePage(
   if (found.post.seo.canonicalPath === HOME_SERVICE_PATH) {
     return (
       <>
-        {isIndexable(found.post) && <JsonLd data={articleSchema(found.post)} />}
+        {isIndexable(found.post) && <JsonLd data={homeServiceSchema(found.post)} />}
         <HomeServiceArticle post={found.post} />
       </>
     );
