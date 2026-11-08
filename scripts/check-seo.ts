@@ -169,7 +169,7 @@ function checkSections(): void {
 
   console.log("\nlib/seo/copy");
   for (const [path, copy] of Object.entries(PAGE_COPY)) {
-    checkBlocks(path, `${path} (copy)`, copy.body);
+    if (copy.body) checkBlocks(path, `${path} (copy)`, copy.body);
     if (copy.excerpt) checkTokens(`${path} (copy excerpt)`, [copy.excerpt]);
   }
   console.log(`  ${Object.keys(PAGE_COPY).length} pages with their copy in code`);
@@ -303,14 +303,17 @@ async function checkFixes(base: string): Promise<void> {
   }
 
   /* A page with its copy in code serves that copy: its lead and its opening
-     paragraph, rather than the panel's. */
+     paragraph, rather than the panel's. An article's lead is shown on the
+     blog's cards, not on the article, so the blog counts too. */
+  const blog = visible(await (await fetch(`${base}/blog/`)).text());
   for (const [path, copy] of Object.entries(PAGE_COPY)) {
     const text = visible(await (await fetch(`${base}${path}`)).text());
-    const opening = copy.body.find((block) => block.type === "paragraph");
+    const opening = copy.body?.find((block) => block.type === "paragraph");
     const expected = [copy.excerpt, opening?.type === "paragraph" ? opening.text : undefined];
     for (const value of expected) {
       if (!value) continue;
-      check(`${path} serves its code copy "${plain(value).slice(0, 40)}…"`, served(value).test(text), "not served");
+      const shown = served(value).test(text) || (value === copy.excerpt && served(value).test(blog));
+      check(`${path} serves its code copy "${plain(value).slice(0, 40)}…"`, shown, "not served");
     }
   }
 
