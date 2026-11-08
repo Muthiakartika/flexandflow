@@ -28,14 +28,18 @@ export default function BlogListing({
   basePath = "/blog",
   emptyMessage = "No posts found.",
   searchable = false,
+  featured = false,
 }: {
   posts: Post[];
   page?: number;
   /** Root of the listing; `listingHref` derives the numbered pages from it. */
   basePath?: string;
   emptyMessage?: string;
-  /** Filter on the `?s=` query, client-side. Only the blog index wants this. */
+  /** Filter on the `?s=` query, client-side. Only the blog index wants this.
+   *  Its search box then sits in the page's hero, not the sidebar. */
   searchable?: boolean;
+  /** The newest post as the wide card on the first page (the blog index). */
+  featured?: boolean;
 }) {
   const totalPages = Math.max(1, Math.ceil(posts.length / POSTS_PER_PAGE));
   const visible = posts.slice(
@@ -54,6 +58,7 @@ export default function BlogListing({
       totalPages={totalPages}
       hrefFor={(target) => listingHref(basePath, target)}
       emptyMessage={emptyMessage}
+      featureFirst={featured}
     />
   );
 
@@ -66,13 +71,14 @@ export default function BlogListing({
               posts={posts}
               basePath={basePath}
               emptyMessage={emptyMessage}
+              featureFirst={featured}
             />
           </Suspense>
         ) : (
           unfiltered
         )}
 
-        <BlogSidebar />
+        <BlogSidebar search={!searchable} />
       </div>
     </section>
   );

@@ -1,19 +1,23 @@
 import type { Metadata } from "next";
 
 import BlogListing from "@/components/blog/BlogListing";
+import SearchForm from "@/components/blog/SearchForm";
 import PageHero from "@/components/ui/PageHero";
 import { listPosts } from "@/lib/cms/read";
+import { isGuide, newestFirst } from "@/lib/content";
 import { assets } from "@/lib/site";
 
+const title = "Bodywork Guides From Uluwatu | Flex & Flow";
 const description =
-  "Explore our blog for expert tips on yoga, flexibility training, and Physical Therapy in Uluwatu to support your overall well-being.";
+  "Straight answers on surfing injuries, stretching, pregnancy massage, lymphatic drainage and " +
+  "recovery, from the Flex & Flow studio in Ungasan, Uluwatu.";
 
 export const metadata: Metadata = {
-  title: "Blog - Flex and Flow",
+  title,
   description,
   alternates: { canonical: "/blog/" },
   openGraph: {
-    title: "Blog - Flex and Flow",
+    title,
     description,
     url: "/blog/",
     type: "website",
@@ -22,6 +26,12 @@ export const metadata: Metadata = {
 };
 
 /**
+ * The blog: "Guides From the Studio", as the home page names its row of
+ * them. The newest guide leads as a wide card and the rest follow as compact
+ * ones (`PostCard`), every guide on one page; the search box sits in the
+ * hero rather than at the foot of the sidebar, where a phone met it last.
+ * The home service page is a post in the panel but not a guide (`isGuide`).
+ *
  * Keyword search filters the listing client-side via the `?s=` query.
  *
  * The filtering genuinely happens in the browser now — reading `searchParams`
@@ -32,20 +42,22 @@ export const metadata: Metadata = {
  * the URL or the search box changed.
  */
 export default async function BlogPage() {
-  const posts = await listPosts();
+  const posts = newestFirst((await listPosts()).filter(isGuide));
 
   return (
     <>
       <PageHero
-        title="Blog"
+        title="Guides From the Studio"
+        eyebrow="Blog"
         crumbs={[{ label: "Blog" }]}
-        lead={description}
+        lead="Straight answers on what we treat every week: surf injuries, stiff hips and backs, pregnancy and recovery. Written by the studio, for bodies that surf, train and travel hard."
+        actions={
+          <div className="w-full sm:w-[340px]">
+            <SearchForm />
+          </div>
+        }
       />
-      <BlogListing
-        posts={posts}
-        page={1}
-        searchable
-      />
+      <BlogListing posts={posts} page={1} searchable featured />
     </>
   );
 }

@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties, ReactNode } from "react";
+import { Fragment, type CSSProperties, type ReactNode } from "react";
 
 import { BTN_GHOST, BTN_SOLID } from "@/components/ui/tokens";
+import { groupsFor, type ColumnGroups } from "@/lib/seo/layouts";
+import CardSlider from "./CardSlider";
 import InlineFaq from "./InlineFaq";
 import type { ContentBlock } from "@/types";
 
@@ -57,14 +59,96 @@ export function renderInline(text: string): ReactNode[] {
   return nodes;
 }
 
-/** Renders the ported body content of a service or blog post page. */
+const TERM = /^\*\*([^*]+?):\*\*\s+([\s\S]+)$/;
+
+/**
+ * A bullet list whose every point opens with a bold label and a colon
+ * ("**After a surf:** rinse off…"), split into label and detail, the detail
+ * capitalised now that it starts its own line. Null when any point lacks
+ * one, so a mixed list stays an ordinary list.
+ */
+function termsOf(items: string[]): { term: string; detail: string }[] | null {
+  const matches = items.map((item) => item.match(TERM));
+  return items.length >= 2 && matches.every((m) => m !== null)
+    ? matches.map((m) => ({ term: m![1], detail: m![2][0].toUpperCase() + m![2].slice(1) }))
+    : null;
+}
+
+const STEP = /^\*\*([^*]+?)[.:]\*\*\s+([\s\S]+)$/;
+
+/**
+ * A numbered list whose every step opens with a bold title ending in a full
+ * stop or a colon ("**Book.** Use…", "**The same evening:** spend…"), split
+ * into title and detail the same way. Null when any step lacks one.
+ */
+function stepsOf(items: string[]): { term: string; detail: string }[] | null {
+  const matches = items.map((item) => item.match(STEP));
+  return items.length >= 2 && matches.every((m) => m !== null)
+    ? matches.map((m) => ({ term: m![1], detail: m![2][0].toUpperCase() + m![2].slice(1) }))
+    : null;
+}
+
+/** A section heading's anchor: "Built Around How You Train" → "built-around-how-you-train".
+ *  The scannable layout gives its h2s these ids for the "On this page" list. */
+export function headingId(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/[\s-]+/g, "-");
+}
+
+const FIGURE = /^(IDR\s?)?\d{1,3}(,\d{3})+$/;
+
+/** A comparison whose last column, and only that one, is a price on every
+ *  row: on a phone the price sits beside the row's title, so each card reads
+ *  name and price at a glance. With two price columns (team and Ginny) the
+ *  team's must not lose its place, so those stay as they are. */
+function isPricedTable(block: Extract<ContentBlock, { type: "table" }>): boolean {
+  const last = block.head.length - 1;
+  const prices = (j: number) => block.rows.every((row) => FIGURE.test(row[j]?.trim() ?? ""));
+  return last >= 2 && prices(last) && !block.head.slice(1, last).some((_, k) => prices(k + 1));
+}
+
+/** A table of prices: a label per row and nothing but figures after it. */
+function isPriceTable(block: Extract<ContentBlock, { type: "table" }>): boolean {
+  return (
+    block.head.length >= 2 &&
+    block.rows.length <= 8 &&
+    block.rows.every((row) => row.slice(1).every((cell) => /IDR\s?\d/.test(cell)))
+  );
+}
+
+/**
+ * Renders the ported body content of a service or blog post page.
+ *
+ * `layout="scannable"` is the treatment-page redesign, on its pilot pages
+ * first: two-column bullets become white cards, labelled lists become label
+ * and detail, price tables a menu and FAQs numbered cards, so a long article
+ * can be skimmed. The words and their order are unchanged.
+ */
 export default function RichText({
   blocks,
   className = "",
+  layout = "article",
+  columnGroups,
+  before,
+  after,
 }: {
   blocks: ContentBlock[];
   className?: string;
+  layout?: "article" | "scannable";
+  /** How the scannable layout groups this page's two-column list
+   *  (`lib/seo/layouts.ts`). */
+  columnGroups?: ColumnGroups;
+  /** Built elements to place straight before, or straight after, the heading
+   *  with this exact text, for pieces that need live data (`ReviewsBand`,
+   *  `TierChooser`). */
+  before?: Record<string, ReactNode>;
+  after?: Record<string, ReactNode>;
 }) {
+  const scannable = layout === "scannable";
   return (
     <div className={`prose-flex ${className}`.trim()}>
       {blocks.map((block, i) => {
@@ -77,13 +161,56 @@ export default function RichText({
               | "h4"
               | "h5"
               | "h6";
-            return <Tag key={i}>{block.text}</Tag>;
+            return (
+              <Fragment key={i}>
+                {before?.[block.text]}
+                <Tag id={scannable && block.level === 2 ? headingId(block.text) : undefined}>
+                  {block.text}
+                </Tag>
+                {after?.[block.text]}
+              </Fragment>
+            );
           }
 
           case "paragraph":
             return <p key={i}>{renderInline(block.text)}</p>;
 
-          case "list":
+          case "list": {
+            /* Scannable layout: a labelled list reads as label and detail,
+               ruled like the price menu. */
+            const terms = scannable && !block.ordered ? termsOf(block.items) : null;
+            if (terms) {
+              return (
+                <dl key={i} className="term-list">
+                  {terms.map((item, j) => (
+                    <div key={j}>
+                      <dt>{renderInline(item.term)}</dt>
+                      <dd>{renderInline(item.detail)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              );
+            }
+            /* Scannable layout: titled steps read as a numbered timeline,
+               one short title per step and its detail under it. */
+            const steps = scannable && block.ordered ? stepsOf(block.items) : null;
+            if (steps) {
+              return (
+                <ol key={i} className="step-list">
+                  {steps.map((step, j) => (
+                    <li key={j}>
+                      <span aria-hidden className="step-list-num">
+                        {String(j + 1).padStart(2, "0")}
+                      </span>
+                      <div>
+                        <strong className="step-list-title">{renderInline(step.term)}</strong>
+                        <p className="step-list-detail">{renderInline(step.detail)}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              );
+            }
             return block.ordered ? (
               <ol key={i}>
                 {block.items.map((item, j) => (
@@ -97,16 +224,35 @@ export default function RichText({
                 ))}
               </ul>
             );
+          }
 
           /* The theme lays these bullets out in two columns. */
-          case "columns":
+          case "columns": {
+            /* Scannable layout: when the page groups this list, one numbered
+               card per group, a slider on phones. The deck is named after
+               the heading just above it. */
+            const groups = scannable ? groupsFor(block.items, columnGroups) : null;
+            if (groups) {
+              const heading = [...blocks.slice(0, i)].reverse().find((b) => b.type === "heading");
+              return (
+                <CardSlider
+                  key={i}
+                  label={heading?.type === "heading" ? heading.text : "Cards"}
+                  slides={groups.map((group) => ({
+                    title: group.title,
+                    points: group.items.map((n) => renderInline(block.items[n])),
+                  }))}
+                />
+              );
+            }
             return (
-              <ul key={i} className="icon-list list-none! pl-0!">
+              <ul key={i} className={scannable ? "benefit-grid" : "icon-list list-none! pl-0!"}>
                 {block.items.map((item, j) => (
                   <li key={j}>{renderInline(item)}</li>
                 ))}
               </ul>
             );
+          }
 
           case "image":
             return (
@@ -121,7 +267,7 @@ export default function RichText({
             );
 
           case "faq":
-            return <InlineFaq key={i} items={block.items} />;
+            return <InlineFaq key={i} items={block.items} variant={scannable ? "cards" : "plain"} />;
 
           /* Olive pull-quote callout box some posts drop mid-article, with a
              quote-mark glyph pinned to the bottom-right corner. */
@@ -171,6 +317,31 @@ export default function RichText({
             );
 
           case "gallery":
+            /* Scannable layout: two captioned photos are a choice of two
+               (studio or villa), set as an overlapping pair with an olive
+               "or" on the seam and each caption as a tag on its photo. */
+            if (scannable && block.images.length === 2 && block.images.every((image) => image.caption)) {
+              return (
+                <div key={i} className="photo-pair">
+                  {block.images.map((image, j) => (
+                    <figure key={j} className="photo-pair-item">
+                      <Image
+                        src={image.src}
+                        alt={image.alt}
+                        width={image.width}
+                        height={image.height}
+                        sizes="(max-width: 639px) 80vw, 400px"
+                        className="photo-pair-img"
+                      />
+                      <figcaption className="photo-pair-tag">{renderInline(image.caption!)}</figcaption>
+                    </figure>
+                  ))}
+                  <span aria-hidden className="photo-pair-or">
+                    or
+                  </span>
+                </div>
+              );
+            }
             return block.images.length === 0 ? null : (
               <ul
                 key={i}
@@ -265,14 +436,42 @@ export default function RichText({
             );
           }
 
-          /* Scrolls sideways on a phone rather than squeezing a four-column
-             price table into 360px. The wrapper is focusable so that scroll
-             is reachable from the keyboard too. */
+          /* On a phone each row is a small card, its first cell the title
+             and the rest labelled by their column (CSS in globals.css), in
+             place of a table that scrolled sideways. From 640px it is a
+             table; the wrapper stays focusable for the keyboard. */
           case "table":
+            /* On the scannable layout a price table reads as a menu: one line
+               per session, a dotted leader to its price, the other columns
+               under it in small type labelled by their heading. The hero
+               already carries the rate card, so this stays text, not cards. */
+            if (scannable && isPriceTable(block)) {
+              return (
+                <dl key={i} className="price-menu">
+                  {block.rows.map((row, r) => (
+                    <div key={r} className="price-menu-row">
+                      <dt>{renderInline(row[0])}</dt>
+                      <span aria-hidden className="price-menu-leader" />
+                      <dd>
+                        <span className="price-menu-price">
+                          <span className="sr-only">{block.head[1]}: </span>
+                          {renderInline(row[1])}
+                        </span>
+                        {row.slice(2).map((cell, j) => (
+                          <span key={j} className="price-menu-note">
+                            {block.head[j + 2]} {renderInline(cell)}
+                          </span>
+                        ))}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              );
+            }
             return (
               <div
                 key={i}
-                className="prose-table"
+                className={isPricedTable(block) ? "prose-table is-priced" : "prose-table"}
                 role="region"
                 aria-label="Table"
                 tabIndex={0}
@@ -299,7 +498,12 @@ export default function RichText({
                               {renderInline(cell)}
                             </th>
                           ) : (
-                            <td key={j}>{renderInline(cell)}</td>
+                            /* The column's heading, shown as the value's
+                               label where a phone stacks each row as a card
+                               (`.prose-table` in globals.css). */
+                            <td key={j} data-label={block.head[j] || undefined}>
+                              {renderInline(cell)}
+                            </td>
                           ),
                         )}
                       </tr>

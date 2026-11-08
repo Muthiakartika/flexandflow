@@ -14,6 +14,9 @@ export type ContentImage = {
   alt: string;
   width: number;
   height: number;
+  /** Shown with the image (inline markers allowed). Only galleries read it so
+   *  far; on the scannable layout two captioned photos become a pair. */
+  caption?: string;
 };
 
 /**

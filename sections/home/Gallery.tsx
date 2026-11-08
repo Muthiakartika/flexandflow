@@ -1,6 +1,9 @@
 import Image from "next/image";
+import Link from "next/link";
 
-import { BAND, WRAP } from "@/components/ui/tokens";
+import { H2, LINK, WRAP } from "@/components/ui/tokens";
+import { formatIdr } from "@/lib/pricing";
+import { homeServiceFeeIdr } from "@/lib/site";
 
 /** The six studio photographs, in the original's order. */
 /* Order matters: `.mosaic` gives the first photo a 2x2 block and photos 2,
@@ -17,18 +20,34 @@ const photos = [
 ];
 
 /**
- * The studio wall. A mosaic rather than two even rows: the first frame takes a
- * 2x2 block from 1024px up, so the group reads as one composition and the band
- * needs no heading to justify itself. `.mosaic` owns the geometry — see
+ * The studio wall, under the one practical choice it raises: come to the
+ * room, or have the session at your villa. The villa fee is read from
+ * `homeServiceFeeIdr`, never typed. `.mosaic` owns the geometry — see
  * globals.css, where the breakpoints are explicit media queries.
  */
 export default function Gallery() {
   return (
-    <section className="page-band-line">
-      <div className={`${WRAP} ${BAND}`}>
-        <h2 className="sr-only">Inside the studio</h2>
+    /* No hairline on top: the olive rating band sits directly above. */
+    <section aria-labelledby="home-studio">
+      <div className={`${WRAP} home-band`}>
+        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
+          <div>
+            <p className="page-label">Ungasan &middot; Uluwatu</p>
+            <h2 id="home-studio" className={`mt-2 ${H2}`}>
+              The Studio, or Your Villa
+            </h2>
+            <p className="mt-3 max-w-[56ch] font-body text-[15px] leading-[1.7] text-body-text/75">
+              Come to the studio, or have the same session at your villa, hotel
+              or home around Uluwatu, with {formatIdr(homeServiceFeeIdr)} added
+              per visit. Trauma healing stays at the studio.
+            </p>
+          </div>
+          <Link href="/uluwatu-bali/outcall-home-service-massage" className={`${LINK} shrink-0`}>
+            Villa sessions &rarr;
+          </Link>
+        </div>
 
-        <ul className="mosaic">
+        <ul className="mosaic mt-7">
           {photos.map((photo) => (
             <li key={photo.src} className="overflow-hidden rounded-[10px]">
               <Image

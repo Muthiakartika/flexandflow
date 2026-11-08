@@ -20,20 +20,25 @@ export default function PostGrid({
   totalPages,
   hrefFor,
   emptyMessage,
+  featureFirst = false,
 }: {
   posts: Post[];
   page: number;
   totalPages: number;
   hrefFor: (page: number) => string;
   emptyMessage: string;
+  /** The blog index, unfiltered: its newest guide as the wide card. */
+  featureFirst?: boolean;
 }) {
+  const feature = featureFirst && page === 1;
+
   return (
     <div>
       {posts.length ? (
         <ul className="grid gap-3 sm:grid-cols-2">
-          {posts.map((post) => (
-            <li key={post.slug}>
-              <PostCard post={post} />
+          {posts.map((post, i) => (
+            <li key={post.slug} className={feature && i === 0 ? "sm:col-span-2" : undefined}>
+              <PostCard post={post} feature={feature && i === 0} />
             </li>
           ))}
         </ul>

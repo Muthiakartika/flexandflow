@@ -223,41 +223,6 @@
     color: color-mix(in oklab, var(--color-body-text) 58%, transparent);
   }
 
-  /* Continuous strip of treatment names under the hero. Doubled in the markup,
-     so translating one half brings the copy exactly into place. */
-  .marquee-viewport {
-    overflow: hidden;
-    -webkit-mask: linear-gradient(
-      90deg,
-      transparent,
-      #000 5%,
-      #000 95%,
-      transparent
-    );
-    mask: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
-  }
-
-  .marquee-track {
-    display: flex;
-    width: max-content;
-    animation: marqueeSlide 42s linear infinite;
-  }
-
-  @keyframes marqueeSlide {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .marquee-track {
-      animation: none;
-    }
-  }
-
   /* Gallery mosaic. Two even columns on phones; from 1024px the first frame
      takes a 2x2 block so the wall reads as a composition, not a contact sheet. */
   .mosaic {
@@ -1637,5 +1602,1916 @@ button.booking-step-body {
   .link-hint.is-pending {
     animation: none;
     opacity: 0.65;
+  }
+}
+
+/* ── Header address ──────────────────────────────────────────────────────────
+   Beside "Book now" only where the bar has room for it. An explicit `@media`
+   block on a bare class, not a Tailwind arbitrary breakpoint variant
+   (CLAUDE.md, gotcha 2); unlayered, so no utility can outrank it. */
+@media (max-width: 1379px) {
+  .header-address {
+    display: none;
+  }
+}
+
+/* ── Treatment-page redesign (pilot) ─────────────────────────────────────────
+   Used by `RichText layout="scannable"` and `StickyBookBar` on
+   the pilot treatment pages (`REDESIGN_PILOT` in ServiceArticle.tsx). White
+   cards on cream, a hairline, a 10px corner and no shadow, as everywhere
+   else (DESIGN.md). Unlayered, so the `.prose-flex` list rules lose to them;
+   every responsive rule is an explicit `@media` block (CLAUDE.md, gotcha 2). */
+
+.prose-flex .benefit-grid,
+.prose-flex .tile-grid {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  margin-block: 1.25em 1.75em;
+}
+
+.prose-flex .benefit-grid > li,
+.prose-flex .tile-grid > li {
+  margin: 0;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  border-radius: 10px;
+}
+
+.prose-flex .benefit-grid > li {
+  position: relative;
+  padding: 14px 16px 14px 42px;
+  line-height: 1.6;
+}
+
+/* The site's olive star, as `.icon-list` draws it, inside the card. */
+.prose-flex .benefit-grid > li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 16px;
+  top: 18px;
+  width: 14px;
+  height: 14px;
+  background-color: var(--color-primary);
+  -webkit-mask: url("/shapes/bullet-star.svg") center / contain no-repeat;
+  mask: url("/shapes/bullet-star.svg") center / contain no-repeat;
+}
+
+@media only screen and (min-width: 640px) {
+  .prose-flex .benefit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Lists whose every point opens with a bold label (`RichText`): the label in
+   the display face, the detail under it, a hairline between rows, and the
+   two side by side from 768px. Ruled like the price menu, not boxed: short
+   points in cards read as filler. */
+.prose-flex .term-list {
+  margin-block: 1.25em 1.75em;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+}
+
+.prose-flex .term-list > div {
+  display: grid;
+  gap: 4px;
+  padding: 14px 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+}
+
+.prose-flex .term-list dt {
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.05;
+  font-weight: 700;
+  color: var(--color-body-text);
+}
+
+/* The prose paragraph colour, so the detail reads as body text, not as a
+   second, heavier label. */
+.prose-flex .term-list dd {
+  margin: 0;
+  line-height: 1.6;
+  color: color-mix(in oklab, var(--color-body-text) 82%, transparent);
+}
+
+@media only screen and (min-width: 768px) {
+  .prose-flex .term-list > div {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    gap: 24px;
+    align-items: baseline;
+  }
+}
+
+/* Numbered lists whose every step opens with a bold title (`RichText`): a
+   timeline, each number in an olive ring joined to the next by a hairline,
+   the title in the display face and the detail under it. Not cards, so it
+   reads apart from the card slider that often sits a section above. */
+.prose-flex .step-list {
+  list-style: none;
+  margin-block: 1.25em 1.75em;
+  padding: 0;
+}
+
+.prose-flex .step-list > li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 16px;
+  margin: 0;
+  padding-bottom: 22px;
+}
+
+.prose-flex .step-list > li:last-child {
+  padding-bottom: 0;
+}
+
+/* From under one ring to the top of the next: ring 44px, 6px clear of each. */
+.prose-flex .step-list > li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 21.5px;
+  top: 50px;
+  bottom: 6px;
+  width: 1px;
+  background: color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+
+.prose-flex .step-list-num {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 55%, transparent);
+  border-radius: 999px;
+  background: #fff;
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+}
+
+.prose-flex .step-list-title {
+  display: block;
+  padding-top: 9px;
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.05;
+  font-weight: 700;
+  color: var(--color-body-text);
+}
+
+.prose-flex .step-list-detail {
+  margin: 6px 0 0;
+  line-height: 1.6;
+  color: color-mix(in oklab, var(--color-body-text) 82%, transparent);
+}
+
+.sticky-book-bar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 40;
+  background: rgb(255 255 255 / 0.96);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* Below the screen until the hero, with its own two buttons, has scrolled
+     away (`StickyBookBar`); then it stays to the end of the page. */
+  transform: translateY(100%);
+  visibility: hidden;
+  transition:
+    transform 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 380ms;
+}
+
+.sticky-book-bar.is-shown {
+  transform: none;
+  visibility: visible;
+}
+
+/* None from 1024px: the header, with its Book now, stays on screen there,
+   so a second pinned button would only cover the page. */
+@media only screen and (min-width: 1024px) {
+  .sticky-book-bar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-book-bar {
+    transition: none;
+  }
+}
+
+/* Room for the bar under the footer, so the footer's wordmark ends above it
+   rather than under it. On the footer, not the body, so the space under the
+   bar stays the footer's white instead of a cream strip. */
+@media only screen and (max-width: 1023px) {
+  html.has-book-bar footer {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+
+  html.has-book-bar .scroll-to-top {
+    bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Price tables on the scannable layout (`RichText`): a menu, not a grid. The
+   session in the display face, an olive dotted leader, the price in bold and
+   the villa price small under it. No card: the hero already has one. */
+.prose-flex .price-menu {
+  margin-block: 1.25em 1.5em;
+  border-top: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+}
+
+.prose-flex .price-menu-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-block: 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+}
+
+.prose-flex .price-menu-row > dt {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--color-body-text);
+}
+
+.prose-flex .price-menu-leader {
+  flex: 1 1 24px;
+  min-width: 24px;
+  align-self: center;
+  border-bottom: 2px dotted color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+
+.prose-flex .price-menu-row > dd {
+  margin: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.prose-flex .price-menu-price {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.2;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-body-text);
+}
+
+.prose-flex .price-menu-note {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in oklab, var(--color-body-text) 55%, transparent);
+}
+
+@media only screen and (max-width: 639px) {
+  .prose-flex .price-menu-row > dt {
+    font-size: 21px;
+  }
+}
+
+/* `/about-us/`: Ginny's own words as a white card with an olive rule, in the
+   body face (the display face is too condensed for a full sentence), and the
+   studio's photos: one wide over two on a phone, three across from 768px. */
+.about-quote {
+  margin: 24px 0 0;
+  padding: 18px 20px;
+  background: #fff;
+  border-left: 3px solid var(--color-primary);
+  border-radius: 0 10px 10px 0;
+}
+
+.about-quote blockquote {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  font-style: italic;
+  color: var(--color-body-text);
+}
+
+.about-quote figcaption {
+  margin-top: 10px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-body-text) 55%, transparent);
+}
+
+.about-space {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about-space > li:first-child {
+  grid-column: 1 / -1;
+}
+
+.about-space img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.about-space > li:first-child img {
+  aspect-ratio: 16 / 9;
+}
+
+.about-space figcaption {
+  margin-top: 8px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-body-text) 60%, transparent);
+}
+
+@media only screen and (min-width: 768px) {
+  .about-space {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .about-space > li:first-child {
+    grid-column: auto;
+  }
+
+  .about-space > li:first-child img {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+/* `/price-list/` (`PriceMenus`): the shortcuts and the studio / villa switch,
+   then one white card per treatment holding a menu like `.price-menu`
+   above, one session to a line. Two columns from 1024px. The shortcut row
+   scrolls sideways on a phone; `contain: inline-size` keeps its width out of
+   the page's, which would otherwise swing sideways. */
+.pl-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pl-jump {
+  contain: inline-size;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pl-jump::-webkit-scrollbar {
+  display: none;
+}
+
+.pl-jump ul {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pl-jump a {
+  display: block;
+  padding: 9px 14px;
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 16%, transparent);
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--color-body-text);
+  transition:
+    border-color 300ms ease,
+    color 300ms ease;
+}
+
+.pl-jump a:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary-strong);
+}
+
+.pl-where {
+  margin-top: 12px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--color-body-text) 60%, transparent);
+}
+
+.pl-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.pl-card {
+  display: flex;
+  flex-direction: column;
+  scroll-margin-top: 96px;
+  padding: 20px 20px 22px;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  border-radius: 10px;
+}
+
+.pl-name {
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.pl-line {
+  margin-top: 6px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--color-body-text) 65%, transparent);
+}
+
+.pl-menu {
+  margin-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+}
+
+.pl-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-block: 11px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+}
+
+.pl-row > dt {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 21px;
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--color-body-text);
+}
+
+/* Who the session is with, small and quiet after its length. */
+.pl-who {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-body-text) 55%, transparent);
+}
+
+.pl-leader {
+  flex: 1 1 20px;
+  min-width: 20px;
+  align-self: center;
+  border-bottom: 2px dotted color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+
+.pl-row > dd {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-body-text);
+}
+
+.pl-note {
+  margin-top: 10px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.4;
+  color: color-mix(in oklab, var(--color-body-text) 60%, transparent);
+}
+
+.pl-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: auto;
+  padding-top: 18px;
+}
+
+/* The villa facts: label over value, three across from 768px. */
+.pl-facts {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.pl-facts > div {
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  border-radius: 10px;
+}
+
+.pl-facts dt {
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-body-text) 55%, transparent);
+}
+
+.pl-facts dd {
+  margin: 4px 0 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-body-text);
+}
+
+@media only screen and (min-width: 768px) {
+  .pl-controls {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  /* Contained, the row has no width of its own to bring; it takes what the
+     switch leaves. */
+  .pl-jump {
+    flex: 1 1 0%;
+    min-width: 0;
+  }
+
+  .pl-facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media only screen and (min-width: 1024px) {
+  .pl-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .pl-card {
+    padding: 24px 26px 26px;
+  }
+}
+
+/* `CardSlider`: the scannable layout's grouped two-column list
+   (`lib/seo/layouts.ts`). Numbered white cards joined by one olive rule that
+   runs from each number across the gap into the next card, so the three read
+   as steps in order. Below 1200px a swipeable deck (one card and a peek on a
+   phone, two from 640px) with a counter, a progress line and arrows in place
+   of the scrollbar; from 1200px, where the article column fits three, they
+   sit side by side and the controls go. `contain: inline-size` keeps the
+   deck's width out of the article's own sizing, which otherwise grows to fit
+   it and swings the whole page sideways on a phone. */
+.prose-flex .card-slider {
+  contain: inline-size;
+  margin-block: 1.25em 1.75em;
+}
+
+.prose-flex .card-slider-track {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 84%;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.prose-flex .card-slider-track::-webkit-scrollbar {
+  display: none;
+}
+
+.prose-flex .card-slider-card {
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 18px 20px 20px;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  border-radius: 10px;
+}
+
+.prose-flex .card-slider-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prose-flex .card-slider-num {
+  font-family: var(--font-display);
+  font-size: 46px;
+  line-height: 0.9;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* To the card's right edge and on through the 12px gap: padding 20px +
+   border 1px + gap 12px. The last card's stops at its own padding. */
+.prose-flex .card-slider-rule {
+  flex: 1;
+  height: 1px;
+  margin-right: -33px;
+  background: color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+
+.prose-flex .card-slider-card:last-child .card-slider-rule {
+  margin-right: 0;
+}
+
+.prose-flex .card-slider-card > h3 {
+  margin: 14px 0 8px;
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--color-body-text);
+}
+
+.prose-flex .card-slider-lead {
+  margin: 0 0 16px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: color-mix(in oklab, var(--color-body-text) 86%, transparent);
+}
+
+.prose-flex .card-slider-note {
+  margin: auto 0 0;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  font-size: 14px;
+  line-height: 1.6;
+  color: color-mix(in oklab, var(--color-body-text) 62%, transparent);
+}
+
+.prose-flex .card-slider-note + .card-slider-note {
+  margin-top: 10px;
+}
+
+.prose-flex .card-slider-pager {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.prose-flex .card-slider-count {
+  min-width: 4.2em;
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-body-text);
+}
+
+.prose-flex .card-slider-count > span {
+  color: color-mix(in oklab, var(--color-body-text) 40%, transparent);
+}
+
+.prose-flex .card-slider-progress {
+  position: relative;
+  flex: 1;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--color-secondary) 12%, transparent);
+}
+
+/* One segment per card, slid along by the scroll position (`--p`, 0 to 1). */
+.prose-flex .card-slider-thumb {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: calc(100% / var(--n));
+  background: var(--color-primary);
+  transform: translateX(calc(var(--p) * (var(--n) - 1) * 100%));
+}
+
+.prose-flex .card-slider-arrow {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-primary);
+  transition:
+    background-color 300ms,
+    border-color 300ms,
+    color 300ms,
+    opacity 300ms;
+}
+
+.prose-flex .card-slider-arrow:hover:not(:disabled) {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.prose-flex .card-slider-arrow:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.prose-flex .card-slider-arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+@media only screen and (min-width: 640px) {
+  .prose-flex .card-slider-track {
+    grid-auto-columns: calc(50% - 6px);
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  .prose-flex .card-slider-track {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  .prose-flex .card-slider-pager {
+    display: none;
+  }
+}
+
+/* `RelatedBand`: the other treatments and articles at the foot of a pilot
+   treatment page. A swipeable deck with the next card peeking in on a phone
+   (scrollbar hidden; the cut-off card is the cue), a grid from 1024px. Same
+   `contain` reason as `.card-slider`. */
+.related-row {
+  contain: inline-size;
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 72%;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.related-row::-webkit-scrollbar {
+  display: none;
+}
+
+.related-row > li {
+  scroll-snap-align: start;
+}
+
+.related-row-3 {
+  grid-auto-columns: 82%;
+}
+
+@media only screen and (min-width: 640px) {
+  .related-row,
+  .related-row-3 {
+    grid-auto-columns: calc(40% - 6px);
+  }
+}
+
+@media only screen and (min-width: 1024px) {
+  .related-row {
+    grid-auto-flow: row;
+    overflow: visible;
+  }
+
+  .related-row-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .related-row-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────────
+   The closing wordmark: the studio's name in the display face, a signature
+   rather than a banner (about half a phone's width; at near full width it
+   outweighed the footer it signs), and whole (an earlier version let the
+   footer's edge cut its foot off, which read as a mistake). Decoration only;
+   it is `aria-hidden` and the logo above is the link home. */
+.footer-mark {
+  margin: 0;
+  padding: 0.04em 12px 0.14em;
+  font-family: var(--font-display);
+  font-size: clamp(3.25rem, 16vw, 4.75rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--color-primary);
+  user-select: none;
+}
+
+.footer-mark > span {
+  color: var(--color-body-text);
+}
+
+/* `OpenStatus`: a soft ring pulses out of the dot while the studio is open. */
+.open-dot {
+  position: relative;
+}
+
+.open-dot.is-open::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: open-pulse 2.2s ease-out infinite;
+}
+
+@keyframes open-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .open-dot.is-open::after {
+    display: none;
+  }
+}
+
+/* Two captioned photos on the scannable layout (`RichText`), for a choice of
+   two such as studio or villa. They overlap rather than sit in a grid (overlap
+   is this system's depth), the front one framed in the page's cream so the
+   seam reads, with an olive "or" disc on the seam. Stacked and offset on a
+   phone, side by side and staggered from 640px. Each caption is a tag on its
+   photo: the bold part is its title. */
+.prose-flex .photo-pair {
+  position: relative;
+  display: grid;
+  margin-block: 1.5em 2em;
+}
+
+.prose-flex .photo-pair-item {
+  position: relative;
+  margin: 0;
+}
+
+.prose-flex .photo-pair-item:first-child {
+  margin-right: 16%;
+}
+
+.prose-flex .photo-pair-item:nth-child(2) {
+  z-index: 1;
+  margin-top: -14%;
+  margin-left: 16%;
+  border: 5px solid var(--color-cream);
+  border-radius: 15px;
+}
+
+.prose-flex .photo-pair-img {
+  display: block;
+  width: 100%;
+  margin: 0;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.prose-flex .photo-pair-tag {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  max-width: calc(100% - 24px);
+  padding: 8px 12px 9px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.94);
+  backdrop-filter: blur(6px);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: color-mix(in oklab, var(--color-body-text) 70%, transparent);
+}
+
+/* Stacked on a phone, the second photo covers the first one's foot, so the
+   first tag sits at its top instead. */
+@media only screen and (max-width: 639px) {
+  .prose-flex .photo-pair-item:first-child .photo-pair-tag {
+    top: 12px;
+    bottom: auto;
+  }
+}
+
+.prose-flex .photo-pair-tag strong {
+  display: block;
+  margin-bottom: 2px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--color-body-text);
+}
+
+.prose-flex .photo-pair-or {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border: 5px solid var(--color-cream);
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  transform: translate(-50%, -50%) rotate(-8deg);
+}
+
+@media only screen and (min-width: 640px) {
+  .prose-flex .photo-pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .prose-flex .photo-pair-item:first-child {
+    margin-right: -6%;
+  }
+
+  .prose-flex .photo-pair-item:nth-child(2) {
+    margin-top: 14%;
+    margin-left: 0;
+  }
+}
+
+/* `TierChooser`: the team and Ginny as two cards under the price heading.
+   Each round avatar overlaps its card's top edge, framed in the page cream
+   so the overlap reads. The team card is outlined in olive and carries the
+   filled pill; Ginny's is the quiet one (DESIGN.md, copy rule). */
+.prose-flex .tier-chooser {
+  display: grid;
+  gap: 40px 14px;
+  margin-block: 2.5em 1.75em;
+}
+
+.prose-flex .tier-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 20px 20px;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  border-radius: 10px;
+}
+
+.prose-flex .tier-card-team {
+  border-color: color-mix(in srgb, var(--color-primary) 60%, transparent);
+}
+
+.prose-flex .tier-avatar {
+  position: absolute;
+  top: -30px;
+  left: 18px;
+  width: 60px;
+  height: 60px;
+  overflow: hidden;
+  border: 4px solid var(--color-cream);
+  border-radius: 999px;
+  background: #fff;
+}
+
+.prose-flex .tier-avatar img {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  object-fit: cover;
+}
+
+/* The portrait is a seated half-length shot; zoomed to the face. */
+.prose-flex .tier-avatar img.tier-avatar-face {
+  object-position: 44% 22%;
+  transform: scale(1.9);
+  transform-origin: 44% 26%;
+}
+
+.prose-flex .tier-pill {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  margin: 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 10.5px;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.prose-flex .tier-pill-quiet {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 18%, transparent);
+  color: color-mix(in oklab, var(--color-body-text) 70%, transparent);
+}
+
+.prose-flex .tier-card > h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.prose-flex .tier-role {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: color-mix(in oklab, var(--color-body-text) 60%, transparent);
+}
+
+.prose-flex .tier-from {
+  margin: 16px 0 0;
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.prose-flex .tier-from > span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-body-text) 55%, transparent);
+}
+
+.prose-flex .tier-meta {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: color-mix(in oklab, var(--color-body-text) 60%, transparent);
+}
+
+.prose-flex .tier-copy {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  font-size: 14px;
+  line-height: 1.6;
+  color: color-mix(in oklab, var(--color-body-text) 75%, transparent);
+}
+
+@media only screen and (min-width: 640px) {
+  .prose-flex .tier-chooser {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ── Mobile menu (`MobileNav`) ───────────────────────────────────────────────
+   Full screen on a phone, a 440px panel from 640px. It slides in from the
+   right; each row then rises into place a beat after the one above
+   (`--i` is its position). While closed the panel is off screen and inert,
+   so the rows' resting state is never what anyone sees. */
+.mobile-menu {
+  transform: translateX(100%);
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mobile-menu[data-open="true"] {
+  transform: none;
+}
+
+.mobile-menu .mobile-menu-item {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 360ms ease,
+    transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mobile-menu[data-open="true"] .mobile-menu-item {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(140ms + var(--i, 0) * 45ms);
+}
+
+.mobile-menu-num {
+  width: 1.6rem;
+  flex: none;
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+}
+
+.mobile-menu-link {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 1.8rem + 2vw, 2.75rem);
+  line-height: 1.05;
+  font-weight: 700;
+  color: var(--color-body-text);
+  border-radius: 6px;
+  transition: color 300ms;
+}
+
+.mobile-menu-link:hover,
+.mobile-menu-link.is-active {
+  color: var(--color-primary);
+}
+
+/* The page you are on gets the site's olive star after its name. */
+.mobile-menu-link.is-active::after {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-left: 10px;
+  vertical-align: 0.35em;
+  background-color: var(--color-primary);
+  -webkit-mask: url("/shapes/bullet-star.svg") center / contain no-repeat;
+  mask: url("/shapes/bullet-star.svg") center / contain no-repeat;
+}
+
+/* Treatments under Services: a swipeable row of photos running to the
+   panel's edge, the next one peeking in. */
+.mobile-menu-photos {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 140px;
+  gap: 10px;
+  margin: 4px -20px 0;
+  padding: 0 20px 4px;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 20px;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.mobile-menu-photos::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-menu-photos > li {
+  scroll-snap-align: start;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu,
+  .mobile-menu .mobile-menu-item {
+    transition: none;
+  }
+}
+
+/* `ReviewsBand`: the Google rating before the prices. The score large in the
+   display face beside the stars and the count; then this treatment's share
+   of the reviews, Google's related topics as chips, and the way to Google. */
+.prose-flex .reviews-band {
+  display: grid;
+  gap: 16px;
+  margin-block: 2em 0.5em;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  border-radius: 10px;
+}
+
+.prose-flex .reviews-score {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.prose-flex .reviews-score-num {
+  font-family: var(--font-display);
+  font-size: 64px;
+  line-height: 0.85;
+  font-weight: 700;
+  color: var(--color-body-text);
+}
+
+.prose-flex .reviews-score-count {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: color-mix(in oklab, var(--color-body-text) 65%, transparent);
+}
+
+.prose-flex .reviews-lead {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.prose-flex .reviews-lead strong {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1;
+  color: var(--color-primary);
+}
+
+.prose-flex .reviews-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prose-flex .reviews-topics > li {
+  margin: 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--color-cream);
+  font-size: 12.5px;
+  line-height: 1.2;
+}
+
+.prose-flex .reviews-topics > li > span {
+  margin-left: 4px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.prose-flex .reviews-link {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 14px;
+  color: var(--color-primary);
+}
+
+@media only screen and (min-width: 768px) {
+  .prose-flex .reviews-band {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 28px;
+    padding: 24px 28px;
+  }
+
+  .prose-flex .reviews-score {
+    padding-right: 28px;
+    border-right: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  }
+}
+
+/* ── Treatment article on the redesign (`ServiceArticle`, pilot) ─────────────
+   One column at a reading measure (about 75 characters a line), centred.
+   From 1280px the page's sections sit beside it in the left margin
+   (`PageToc`), sticky under the header; the right margin stays empty so
+   the column stays centred under the hero. */
+.article-band {
+  padding-block: clamp(1.75rem, 3vw, 2.75rem) clamp(2.75rem, 4.4vw, 4.25rem);
+}
+
+.article-main {
+  max-width: 46rem;
+  margin-inline: auto;
+}
+
+.article-toc {
+  display: none;
+}
+
+.prose-flex h2[id] {
+  scroll-margin-top: 104px;
+}
+
+@media only screen and (min-width: 1280px) {
+  .article-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 46rem) minmax(0, 1fr);
+    column-gap: 56px;
+  }
+
+  .article-main {
+    grid-column: 2;
+    grid-row: 1;
+    max-width: none;
+    margin: 0;
+  }
+
+  .article-toc {
+    display: block;
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    position: sticky;
+    top: 104px;
+    width: 100%;
+    max-width: 15rem;
+  }
+
+  .article-toc ol {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    border-left: 1px solid color-mix(in srgb, var(--color-secondary) 12%, transparent);
+  }
+
+  .article-toc li a {
+    position: relative;
+    display: flex;
+    gap: 10px;
+    padding: 7px 0 7px 14px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    line-height: 1.4;
+    color: color-mix(in oklab, var(--color-body-text) 60%, transparent);
+    transition: color 300ms;
+  }
+
+  .article-toc li a > span {
+    flex: none;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    line-height: 1.75;
+    color: color-mix(in oklab, var(--color-body-text) 40%, transparent);
+  }
+
+  .article-toc li a:hover {
+    color: var(--color-body-text);
+  }
+
+  /* The section being read: olive, with an olive bar over the rule. */
+  .article-toc li a.is-active {
+    color: var(--color-body-text);
+    font-weight: 700;
+  }
+
+  .article-toc li a.is-active > span {
+    color: var(--color-primary);
+  }
+
+  .article-toc li a.is-active::before {
+    content: "";
+    position: absolute;
+    left: -1px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--color-primary);
+  }
+}
+
+/* `<html>` and `<body>` carry `overflow-x-hidden` so nothing can scroll the
+   page sideways. `hidden` also turns `<body>` into a scroll container that
+   never scrolls, which silently breaks every `position: sticky` inside it
+   (the article's "On this page" list, the old rates aside). `clip` stops the
+   sideways scroll without that side effect; the utility stays as the fallback
+   where `clip` is not supported. */
+@supports (overflow: clip) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+}
+
+/* ── Site header (`Header`, `HeaderShell`) ───────────────────────────────────
+   76px at the top of a page (64px on a small phone), slimming to 64 / 56
+   once the page moves, the tagline under the name folding away. Below
+   1024px it slides up while scrolling down and back on any scroll up. */
+.site-header {
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.site-header-row {
+  min-height: 76px;
+  transition: min-height 260ms ease;
+}
+
+.site-header-logo {
+  width: 56px;
+  height: 56px;
+  transition:
+    width 260ms ease,
+    height 260ms ease;
+}
+
+.site-header-tagline {
+  max-height: 12px;
+  overflow: hidden;
+  transition:
+    max-height 260ms ease,
+    opacity 200ms ease,
+    margin 260ms ease;
+}
+
+.site-header[data-scrolled="true"] .site-header-row {
+  min-height: 64px;
+}
+
+.site-header[data-scrolled="true"] .site-header-logo {
+  width: 46px;
+  height: 46px;
+}
+
+.site-header[data-scrolled="true"] .site-header-tagline {
+  max-height: 0;
+  margin-top: 0;
+  opacity: 0;
+}
+
+@media only screen and (max-width: 479px) {
+  .site-header-row {
+    min-height: 64px;
+    gap: 12px;
+  }
+
+  .site-header-logo {
+    width: 44px;
+    height: 44px;
+  }
+
+  .site-header[data-scrolled="true"] .site-header-row {
+    min-height: 56px;
+  }
+
+  .site-header[data-scrolled="true"] .site-header-logo {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* The name, the Book pill and the round menu button only fit side by side
+   on the narrowest phones without the tagline. */
+@media only screen and (max-width: 399px) {
+  .site-header-tagline {
+    display: none;
+  }
+}
+
+@media only screen and (max-width: 1023px) {
+  .site-header[data-hidden="true"] {
+    transform: translateY(-100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .site-header-row,
+  .site-header-logo,
+  .site-header-tagline {
+    transition: none;
+  }
+}
+
+/* The right margin beside the pilot article (`RailPhotos`), from 1280px:
+   sticky under the header like "On this page" on the left, so the column
+   between them stays centred. A tall photo per section, cross-fading as the
+   reader moves on, a caption tag at its foot and the section number on top. */
+.rail-photos {
+  position: relative;
+  aspect-ratio: 3 / 5;
+  overflow: hidden;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-secondary) 6%, transparent);
+}
+
+.rail-photo {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  transition: opacity 650ms ease;
+}
+
+.rail-photo.is-shown {
+  opacity: 1;
+}
+
+.rail-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.05);
+  transition: transform 1400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rail-photo.is-shown img {
+  transform: none;
+}
+
+.rail-photo figcaption {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  padding: 9px 12px 10px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.94);
+  backdrop-filter: blur(6px);
+  font-family: var(--font-display);
+  font-size: 21px;
+  line-height: 1.05;
+  font-weight: 700;
+  color: var(--color-body-text);
+}
+
+.rail-photos-count {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.9);
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+}
+
+.rail-photos-count > span {
+  color: color-mix(in oklab, var(--color-body-text) 45%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail-photo,
+  .rail-photo img {
+    transition: none;
+  }
+}
+.article-rail {
+  display: none;
+}
+
+.article-toc-help {
+  margin: 20px 0 0;
+  padding: 14px 0 0 14px;
+  border-top: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--color-body-text) 60%, transparent);
+}
+
+.article-toc-help a {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-primary);
+  transition: color 300ms;
+}
+
+.article-toc-help a:hover {
+  color: var(--color-primary-strong);
+}
+
+@media only screen and (min-width: 1280px) {
+  .article-rail {
+    display: block;
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: start;
+    align-self: start;
+    position: sticky;
+    top: 104px;
+    width: 100%;
+    max-width: 17rem;
+  }
+}
+
+/* The footer (`Footer`): every piece is a child of one grid, placed by
+   area. A phone stacks them, the small print and then the wordmark last; a
+   tablet pairs them; from 1024px it is three tight rows: the sign-off, the
+   booking card and the newsletter; the wordmark beside the three detail
+   columns, filling the space that used to sit empty under the address; then
+   the small print. */
+.footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "sign"
+    "book"
+    "rule"
+    "studio"
+    "contact"
+    "explore"
+    "news"
+    "base"
+    "mark";
+  gap: 26px;
+  padding-top: clamp(2rem, 4vw, 2.75rem);
+}
+
+.footer-sign { grid-area: sign; }
+.footer-book { grid-area: book; }
+.footer-news { grid-area: news; }
+.footer-studio { grid-area: studio; }
+.footer-contact { grid-area: contact; }
+.footer-explore { grid-area: explore; }
+.footer-grid > .footer-mark { grid-area: mark; padding-inline: 0; }
+
+.footer-rule {
+  grid-area: rule;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+}
+
+.footer-base {
+  grid-area: base;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding-top: 18px;
+  border-top: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+}
+
+@media only screen and (min-width: 640px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "sign sign"
+      "book book"
+      "rule rule"
+      "studio contact"
+      "explore news"
+      "base base"
+      "mark mark";
+    column-gap: 40px;
+  }
+}
+
+@media only screen and (min-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "sign book news news"
+      "rule rule rule rule"
+      "mark studio contact explore"
+      "base base base base";
+    align-items: start;
+    gap: 24px 40px;
+  }
+
+  /* The top row sits on one line: the sign-off's last line, the booking
+     buttons and the newsletter's note share a bottom edge. */
+  .footer-sign,
+  .footer-book,
+  .footer-news {
+    align-self: end;
+  }
+
+  /* Starts where the Contact column below does; a field wider than this
+     only reads as empty. */
+  .footer-news {
+    max-width: 30rem;
+  }
+
+  /* One line for the open/closed pill in its column. */
+  .footer-status p {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  /* The wordmark under the sign-off, its foot on the details' last line. */
+  .footer-grid > .footer-mark {
+    align-self: end;
+    justify-self: start;
+    margin: 0;
+    padding: 0;
+    font-size: clamp(3rem, 4vw, 4.25rem);
+    line-height: 0.82;
+    text-align: left;
+  }
+
+  .footer-base {
+    margin-bottom: 4px;
+    padding-block: 14px 16px;
+  }
+}
+
+/* `RailTeam`: the practitioners under the photo in the right margin. A row
+   each, portrait, name and role, linking to their profile. The photo above
+   gives up a little height so the pair fits a laptop screen. */
+.article-rail .rail-photos {
+  aspect-ratio: 3 / 4.4;
+}
+
+.rail-team {
+  margin-top: 18px;
+}
+
+.rail-team ul {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rail-team li a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  border-radius: 4px;
+}
+
+.rail-team-face {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.rail-team-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 45% 24%;
+  transform: scale(1.7);
+  transform-origin: 45% 28%;
+}
+
+.rail-team-name {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--color-body-text);
+}
+
+.rail-team-role {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.35;
+  color: color-mix(in oklab, var(--color-body-text) 60%, transparent);
+}
+
+.rail-team-arrow {
+  color: var(--color-primary);
+  transition: transform 300ms;
+}
+
+.rail-team li a:hover .rail-team-arrow {
+  transform: translateX(3px);
+}
+
+.rail-team li a:hover .rail-team-name {
+  color: var(--color-primary);
+}
+
+/* Tables on a phone (`RichText`): each row a small white card instead of a
+   table that scrolls sideways. The first cell is the card's title; every
+   other cell carries its column's heading as a small label (`data-label`).
+   From 640px they are tables again. Price tables on the treatment pages are
+   menus instead (`.price-menu`) and never reach this. */
+@media only screen and (max-width: 639px) {
+  .prose-flex .prose-table {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .prose-flex .prose-table table {
+    min-width: 0;
+  }
+
+  .prose-flex .prose-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .prose-flex .prose-table table,
+  .prose-flex .prose-table tbody,
+  .prose-flex .prose-table tr,
+  .prose-flex .prose-table th,
+  .prose-flex .prose-table td {
+    display: block;
+  }
+
+  .prose-flex .prose-table tbody tr {
+    margin-bottom: 8px;
+    padding: 10px 14px 4px;
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--color-secondary) 10%, transparent);
+    border-radius: 10px;
+  }
+
+  .prose-flex .prose-table tbody :where(th, td) {
+    padding: 0;
+    border-top: 0;
+  }
+
+  .prose-flex .prose-table tbody tr > :first-child {
+    margin-bottom: 2px;
+    font-family: var(--font-display);
+    font-size: 20px;
+    line-height: 1.1;
+    font-weight: 700;
+    color: var(--color-body-text);
+  }
+
+  .prose-flex .prose-table tbody tr > :not(:first-child) {
+    padding: 5px 0;
+    border-top: 1px solid color-mix(in srgb, var(--color-secondary) 8%, transparent);
+  }
+
+  .prose-flex .prose-table tbody tr > [data-label]:not(:first-child)::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 1px;
+    font-size: 10px;
+    line-height: 1.3;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-body-text) 55%, transparent);
+  }
+
+  /* A comparison ending in a price (`.is-priced`): the price moves up beside
+     the title, its label over it, and the other values follow full width. */
+  .prose-flex .prose-table.is-priced tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 14px;
+  }
+
+  .prose-flex .prose-table.is-priced tbody tr > * {
+    grid-column: 1 / -1;
+  }
+
+  .prose-flex .prose-table.is-priced tbody tr > :first-child {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: end;
+    margin-bottom: 6px;
+  }
+
+  .prose-flex .prose-table.is-priced tbody tr > :last-child {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    margin-bottom: 6px;
+    padding: 0;
+    border-top: 0;
+    text-align: right;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 }

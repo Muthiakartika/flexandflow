@@ -45,7 +45,14 @@ import {
   type PostCategory,
 } from "@/lib/cms/shape";
 import { prisma } from "@/lib/db";
-import { withPageSeo } from "@/lib/seo/pages";
+import { withPageCopy } from "@/lib/seo/copy";
+import { withPageFixes } from "@/lib/seo/fixes";
+import { withGuideTitle, withPageSeo } from "@/lib/seo/pages";
+import { withPagePhoto } from "@/lib/seo/photos";
+import type { PriceBook } from "@/lib/seo/price-tokens";
+import { loadPriceBook } from "@/lib/seo/prices";
+import { withPageSections } from "@/lib/seo/sections";
+import { withTierLabels } from "@/lib/seo/tiers";
 import type { Post, Service } from "@/types";
 
 /** Invalidated by `lib/cms/write.ts` on every publish. */
@@ -106,19 +113,40 @@ async function load(
 }
 
 /*
- * Every function below lays `lib/seo/pages.ts` over the row with `withPageSeo`,
- * after the cache rather than inside it: the cache holds database rows, so a
- * deploy that changes a title takes effect without anything being invalidated.
- * It is applied here and not in `lib/cms/shape.ts` because the import check
+ * Every function below passes the row through `fromCode`, which swaps in the
+ * code's own copy for the pages in `lib/seo/copy`, corrects the panel's copy
+ * with `lib/seo/fixes.ts`, appends `lib/seo/sections` to its body, swaps in
+ * the studio's own photo from `lib/seo/photos.ts`, relabels a rate-card row
+ * from `lib/seo/tiers.ts` and lays `lib/seo/pages.ts` over its SEO. Fixes go first so they only ever touch the panel's blocks,
+ * never the code's own sections; the photo goes before the SEO, which keeps
+ * the link preview it sets. A post then takes its guide title from
+ * `lib/seo/pages.ts` (`withGuideTitle`).
+ * After the cache rather than inside it: the cache holds database rows, so a
+ * deploy that changes any of these takes effect without anything being
+ * invalidated. Here and not in `lib/cms/shape.ts`, because the import check
  * reads through `shape.ts` and compares against what WordPress published.
+ * Each loads the price book beside its own query, for the price tokens in
+ * that code (`lib/seo/prices.ts`).
  */
+function fromCode<T extends Service | Post>(entry: T, prices: PriceBook): T {
+  return withPageSeo(
+    withTierLabels(
+      withPagePhoto(
+        withPageSections(withPageFixes(withPageCopy(entry, prices), prices), prices),
+      ),
+    ),
+  );
+}
 
 // ── Services ──────────────────────────────────────────────────────────────
 
 /** Every published treatment, in reading order. */
 export async function listServices(): Promise<Service[]> {
-  const rows = await load({ kind: "SERVICE" }, "sortOrder", [CMS_TAG.services]);
-  return rows.map((row) => withPageSeo(toService(row)));
+  const [rows, prices] = await Promise.all([
+    load({ kind: "SERVICE" }, "sortOrder", [CMS_TAG.services]),
+    loadPriceBook(),
+  ]);
+  return rows.map((row) => fromCode(toService(row), prices));
 }
 
 /**
@@ -130,52 +158,60 @@ export async function listServices(): Promise<Service[]> {
  * both are live, indexable pages that appear on no menu, on purpose.
  */
 export async function listPricedServices(): Promise<Service[]> {
-  const rows = await load({ kind: "SERVICE" }, "gridOrder", [CMS_TAG.services]);
-  return rows.map((row) => withPageSeo(toService(row)));
+  const [rows, prices] = await Promise.all([
+    load({ kind: "SERVICE" }, "gridOrder", [CMS_TAG.services]),
+    loadPriceBook(),
+  ]);
+  return rows.map((row) => fromCode(toService(row), prices));
 }
 
 export async function getService(slug: string): Promise<Service | null> {
-  const rows = await load(
-    { kind: "SERVICE", urlPrefix: "uluwatu-bali", slug },
-    "sortOrder",
-    [CMS_TAG.services, CMS_TAG.service(slug)],
-  );
-  return rows.length ? withPageSeo(toService(rows[0])) : null;
+  const [rows, prices] = await Promise.all([
+    load({ kind: "SERVICE", urlPrefix: "uluwatu-bali", slug }, "sortOrder", [
+      CMS_TAG.services,
+      CMS_TAG.service(slug),
+    ]),
+    loadPriceBook(),
+  ]);
+  return rows.length ? fromCode(toService(rows[0]), prices) : null;
 }
 
 // ── Posts ─────────────────────────────────────────────────────────────────
 
 /** Every published post, newest-written first, as the listing shows them. */
 export async function listPosts(): Promise<Post[]> {
-  const [rows, labels] = await Promise.all([
+  const [rows, labels, prices] = await Promise.all([
     load({ kind: "POST" }, "sortOrder", [CMS_TAG.posts]),
     categoryLabels(),
+    loadPriceBook(),
   ]);
-  return rows.map((row) => withPageSeo(toPost(row, labels)));
+  return rows.map((row) => withGuideTitle(fromCode(toPost(row, labels), prices)));
 }
 
 export async function listPostsInCategory(
   category: PostCategory,
 ): Promise<Post[]> {
-  const [rows, labels] = await Promise.all([
+  const [rows, labels, prices] = await Promise.all([
     load({ kind: "POST", urlPrefix: category }, "sortOrder", [CMS_TAG.posts]),
     categoryLabels(),
+    loadPriceBook(),
   ]);
-  return rows.map((row) => withPageSeo(toPost(row, labels)));
+  return rows.map((row) => withGuideTitle(fromCode(toPost(row, labels), prices)));
 }
 
 export async function getPost(
   category: PostCategory,
   slug: string,
 ): Promise<Post | null> {
-  const [rows, labels] = await Promise.all([
+  const [rows, labels, prices] = await Promise.all([
     load({ kind: "POST", urlPrefix: category, slug }, "sortOrder", [
       CMS_TAG.posts,
       CMS_TAG.post(slug),
     ]),
     categoryLabels(),
+    loadPriceBook(),
   ]);
-  return rows.length ? withPageSeo(toPost(rows[0], labels)) : null;
+  return rows.length ? withGuideTitle(fromCode(toPost(rows[0], labels), prices)) : null;
 }
 
 // ── Static params ─────────────────────────────────────────────────────────

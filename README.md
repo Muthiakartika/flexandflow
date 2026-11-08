@@ -108,8 +108,9 @@ components/
   blog/               BlogListing, BlogSidebar, CategoryArchiveGrid,
                       Pagination, SearchForm
   forms/              ContactForm
-sections/home/        Hero, ServiceTicker, Treatments, PrivateTherapy,
-                      CompleteWellness, Practitioners, Gallery, Faqs
+sections/home/        Hero, ServiceTicker, Treatments, Approach, WhoTreatsYou,
+                      Reviews, Gallery, Faqs; PrivateTherapy (About page);
+                      styles in app/(main)/home.css
 sections/common/      BookClose (the closing band, shared by pages)
   booking/            the wizard, step by step
   booking-result/     confirmation and manage-booking views

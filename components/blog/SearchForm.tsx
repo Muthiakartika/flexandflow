@@ -29,7 +29,7 @@ export default function SearchForm() {
         name="s"
         value={keyword}
         onChange={(event) => setKeyword(event.target.value)}
-        placeholder="Enter Keyword"
+        placeholder="Search the guides"
         className={`${FIELD} min-w-0 flex-1`}
       />
       <button

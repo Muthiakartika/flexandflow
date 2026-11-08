@@ -2,17 +2,23 @@ import Image from "next/image";
 import Link from "next/link";
 
 import DesktopNav from "./DesktopNav";
+import HeaderShell from "./HeaderShell";
 import MobileNav from "./MobileNav";
 import {
   bookingCtaHref,
   bookingCtaProps,
+  contact,
   primaryNav,
+  shortHours,
   siteConfig,
+  studioMapsUrl,
 } from "@/lib/site";
 
 /**
  * Site header, rebuilt for the studio look: a slim sticky bar rather than the
- * old theme's 184px band with its oversized overhanging logo. Logo left,
+ * old theme's 184px band with its oversized overhanging logo. It slims as the
+ * page scrolls and, on a phone, gets out of the way while scrolling down
+ * (`HeaderShell`). Logo left,
  * uppercase nav centre-right, and one solid booking action that stays reachable
  * on every scroll position — the pattern both reference studios use.
  *
@@ -25,8 +31,8 @@ import {
  */
 export default function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-secondary/10 bg-white/95 backdrop-blur-md">
-      <div className="page-wrap flex min-h-[76px] items-center gap-6 max-[479px]:min-h-[64px]">
+    <HeaderShell>
+      <div className="site-header-row page-wrap flex items-center gap-6">
         <Link
           href="/"
           aria-label={siteConfig.name}
@@ -39,7 +45,7 @@ export default function Header() {
             height={861}
             priority
             sizes="56px"
-            className="h-14 w-14 object-contain max-[479px]:h-11 max-[479px]:w-11"
+            className="site-header-logo object-contain"
           />
           {/* Wordmark in the academy's lockup: the studio name on the display
               face, what it does tracked out underneath. */}
@@ -50,7 +56,7 @@ export default function Header() {
             {siteConfig.shortName}
             {/* 9px on tighter tracking keeps the longer second line close to
                 the width of the name above it. */}
-            <span className="mt-1 block font-body text-[9px] leading-none font-bold tracking-[0.14em] text-subtle uppercase">
+            <span className="site-header-tagline mt-1 block font-body text-[9px] leading-none font-bold tracking-[0.14em] text-subtle uppercase">
              Body Work and Movement
             </span>
           </span>
@@ -59,12 +65,28 @@ export default function Header() {
         <div className="ml-auto flex items-center gap-7 max-[1180px]:hidden">
           <DesktopNav items={primaryNav} />
 
+          {/* The studio's address beside the booking action, on every page, in
+              the same words as the footer and the LocalBusiness JSON-LD. Only
+              where the bar has room; narrower screens have it in the footer. */}
+          <address className="header-address text-right font-body text-[12px] leading-[1.35] not-italic">
+            <a
+              href={studioMapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block rounded-[4px] text-body-text/80 transition-colors duration-300 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              {contact.shortAddress}
+              <span className="block text-subtle">{shortHours}</span>
+            </a>
+          </address>
+
           <Link
             href={bookingCtaHref}
             {...bookingCtaProps}
-            className="inline-flex items-center rounded-[10px] bg-primary-strong px-6 py-3 font-body text-[13px] tracking-[0.12em] text-white uppercase transition-colors duration-300 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex items-center gap-2 rounded-full bg-primary-strong py-3 pr-5 pl-6 font-body text-[13px] tracking-[0.12em] text-white uppercase transition-colors duration-300 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             Book now
+            <span aria-hidden>&rarr;</span>
           </Link>
         </div>
 
@@ -73,13 +95,13 @@ export default function Header() {
           <Link
             href={bookingCtaHref}
             {...bookingCtaProps}
-            className="inline-flex items-center rounded-[10px] bg-primary-strong px-5 py-2.5 font-body text-[12px] tracking-[0.12em] text-white uppercase transition-colors duration-300 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary max-[380px]:hidden"
+            className="inline-flex h-11 items-center rounded-full bg-primary-strong px-5 font-body text-[12px] tracking-[0.12em] text-white uppercase transition-colors duration-300 hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary max-[340px]:hidden"
           >
             Book
           </Link>
           <MobileNav items={primaryNav} />
         </div>
       </div>
-    </header>
+    </HeaderShell>
   );
 }

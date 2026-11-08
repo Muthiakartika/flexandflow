@@ -25,7 +25,7 @@ export const siteConfig = {
   description:
     "Join wellness journeys with Flex and Flow. Our services focus on improving flexibility, reducing discomfort, and enhancement of well-being.",
   logo: "/images/2025/06/FlexnFlow_new_logo.png",
-  copyright: "All Right Reserved © 2026 Flex&Flow",
+  copyright: "© 2026 Flex & Flow. All rights reserved.",
 } as const;
 
 /**
@@ -90,7 +90,9 @@ const academyPage = (label: string, path: string): NavItem => ({
 });
 
 export const contact = {
-  address: "Jl. Toya Ning II, Ungasan, Kec. Kuta Sel., Denpasar, Bali",
+  address: "Jl. Toya Ning II, Ungasan, Kec. Kuta Sel., Kabupaten Badung, Bali 80361",
+  /** The header's one-line form: street and the place people search for. */
+  shortAddress: "Jl. Toya Ning II, Ungasan, Uluwatu",
   email: "Flexandflow06@gmail.com",
   phone: "+6285858887777",
   phoneHref: "tel:+6285858887777",
@@ -102,6 +104,51 @@ export const contact = {
 export const workingHours = [
   { days: "Monday to Saturday", hours: "09:00 - 17:00 hrs" },
 ] as const;
+
+/** `workingHours` in the header's compact form. Change it, `workingHours` and
+ *  `openingSchedule` together. */
+export const shortHours = "Mon–Sat, 09:00–17:00";
+
+/**
+ * `workingHours` as data, for the footer's live "Open now" line
+ * (`OpenStatus`). Days are 0 = Sunday to 6 = Saturday. Bali keeps WITA,
+ * UTC+8, all year, which the IANA zone `Asia/Makassar` names.
+ */
+export const openingSchedule = {
+  timeZone: "Asia/Makassar",
+  days: [1, 2, 3, 4, 5, 6],
+  opens: "09:00",
+  closes: "17:00",
+} as const;
+
+/** Directions to the studio, the same search the booking emails link to. */
+export const studioMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+  contact.address,
+)}`;
+
+/**
+ * Added once per visit for a treatment at the client's villa, hotel or home.
+ * Not a booking price row, so it lives here; `lib/seo/prices.ts` adds it to
+ * every `{{villa:…}}` figure. The home service page's own copy states it too.
+ */
+export const homeServiceFeeIdr = 100_000;
+
+/** The home service page: an article in the panel, a service on the site. */
+export const homeServicePath = "/uluwatu-bali/outcall-home-service-massage/";
+
+/**
+ * Treatments a therapist will bring to a villa, hotel or home, as the home
+ * service page lists them. Trauma healing is studio only, and the two hidden
+ * treatments are not offered at all.
+ */
+export const homeServiceSlugs: ReadonlySet<string> = new Set([
+  "sport-massage",
+  "lymphatic-drainage",
+  "lymphatic-detox-massage-for-men",
+  "pregnancy-massage-service",
+  "assisted-stretching",
+  "cupping-therapy",
+]);
 
 export type NavItem = {
   label: string;

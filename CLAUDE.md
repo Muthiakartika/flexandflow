@@ -143,9 +143,11 @@ simple", `d` "Studio" superseded by the live `/` it became — and all four were
 still on Phase 1 classes. They are in git history if a direction needs revisiting.
 
 **Header and footer** apply to every page: 76px sticky header
-(`components/layout/Header.tsx`, uppercase tracked nav) and a deliberately small
-**white** footer (`components/layout/Footer.tsx`). A black footer was tried and
-rejected. Both now sit on `.page-wrap`, so they share the page body's 1440px measure.
+(`components/layout/Header.tsx`, uppercase tracked nav) and a **white** footer
+(`components/layout/Footer.tsx`). A black footer was tried and rejected. Since
+2026-11-05 the footer signs off with a display line, a booking card with a live
+open/closed line in Bali time (`OpenStatus`, from `openingSchedule`), four short
+columns and a page-wide olive wordmark, shown whole. Both now sit on `.page-wrap`, so they share the page body's 1440px measure.
 
 ---
 
@@ -546,6 +548,42 @@ the panel for headings, body copy, pictures and rates.
 - Workflow: branch → `npm run check:seo` → PR → Vercel preview →
   `npm run check:seo <preview-url>` → review → merge. Seeded from what the
   live site served, so the change that introduced it altered nothing visible.
+
+**`lib/seo/sections/` adds SEO sections and FAQs to the end of those pages**,
+one file per page (`<slug>.ts`, a `ContentBlock[]`), registered by canonical
+path in `index.ts`. `read.ts` appends them to the body after the panel's own
+blocks, so they render through `RichText`, show in the panel's preview, and
+their `faq` blocks feed the page's `FAQPage` JSON-LD (treatments now emit one
+too, from `serviceSchema`). The panel's block editor does not show them: to
+change one, edit the file. `check:seo` validates them against `blocksSchema`
+and checks every internal link. Written from Search Console, Ahrefs and Brand
+Radar data on 4 Nov 2026, using only facts the site already states.
+
+**The code's copy never types a price.** Sections and fix replacements write
+tokens (`{{price:sport-massage:60:standard}}`, `{{villa:…}}` = price + the
+home service fee in `lib/site.ts`, `{{fee}}`), defined in
+`lib/seo/price-tokens.ts` and filled in `read.ts` from `lib/seo/prices.ts`:
+an active booking price row first, then the `/price-list` card rows, then the
+page's rate card. Cached under `BOOKING_PRICES_TAG` and `cms:services`, so a
+price changed in the booking admin or on a rate card reaches the sections on
+the next render. A token nothing can price throws in development and renders
+"(price not listed)" in production; `check:seo <url>` fails on either. Bump
+the version in `loadPriceBook`'s cache key whenever the loader changes.
+
+**`lib/seo/fixes.ts` corrects wrong panel copy in code**, so the agency never
+has to edit through `/admin`: exact find/replace pairs per page (a `row` scope
+for table cells), applied in `read.ts` before the sections are appended. The
+database keeps the old wording, so the panel still shows it. First used on
+2026-11-05 for sport massage prices typed in before the repricing (400k →
+500k), the men's lymphatic "750K", and hidden full-body/facial massage named
+on the home service page. `check:seo <url>` fails if a fix stops matching,
+which means the owner rewrote that sentence: delete or move the fix.
+**`lib/seo/copy` replaces a page's panel copy outright** (its excerpt and its
+whole body) for pages the agency has rewritten; the sections are still
+appended after it. First used on 2026-11-05 for sport massage, whose panel
+copy read as generic and written for first-timers. The panel still shows the
+old copy for those pages and editing it there does nothing: change them here.
+`check:seo <url>` confirms the code copy is what is served.
 
 ## Phase 5 — the CMS (in progress)
 

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
+import WhatsAppLinks from "@/components/layout/WhatsAppLinks";
 
 /**
  * Header and footer, everywhere except `/intake`.
@@ -27,11 +28,17 @@ export default function SiteChrome({
   const focused = pathname === "/intake" || pathname === "/intake/";
 
   if (focused) {
-    return <main className="flex-1">{children}</main>;
+    return (
+      <>
+        <WhatsAppLinks />
+        <main className="flex-1">{children}</main>
+      </>
+    );
   }
 
   return (
     <>
+      <WhatsAppLinks />
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />

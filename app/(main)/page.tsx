@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
 
-import BookClose from "@/sections/common/BookClose";
-import CompleteWellness from "@/sections/home/CompleteWellness";
+import StickyBookBar from "@/components/content/StickyBookBar";
+import { listServices } from "@/lib/cms/read";
+import { formatIdr, lowestHourlyRate } from "@/lib/pricing";
+import Approach from "@/sections/home/Approach";
 import Faqs from "@/sections/home/Faqs";
 import Gallery from "@/sections/home/Gallery";
+import Guides from "@/sections/home/Guides";
 import Hero from "@/sections/home/Hero";
-import Practitioners from "@/sections/home/Practitioners";
-import PrivateTherapy from "@/sections/home/PrivateTherapy";
-import ServiceTicker from "@/sections/home/ServiceTicker";
+import Reviews from "@/sections/home/Reviews";
 import Treatments from "@/sections/home/Treatments";
-/* Search-facing only — the page's own headings and copy are untouched. Aimed
+import WhoTreatsYou from "@/sections/home/WhoTreatsYou";
+
+import "./home.css";
+
+/* Search-facing only, and kept with the h1 when the page copy was rewritten. Aimed
    at "massage uluwatu" (600 searches a month in Indonesia, KD 12 — Ahrefs,
    2026-10-27), the largest query this studio can realistically win and one
    the old WordPress title ("Flex and Flow - Wellness Studio") never named. */
@@ -32,25 +37,31 @@ export const metadata: Metadata = {
 };
 
 /**
- * Home page, 2026 redesign.
+ * Home page, in the language of the redesigned treatment pages.
  *
- * The order is the visitor's own sequence: what this is and what it costs, the
- * range on offer, what an hour actually involves, who performs it, the room,
- * the questions, then the hand-off to WhatsApp. Every heading and paragraph is
- * the studio's own copy — the redesign moves structure, not words.
+ * The order is the visitor's own: what this is and what it costs, the
+ * treatments with their rates, how an hour runs, who does the work, what
+ * Google's reviewers say, the room (or the villa), the questions. The footer
+ * is the booking sign-off, as on a treatment page, so the olive `BookClose`
+ * band no longer sits on top of it; on a phone `StickyBookBar` keeps one
+ * booking button in reach once the hero has gone. Copy is written for
+ * clients who already know what they are booking (DESIGN.md, copy rule).
  */
-export default function HomePage() {
+export default async function HomePage() {
+  const services = await listServices();
+  const from = lowestHourlyRate(services);
+
   return (
     <>
-      <Hero />
-      <ServiceTicker />
-      <Treatments />
-      <PrivateTherapy />
-      <CompleteWellness />
-      <Practitioners />
+      <Hero from={from} />
+      <Treatments services={services} />
+      <Approach />
+      <WhoTreatsYou services={services} />
+      <Reviews />
       <Gallery />
+      <Guides />
       <Faqs />
-      <BookClose />
+      <StickyBookBar from={from !== null ? formatIdr(from) : null} />
     </>
   );
 }

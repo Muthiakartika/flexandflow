@@ -2,8 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { CARD, FOCUS, LINK } from "@/components/ui/tokens";
-import { formatIdr, priceAmount, serviceMinutes, tierMinutes } from "@/lib/pricing";
+import { formatIdr, serviceMinutes, teamFirstRates } from "@/lib/pricing";
 import { bookingCtaHref, bookingCtaProps } from "@/lib/site";
+import { TREATMENT_NAMES } from "@/lib/treatments";
 import type { Service } from "@/types";
 
 /**
@@ -14,6 +15,10 @@ import type { Service } from "@/types";
  * treatment was invisible until you touched the card. Here the photo leads, and
  * the two rates sit in the open where they can be compared across the grid.
  *
+ * The rates read as on the treatment pages: the team first, Ginny's limited
+ * sessions after (`teamFirstRates`), under the treatment's everyday name
+ * rather than the panel's search title.
+ *
  * Durations are per tier: they usually match, in which case the length is
  * stated once as a chip on the photo. "Book Session" goes to
  * booking.flexandflow.fit, a separate deployment from this site.
@@ -21,20 +26,7 @@ import type { Service } from "@/types";
 export default function ServicePriceCard({ service }: { service: Service }) {
   const href = `/uluwatu-bali/${service.slug}`;
   const uniform = serviceMinutes(service);
-
-  const tiers = service.tiers.flatMap((tier) => {
-    const amount = priceAmount(tier);
-    return amount === null
-      ? []
-      : [
-          {
-            label: tier.label,
-            note: tier.note,
-            amount,
-            minutes: uniform ? null : tierMinutes(service, tier),
-          },
-        ];
-  });
+  const tiers = teamFirstRates(service);
 
   return (
     <article
@@ -67,7 +59,7 @@ export default function ServicePriceCard({ service }: { service: Service }) {
             href={href}
             className={`transition-colors duration-300 hover:text-primary ${FOCUS}`}
           >
-            {service.title}
+            {TREATMENT_NAMES[service.slug] ?? service.title}
           </Link>
         </h3>
 
@@ -85,7 +77,7 @@ export default function ServicePriceCard({ service }: { service: Service }) {
                 <span className="page-label block">{tier.label}</span>
                 <span className="mt-1 block font-body text-[12px] leading-none text-body-text/55">
                   {tier.minutes ? `${tier.minutes} min · ` : ""}
-                  {tier.note.replace(/[()]/g, "")}
+                  {tier.note}
                 </span>
               </dt>
               <dd className="font-body text-[15px] leading-none font-bold tabular-nums">

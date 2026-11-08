@@ -1,4 +1,5 @@
 import { listPosts, listPostsInCategory } from "@/lib/cms/read";
+import { homeServicePath } from "@/lib/site";
 import type { Post, Seo } from "@/types";
 
 /**
@@ -11,7 +12,23 @@ import type { Post, Seo } from "@/types";
  */
 
 export async function postsInCategory(category: string) {
-  return listPostsInCategory(category);
+  return (await listPostsInCategory(category)).filter(isGuide);
+}
+
+/**
+ * Whether a post belongs in the blog's listings. The home service page is a
+ * post in the panel but a service to the visitor (`HomeServiceArticle`), and
+ * the Services menu is where it is found; in a list of guides it read as one.
+ */
+export function isGuide(post: { seo: Seo }): boolean {
+  return post.seo.canonicalPath !== homeServicePath;
+}
+
+/** Posts by their date, newest first: the blog leads with its latest guide.
+ *  `date` is the display date ("October 29, 2026"), which `Date` reads. */
+export function newestFirst<T extends { date: string }>(posts: T[]): T[] {
+  const time = (post: T) => Date.parse(post.date) || 0;
+  return [...posts].sort((a, b) => time(b) - time(a));
 }
 
 /** Neighbouring posts for the prev/next links, ordered as on the listing. */

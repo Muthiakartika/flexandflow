@@ -65,9 +65,13 @@ the form fields, which previously set `outline-none` with no replacement.
 
 ## Motion
 
-**One authored moment: the treatment ticker** on the home page (`.marquee-track`, 42s,
-disabled under `prefers-reduced-motion`). Everything else is a 300ms colour or
-transform response to hover.
+**Motion answers the reader, never decorates.** The treatment ticker under the home hero
+was removed in November 2026; it repeated the treatment cards directly below it. What
+moves now responds to something: the numbered card decks slide when swiped or stepped
+(`CardSlider`), the margin photos beside a treatment article cross-fade as the section
+changes (`RailPhotos`), the mobile menu's rows rise in as it opens, the header slims
+and, on a phone, steps aside while scrolling down. Everything else is a 300ms colour or
+transform response to hover, and all of it stops under `prefers-reduced-motion`.
 
 Nothing ships at `opacity: 0`. The previous build applied one identical 900ms fade-up
 to ~23 elements per page through an IntersectionObserver, which meant the server HTML
@@ -106,6 +110,14 @@ elsewhere — "Our Team / Meet My Team" comes from the About page. The gallery h
 `sr-only` heading rather than an invented one. The closing band uses the site's own
 description. The two category archives dropped WordPress's "Category:" prefix from the
 visible `h1` into an eyebrow; their `<title>` tags are unchanged.
+
+That rule held for the rebuild. Since November 2026 the agency runs the site's copy as
+the owner would and rewrites it where it reads weak, in code: treatment H1s in
+`lib/seo/pages.ts`, whole pages in `lib/seo/copy`. Write for clients who already know
+the treatment (they are rarely first-timers), and keep every claim to what the studio's
+own pages say. Ginny is the star of the business, but she cannot take every booking:
+carry her approach over to the team, make the team the easy booking, and present her
+own sessions as the limited step up. That is why she costs more on the rate cards.
 
 **No testimonials, ratings or star counts exist yet; do not invent any.**
 

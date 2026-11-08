@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import BlogListing, { POSTS_PER_PAGE } from "@/components/blog/BlogListing";
 import PageHero from "@/components/ui/PageHero";
 import { listPosts, publishedParams } from "@/lib/cms/read";
+import { isGuide, newestFirst } from "@/lib/content";
 
 export async function generateStaticParams() {
   /* `publishedParams`, not `listPosts` — the latter reads `draftMode()` to
@@ -45,17 +46,18 @@ export default async function BlogPaginatedPage(
   const { page } = await props.params;
   const current = Number(page);
 
-  const posts = await listPosts();
+  const posts = newestFirst((await listPosts()).filter(isGuide));
   const totalPages = Math.max(1, Math.ceil(posts.length / POSTS_PER_PAGE));
 
-  if (!Number.isInteger(current) || current < 2 || current > totalPages) {
-    notFound();
-  }
+  if (!Number.isInteger(current) || current < 2) notFound();
+  /* A page that existed before the cards grew (`/blog/page/2/` at six to a
+     page) now has its posts on the blog itself: send it there, not to a 404. */
+  if (current > totalPages) permanentRedirect("/blog/");
 
   return (
     <>
       <PageHero
-        title="Blog"
+        title="Guides From the Studio"
         eyebrow={`Page ${current}`}
         crumbs={[{ label: "Blog" }]}
       />

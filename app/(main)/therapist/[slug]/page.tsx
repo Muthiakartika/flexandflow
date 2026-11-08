@@ -7,6 +7,8 @@ import { ButtonLink } from "@/components/ui/Button";
 import PageHero from "@/components/ui/PageHero";
 import { BAND, CARD, FOCUS, H3, WRAP } from "@/components/ui/tokens";
 import { therapistBySlug, therapists } from "@/lib/data/therapists";
+import { WhatsAppMessage } from "@/components/layout/WhatsAppLinks";
+import { therapistMessage } from "@/lib/whatsapp";
 import {
   bookingCtaHref,
   bookingCtaProps,
@@ -71,6 +73,7 @@ export default async function TherapistPage(
 
   return (
     <>
+      <WhatsAppMessage text={therapistMessage(therapist.name, therapist.slug === "ginny")} />
       <PageHero
         title={therapist.name}
         eyebrow={therapist.role}
