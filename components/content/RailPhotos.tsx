@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 
+import { altFor } from "@/lib/seo/alts";
 import type { RailPhoto } from "@/lib/seo/layouts";
 import useActiveSection from "./useActiveSection";
 
@@ -12,9 +13,10 @@ import useActiveSection from "./useActiveSection";
  * order as "On this page" on the left, cross-fading as the reader moves on.
  * Each carries a short caption tag and the section's number.
  *
- * Decoration beside the article, so the images are `alt=""`: every one of
- * them also sits, described, somewhere on the site's own pages. The list
- * per page is `RAIL_PHOTOS` in `lib/seo/layouts.ts`.
+ * Hidden from screen readers, since the photos repeat the article's subject
+ * beside it, but each still carries its description (`lib/seo/alts.ts`) for
+ * search engines, which read it whatever `aria-hidden` says. The list per
+ * page is `RAIL_PHOTOS` in `lib/seo/layouts.ts`.
  */
 export default function RailPhotos({ photos, ids }: { photos: RailPhoto[]; ids: string[] }) {
   const section = useActiveSection(ids);
@@ -26,7 +28,7 @@ export default function RailPhotos({ photos, ids }: { photos: RailPhoto[]; ids: 
         <figure key={photo.src} className={`rail-photo${i === shown ? " is-shown" : ""}`}>
           <Image
             src={photo.src}
-            alt=""
+            alt={altFor(photo.src)}
             width={photo.width}
             height={photo.height}
             sizes="272px"

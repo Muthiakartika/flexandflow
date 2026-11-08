@@ -113,15 +113,22 @@ export default function Hero({ from }: { from: number | null }) {
 
         {/* ── Studio footage, with the two practitioners on its foot ─────── */}
         <div className="home-hero-media">
+          {/* Each width gets the clip cut to its own frame (`assets`); the
+              browser takes the first `<source>` whose media matches. No
+              poster: Chrome counts a poster as the page's largest paint
+              and fetches it late, which measured the home page's LCP at
+              3.5 s against 1.2 s for the headline without one. */}
           <video
             className="aspect-[4/3] w-full rounded-[10px] object-cover lg:aspect-square"
-            src={assets.heroVideo}
             autoPlay
             loop
             muted
             playsInline
             aria-hidden
-          />
+          >
+            <source src={assets.heroVideoWide} media="(min-width: 1024px)" type="video/mp4" />
+            <source src={assets.heroVideoNarrow} type="video/mp4" />
+          </video>
 
           <ul className="home-hero-team">
             {therapists.map((therapist) => (

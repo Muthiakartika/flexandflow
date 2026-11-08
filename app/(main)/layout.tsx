@@ -12,25 +12,30 @@ import "./globals.css";
 
 /* The original loads `Amatic SC:400,700` and `Andika:400` from Google Fonts.
    Andika 700 is added on top: the redesign marks the current nav item by
-   weight, and without the real face the browser smears a faux bold. */
+   weight, and without the real face the browser smears a faux bold.
+
+   Latin only: `next/font` preloads every subset listed, so `latin-ext` doubled
+   the fonts every page fetched before it could paint (8 files, 213 KB) for
+   letters the site never prints. Plain Latin covers English, Bahasa
+   Indonesia and the accents in Latin-1 ("café"). */
 const amatic = Amatic_SC({
   variable: "--font-amatic",
   weight: ["400", "700"],
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin"],
   display: "swap",
 });
 
 const andika = Andika({
   variable: "--font-andika",
   weight: ["400", "700"],
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Flex and Flow - Wellness Studio",
+    default: "Flex & Flow | Bodywork Studio in Uluwatu, Bali",
     template: "%s",
   },
   description: siteConfig.description,
@@ -57,7 +62,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: siteConfig.locale,
-    siteName: siteConfig.name,
+    /* "Flex & Flow", as the logo, the titles and the WebSite markup
+       (`websiteSchema`) write it. */
+    siteName: siteConfig.shortName,
     url: siteConfig.url,
   },
   twitter: { card: "summary_large_image" },

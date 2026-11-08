@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "check:intake": "tsx --test scripts/check-intake.ts && node --test scripts/check-intake-server.cjs",
-    "dev": "next dev -p 3008",
-    "build": "prisma generate && next build",
+    "dev": "node scripts/image-variants.mjs && next dev -p 3008",
+    "build": "prisma generate && node scripts/image-variants.mjs && next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -28,6 +28,7 @@
     "admin:create": "tsx scripts/create-admin.ts",
     "cache:purge": "tsx scripts/purge-cache.ts",
     "images:optimize": "node scripts/optimize-images.mjs",
+    "images:variants": "node scripts/image-variants.mjs",
     "images:sync": "tsx scripts/sync-media.ts"
   },
   "dependencies": {

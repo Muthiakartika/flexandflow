@@ -19,8 +19,8 @@ import {
 
 const title = "Contact & Booking | Flex & Flow, Uluwatu";
 const description =
-  "WhatsApp Flex & Flow, book online or send a booking request: the studio in Ungasan, " +
-  "Uluwatu, open Monday to Saturday, 09:00 to 17:00, with villa visits across Uluwatu.";
+  "WhatsApp Flex & Flow, book online or send a booking request. The studio in Ungasan, " +
+  "Uluwatu is open Monday to Saturday, 09:00 to 17:00, with villa visits.";
 
 /** Studio location, embedded from Google Maps exactly as on the original. */
 const MAP_SRC =
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     title,
     description,
     url: "/contact-us/",
-    type: "article",
+    type: "website",
     images: ["/images/2026/08/gallery-1.jpg"],
   },
 };

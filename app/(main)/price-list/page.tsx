@@ -19,7 +19,7 @@ import { treatmentMessage } from "@/lib/whatsapp";
 const title = "Massage Prices in Uluwatu, Bali | Flex & Flow";
 const description =
   "Every Flex & Flow price in one place: sports, lymphatic, pregnancy and cupping massage, " +
-  "assisted stretching and trauma healing, at our Ungasan studio or your villa.";
+  "assisted stretching and trauma healing, at the studio or your villa.";
 
 export const metadata: Metadata = {
   title,
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     title,
     description,
     url: "/price-list/",
-    type: "article",
+    type: "website",
     images: ["/images/2026/08/complete-wellness.jpg"],
   },
 };

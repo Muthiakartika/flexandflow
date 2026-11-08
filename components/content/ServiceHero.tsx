@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Breadcrumbs, type Crumb } from "@/components/ui/PageHero";
 import { BAND_LINE, BTN_GHOST, BTN_SOLID, WRAP } from "@/components/ui/tokens";
 import { formatIdr } from "@/lib/pricing";
+import { altFor } from "@/lib/seo/alts";
 import { pageSeoFor } from "@/lib/seo/pages";
 import { bookingCtaHref, bookingCtaProps, contact } from "@/lib/site";
 import type { Service } from "@/types";
@@ -184,13 +185,16 @@ export default function ServiceHero({
 
           {/* ── The treatment, with its rates anchored to it ─────────────── */}
           <div className="relative">
+            {/* The page's main photo, described (`lib/seo/alts.ts`). */}
             <Image
               src={service.image}
-              alt=""
-              aria-hidden
+              alt={altFor(service.image)}
               width={1300}
               height={975}
               priority
+              /* Next 16 preloads a `priority` image but leaves its fetch
+                 priority alone; this is the page's largest paint. */
+              fetchPriority="high"
               sizes="(max-width: 1023px) 92vw, 46vw"
               className="aspect-[4/3] w-full rounded-[10px] object-cover"
             />

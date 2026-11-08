@@ -1,6 +1,9 @@
 /**
- * Therapist profiles. These pages are linked from the About page but excluded
- * from the WordPress sitemap; copy is reproduced verbatim.
+ * Therapist profiles. Linked from the About page, the treatment pages and, for
+ * Ginny, every guide's byline. WordPress kept them out of the index; since 8
+ * Nov 2026 they are indexed and in the sitemap, because Ginny's page is the
+ * author page every guide's `BlogPosting` points to. Copy is reproduced
+ * verbatim.
  */
 export type Therapist = {
   slug: string;
@@ -17,6 +20,8 @@ export type Therapist = {
   instagram?: string;
   hours: string;
   seoTitle: string;
+  /** The meta description: facts from the profile itself. */
+  seoDescription: string;
 };
 
 export const therapists: Therapist[] = [
@@ -38,7 +43,9 @@ export const therapists: Therapist[] = [
       "I combine assisted stretching, therapeutic massage, movement-based techniques, and recovery work, with each session guided by what I observe and what you tell me.",
     instagram: "https://www.instagram.com/ginnyasih?igsh=MW9saGJoZDExbGc5NA==",
     hours: "Monday to Friday : 08:00 - 17:00 hrs",
-    seoTitle: "Ginny - Flex and Flow",
+    seoTitle: "Ginny, Founder & Bodywork Specialist | Flex & Flow",
+    seoDescription:
+      "Ginny founded Flex & Flow in Uluwatu, with a background in nursing, fitness training and bodywork: sports massage, assisted stretching and lymphatic drainage.",
   },
   {
     slug: "yuni",
@@ -55,7 +62,9 @@ export const therapists: Therapist[] = [
     approach:
       "Integrating fitness-based techniques with intuitive healing to support recovery, flexibility, and emotional release.",
     hours: "Monday to Friday : 08:00 - 17:00 hrs",
-    seoTitle: "Yuni - Flex and Flow",
+    seoTitle: "Yuni, Javanese Massage & Lymphatic Specialist | Flex & Flow",
+    seoDescription:
+      "Yuni works at Flex & Flow in Uluwatu, Bali: traditional Javanese massage and lymphatic drainage, with a modern understanding of the body. Easiest to book.",
   },
 ];
 

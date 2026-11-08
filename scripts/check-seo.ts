@@ -26,8 +26,10 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { blocksSchema } from "@/lib/cms/blocks";
+import { IMAGE_ALT } from "@/lib/seo/alts";
 import { PAGE_COPY } from "@/lib/seo/copy";
 import { PAGE_FIXES } from "@/lib/seo/fixes";
+import { RAIL_PHOTOS } from "@/lib/seo/layouts";
 import { PAGE_SEO } from "@/lib/seo/pages";
 import { PAGE_PHOTOS } from "@/lib/seo/photos";
 import { PRICE_MISSING, PRICE_TOKEN } from "@/lib/seo/price-tokens";
@@ -183,7 +185,12 @@ function checkSections(): void {
   console.log("\nlib/seo/photos");
   for (const [path, photo] of Object.entries(PAGE_PHOTOS)) {
     check(`${path} photo ${photo.src} is in public/`, existsSync(join("public", photo.src)));
+    check(`${path} photo ${photo.src} has alt text in lib/seo/alts.ts`, Boolean(IMAGE_ALT[photo.src]));
   }
+
+  console.log("\nlib/seo/layouts (margin photos)");
+  const railSrcs = new Set(Object.values(RAIL_PHOTOS).flat().map((photo) => photo.src));
+  for (const src of railSrcs) check(`${src} has alt text in lib/seo/alts.ts`, Boolean(IMAGE_ALT[src]));
 }
 
 /* A price written as a figure: "IDR 500,000", or a bare "500,000" table cell. */
@@ -235,9 +242,10 @@ async function checkServed(base: string): Promise<void> {
   }
 
   /* Articles and treatments are the two-segment addresses; the fixed pages
-     (`/about-us/` and the like) set their metadata in their own route files. */
+     (`/about-us/` and the like) and the therapist profiles set their
+     metadata in their own route files. */
   for (const path of listed) {
-    if (/^\/[a-z0-9-]+\/[a-z0-9-]+\/$/.test(path) && !PAGE_SEO[path]) {
+    if (/^\/[a-z0-9-]+\/[a-z0-9-]+\/$/.test(path) && !path.startsWith("/therapist/") && !PAGE_SEO[path]) {
       warn(`${path} is not in lib/seo/pages.ts, so its SEO still comes from the panel`);
     }
   }
@@ -386,6 +394,34 @@ async function checkPlacement(base: string): Promise<void> {
   }
 }
 
+/*
+ * Every indexable page in the file describes its main photo (the first one in
+ * `<main>` that is not lazy-loaded) and carries one `BreadcrumbList`; the
+ * home page carries the `WebSite` node Google takes the site's name from.
+ * Card thumbnails are left `alt=""` on purpose (`lib/seo/alts.ts`).
+ */
+async function checkMarkup(base: string): Promise<void> {
+  const home = await (await fetch(`${base}/`)).text();
+  check("/ carries the WebSite markup", home.includes('"@type":"WebSite"'));
+
+  for (const [path, seo] of Object.entries(PAGE_SEO)) {
+    if (seo.noindex) continue;
+    const html = await (await fetch(`${base}${path}`)).text();
+    const body = html.slice(Math.max(0, html.indexOf("<main")));
+    const main = [...body.matchAll(/<img\s[^>]*>/g)]
+      .map((m) => m[0])
+      .find((tag) => !/loading="lazy"/.test(tag));
+    const alt = main?.match(/\salt="([^"]*)"/)?.[1] ?? "";
+    check(
+      `${path} main photo has alt text`,
+      alt.length > 0,
+      main ? "empty alt (add it to lib/seo/alts.ts)" : "no main photo found",
+    );
+    const crumbs = html.split('"@type":"BreadcrumbList"').length - 1;
+    check(`${path} carries one BreadcrumbList`, crumbs === 1, `carries ${crumbs}`);
+  }
+}
+
 async function main(): Promise<void> {
   checkFile();
   checkSections();
@@ -393,6 +429,7 @@ async function main(): Promise<void> {
     await checkServed(BASE);
     await checkFixes(BASE);
     await checkPlacement(BASE);
+    await checkMarkup(BASE);
   }
 
   console.log(`\n${failures} failed, ${warnings} warnings`);

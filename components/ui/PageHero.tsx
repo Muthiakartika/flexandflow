@@ -1,14 +1,19 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import JsonLd from "@/components/layout/JsonLd";
+import { breadcrumbSchema } from "@/lib/structured-data";
+
 import { BAND_LINE, FOCUS, H1, WRAP } from "./tokens";
 
 export type Crumb = { label: string; href?: string };
 
-/** The "Home / …" trail. Shared with the treatment hero, which has its own band. */
+/** The "Home / …" trail, with its `BreadcrumbList` beside it. Shared with the
+ *  treatment hero, which has its own band. */
 export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
   return (
     <nav aria-label="Breadcrumb">
+      {crumbs.length ? <JsonLd data={breadcrumbSchema(crumbs)} /> : null}
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
         {/* Flex like the crumbs after it: as a plain block the link sat on
             the body's taller line box and dropped below them. */}

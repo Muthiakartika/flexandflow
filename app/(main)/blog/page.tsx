@@ -5,7 +5,6 @@ import SearchForm from "@/components/blog/SearchForm";
 import PageHero from "@/components/ui/PageHero";
 import { listPosts } from "@/lib/cms/read";
 import { isGuide, newestFirst } from "@/lib/content";
-import { assets } from "@/lib/site";
 
 const title = "Bodywork Guides From Uluwatu | Flex & Flow";
 const description =
@@ -21,7 +20,9 @@ export const metadata: Metadata = {
     description,
     url: "/blog/",
     type: "website",
-    images: [assets.pageHeroBackground],
+    /* Ginny at work: she writes the guides. It was the theme's stock yoga
+       mat, for a studio that runs no yoga classes. */
+    images: ["/images/2026/08/ginny-session.jpg"],
   },
 };
 

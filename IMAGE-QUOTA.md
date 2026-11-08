@@ -7,6 +7,23 @@ against the worst failure mode here.
 
 ---
 
+> ## Update 2026-11-08: resized WebP without the optimizer
+>
+> The optimizer is still off, but phones no longer download the full-size
+> files. `scripts/image-variants.mjs` writes every photo in `public/images/`
+> as WebP at the widths in `lib/image-widths.ts` into `public/images/_v/`
+> (git-ignored) before every `npm run build` and `npm run dev`, and a custom
+> loader (`lib/image-loader.ts`, `images.loaderFile` in `next.config.ts`)
+> points `srcset` at them. They are static files: no `/_next/image`, no
+> quota, no 402. Measured with Lighthouse (mobile, local production builds):
+> page weight down 55–85% (the blog 3.3 MB to 0.56 MB) and scores up
+> 6–17 points. To go back to Vercel's optimizer, remove `loader` and
+> `loaderFile` and delete `unoptimized: true`; the notes below still apply.
+>
+> CMS uploads on the media host are not resized; copy a heavy one into
+> `public/` and point `lib/seo/photos.ts` at it, as the surfing and
+> lymphatic guides do.
+
 > ## ⚠ THE OPTIMIZER IS CURRENTLY OFF
 >
 > `images.unoptimized: true` was set on **2026-09-02** because Vercel's Image
