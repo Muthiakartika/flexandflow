@@ -273,6 +273,16 @@ const nextConfig: NextConfig = {
         destination: "/injury-guide/common-surfing-injuries/",
         permanent: true,
       },
+       {
+        source: "/shiatsu-massage/how-to-make-sitting-too-long-less-painful/",
+        destination: "/injury-guide/how-to-make-sitting-too-long-less-painful/",
+        permanent: true,
+      },
+      {
+        source: "/therapist/fauzan/",
+        destination: "/",
+        permanent: true,
+      },
       ...academyRedirects,
       ...intakeRedirects,
     ];
