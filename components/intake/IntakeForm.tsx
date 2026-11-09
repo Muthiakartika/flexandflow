@@ -16,7 +16,7 @@ import { CARD } from "@/components/ui/tokens";
 import { isFieldVisible } from "@/lib/intake/conditional";
 import { buildAnswerSchema, fieldErrors, SECTION_LABEL, SECTION_ORDER } from "@/lib/intake/schema";
 import { isApiError, intakePayloadBytes, MAX_INTAKE_PAYLOAD_BYTES, type PublicIntakeField } from "@/lib/intake/types";
-import { externalBookingUrl } from "@/lib/site";
+import { intakeNextHref } from "@/lib/site";
 
 /** Long enough to register as a confirmation, short enough that "immediately
  *  redirected" is still true. The manual link below covers anyone who reads
@@ -46,6 +46,17 @@ function defaultAnswers(fields: PublicIntakeField[]): Answers {
   }
 
   return answers;
+}
+
+/** Where to go once submitted: the wizard URL a deep-linked CTA attached as
+ *  `?next=`, or the booking destination. Read at the moment it is needed so
+ *  the component needs no `useSearchParams` (and no Suspense boundary). */
+function nextHref(): string {
+  const next =
+    typeof window === "undefined"
+      ? null
+      : new URLSearchParams(window.location.search).get("next");
+  return intakeNextHref(next);
 }
 
 export function IntakeForm({ fields }: { fields: PublicIntakeField[] }) {
@@ -202,7 +213,7 @@ export function IntakeForm({ fields }: { fields: PublicIntakeField[] }) {
        popup-blocker heuristics, and it puts the visitor's attention where
        their intent already was — on booking, not on this confirmation. */
     const timer = setTimeout(() => {
-      window.location.href = externalBookingUrl;
+      window.location.href = nextHref();
     }, REDIRECT_DELAY_MS);
 
     return () => clearTimeout(timer);
@@ -219,7 +230,7 @@ export function IntakeForm({ fields }: { fields: PublicIntakeField[] }) {
           Taking you to the booking page now…
         </p>
         <a
-          href={externalBookingUrl}
+          href={nextHref()}
           className="mt-3 inline-block font-body text-[14px] font-bold text-primary-strong transition-colors duration-300 hover:text-secondary"
         >
           Continue to booking now

@@ -107,6 +107,11 @@ export function fetchServices(
   );
 }
 
+/** Every variant at every tier — the treatment step, before any therapist. */
+export function fetchTreatments(signal?: AbortSignal): Promise<ServiceCatalogue> {
+  return request<ServiceCatalogue>("/api/booking/services/?all=1", { signal });
+}
+
 export function fetchAvailability(
   staff: StaffSelection,
   variantId: string,

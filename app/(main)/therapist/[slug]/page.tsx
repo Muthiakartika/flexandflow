@@ -12,7 +12,7 @@ import { WhatsAppMessage } from "@/components/layout/WhatsAppLinks";
 import { profileSchema } from "@/lib/structured-data";
 import { therapistMessage } from "@/lib/whatsapp";
 import {
-  bookingCtaHref,
+  bookingHref as bookingHrefFor,
   bookingCtaProps,
   contact,
   workingHours,
@@ -61,13 +61,10 @@ export default async function TherapistPage(
   const therapist = therapistBySlug.get(slug);
   if (!therapist) notFound();
 
-  /* booking.flexandflow.fit — a WordPress plugin that reads no query string,
-     so there's no per-therapist link to build, with or without the intake form
-     in front of it; every visitor lands on the same booking page
-     regardless of which therapist's "Book with" button sent them there. The
-     studio's phone number stays under the button in the aside for anyone who
-     would rather just ask a question first. */
-  const bookingHref = bookingCtaHref;
+  /* Opens the booking wizard with this therapist already chosen
+     (`?staff=<slug>`). The studio's phone number stays under the button in
+     the aside for anyone who would rather just ask a question first. */
+  const bookingHref = bookingHrefFor({ staff: therapist.slug });
 
   return (
     <>

@@ -114,7 +114,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Where can I get a sports massage in Bali if I am not staying in Uluwatu?",
-        answer: "You can come to the Flex & Flow studio on Jl. Toya Ning II, Ungasan, open Monday to Saturday from 09:00 to 17:00. Home visits only cover the Uluwatu area, such as Ungasan, Pecatu, Bingin, Padang Padang and Balangan, so if you are staying elsewhere in Bali the studio is the way to book. [Book online](https://booking.flexandflow.fit/) or message us on WhatsApp.",
+        answer: "You can come to the Flex & Flow studio on Jl. Toya Ning II, Ungasan, open Monday to Saturday from 09:00 to 17:00. Home visits only cover the Uluwatu area, such as Ungasan, Pecatu, Bingin, Padang Padang and Balangan, so if you are staying elsewhere in Bali the studio is the way to book. [Book online](https://flexandflow.fit/appointment/?service=sport-massage) or message us on WhatsApp.",
       },
       {
         question: "Should I get a sports massage before or after surfing?",

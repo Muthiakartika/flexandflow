@@ -1,12 +1,18 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { H2 } from "@/components/ui/tokens";
 import { studioMonthKey } from "@/lib/booking/time";
-import type { StaffOption, StaffSelection } from "@/lib/booking/types";
+import {
+  groupTreatments,
+  type PreselectedService,
+  type StaffOption,
+  type StaffSelection,
+  type TreatmentOption,
+} from "@/lib/booking/types";
 
 import DateTimeStep from "./DateTimeStep";
 import PaymentModal from "./PaymentModal";
@@ -29,7 +35,7 @@ import {
   type CreateBookingBody,
   fetchAvailability,
   fetchBooking,
-  fetchServices,
+  fetchTreatments,
   fetchSlots,
   fetchStaff,
   rescheduleBooking,
@@ -107,11 +113,20 @@ const PAYMENT_DISMISSED_NOTICE =
 export default function BookingWizard({
   cancelCutoffHours,
   preselectedStaff = null,
+  preselectedService = null,
+  preselectedTreatment = null,
   paymentsEnabled = false,
 }: {
   cancelCutoffHours: number;
   /** Resolved on the server from `?staff=<slug>`; null on an ordinary visit. */
   preselectedStaff?: StaffOption | null;
+  /** Resolved on the server from `?service=<slug>`; null on an ordinary visit. */
+  preselectedService?: PreselectedService | null;
+  /**
+   * Step one already answered: the linked treatment has only one length, so
+   * there is nothing left to choose on it. Resolved on the server.
+   */
+  preselectedTreatment?: TreatmentOption | null;
   /**
    * Whether paying online can be offered. Decided on the server, because a
    * client component reading `process.env` reads what the build baked in — and
@@ -128,26 +143,41 @@ export default function BookingWizard({
      list of steps on the very first render, before the booking has arrived. */
   const urlToken = searchParams.get("reschedule") || null;
 
-  /* A "Book with Ginny" link answered step one before the visitor arrived, so
-     the wizard opens on the treatment. The therapist is resolved by the page,
-     on the server, and arrives as a prop — a reschedule ignores it, because
-     there the therapist is not a question at all. */
-  const preselected = urlToken ? null : preselectedStaff;
+  /* What a link already answered, resolved by the page on the server so the
+     first render is already in the right place — nothing paints and then
+     vanishes. A reschedule ignores all of it: there the treatment and the
+     therapist are not questions at all.
 
-  /* Past the staff step from the very first render when a link already named
-     the therapist, so that step never paints and then disappears. */
+       ?service=cupping-therapy  one length → treatment chosen, opens on Staff
+       ?service=sport-massage    two lengths → opens on Treatment, filtered
+       ?staff=ginny              opens on Treatment, only what Ginny gives, at
+                                 her price; Staff is then skipped
+       ?staff=ginny&service=…    both, so possibly straight to Date & Time */
+  const preselected = urlToken ? null : preselectedStaff;
+  const linkedService = urlToken ? null : preselectedService;
+  const linkedTreatment = urlToken ? null : preselectedTreatment;
+
   const openingStep: StepId = urlToken
     ? RESCHEDULE_STEPS[0]
-    : preselected
-      ? "service"
-      : STEPS[0];
+    : linkedTreatment && preselected
+      ? "datetime"
+      : linkedTreatment
+        ? "staff"
+        : STEPS[0];
 
   const [state, dispatch] = useReducer(
     reducer,
     openingStep,
     /* The month the calendar opens on is the studio's current month, read
        through the timezone helper — the browser may well be somewhere else. */
-    (step) => initialState(step, studioMonthKey(new Date()), preselected),
+    (step) =>
+      initialState(
+        step,
+        studioMonthKey(new Date()),
+        preselected,
+        linkedService,
+        linkedTreatment,
+      ),
   );
 
   /* A token the manage endpoint has already refused is not one to wait on
@@ -156,7 +186,7 @@ export default function BookingWizard({
   const token = urlToken === state.rescheduleFailed ? null : urlToken;
   const steps: readonly StepId[] = token ? RESCHEDULE_STEPS : STEPS;
   /* A URL that names no step opens where this visit opens, which is not always
-     the first step: `?staff=ginny` starts on the treatment. Defaulting to
+     the first step: `?service=cupping-therapy` starts on Staff. Defaulting to
      `STEPS[0]` here instead would let the clamping effect below drag the
      wizard straight back to the question the link had already answered. */
   const stepParam = searchParams.get("step");
@@ -176,23 +206,29 @@ export default function BookingWizard({
     /* No draft: the opening state already carries whatever the link chose. */
     if (!draft) return;
 
-    if (preselected && draft.staff !== preselected.id) {
-      /* A half-finished booking in this tab chose somebody else. The link is
-         the more recent statement of intent, so it wins — and because a
-         different therapist means a different tier, the treatment and time the
-         draft was holding cannot survive the swap. `chooseStaff` is what clears
-         them; the details the visitor already typed are kept. */
-      dispatch({ type: "restore", draft: { ...draft, step: "service" } });
-      dispatch({
-        type: "chooseStaff",
-        staff: preselected.id,
-        option: preselected,
-      });
+    if (token) {
+      dispatch({ type: "restore", draft: { ...draft, step: urlStep } });
       return;
     }
 
-    dispatch({ type: "restore", draft: { ...draft, step: urlStep } });
-  }, [urlStep, token, preselected]);
+    /* A link is a fresh statement of intent: what it chose stands, and only
+       the visitor's own details come back from the older draft. */
+    if (preselected || linkedService) {
+      dispatch({ type: "restoreDetails", draft });
+      return;
+    }
+
+    /* A plain "Book now" (no step in the URL) picks the draft back up, minus
+       any link filter an earlier visit left behind. A reload mid-flow (a step
+       in the URL) restores it whole. */
+    const fresh = searchParams.get("step") === null;
+    dispatch({
+      type: "restore",
+      draft: fresh
+        ? { ...draft, step: urlStep, service: null, staffFromLink: false }
+        : { ...draft, step: urlStep },
+    });
+  }, [urlStep, token, preselected, linkedService, searchParams]);
 
   useEffect(() => {
     if (restored.current) saveDraft(state);
@@ -282,7 +318,7 @@ export default function BookingWizard({
           "booking here, or message us on WhatsApp to move the existing one.",
         draft: loadDraft(),
       });
-      router.replace("/appointment/?step=staff", { scroll: false });
+      router.replace("/appointment/?step=service", { scroll: false });
     }
   }, [token, existing.data, existing.error, cancelCutoffHours, router]);
 
@@ -293,10 +329,15 @@ export default function BookingWizard({
     fetchStaff(signal),
   );
 
-  const catalogueKey =
-    moving || state.staff === null ? null : `services:${state.staff}`;
-  const catalogue = useResource(catalogueKey, (signal) =>
-    fetchServices(staffParam(state.staff), signal),
+  /* Step one comes before the therapist, so it asks for every tier at once
+     and the wizard does the grouping (`groupTreatments`); the staff step and
+     the variant are resolved from the same list, with no second request. */
+  const catalogue = useResource(moving ? null : "treatments", (signal) =>
+    fetchTreatments(signal),
+  );
+  const treatments = useMemo(
+    () => (catalogue.data ? groupTreatments(catalogue.data.variants) : null),
+    [catalogue.data],
   );
 
   /* Availability and slots are asked for by therapist and variant. A new
@@ -360,6 +401,14 @@ export default function BookingWizard({
         return;
       }
     }
+    /* A therapist already chosen who gives this treatment — by a "Book with
+       Ginny" link, or on an earlier pass through the wizard — has answered
+       step two; going there again would only ask the same question. The
+       stepper still reaches it for anyone who wants to change their mind. */
+    if (state.step === "service" && state.variant !== null) {
+      goTo("datetime");
+      return;
+    }
     if (nextStep) goTo(nextStep);
   });
 
@@ -395,7 +444,10 @@ export default function BookingWizard({
       }
 
       /* The two the visitor cannot recover from by trying again. */
-      if (cause.code === "CUTOFF_PASSED" || cause.code === "ALREADY_CANCELLED") {
+      if (
+        cause.code === "CUTOFF_PASSED" ||
+        cause.code === "ALREADY_CANCELLED"
+      ) {
         dispatch({ type: "rescheduleBlocked", message: cause.message });
         return;
       }
@@ -482,7 +534,11 @@ export default function BookingWizard({
         for (const [path, message] of Object.entries(cause.fields)) {
           fields[path.replace(/^customer\./, "")] = message;
         }
-        dispatch({ type: "submitFailed", notice: cause.message, errors: fields });
+        dispatch({
+          type: "submitFailed",
+          notice: cause.message,
+          errors: fields,
+        });
         goTo("details");
         return;
       }
@@ -523,9 +579,7 @@ export default function BookingWizard({
     });
   });
 
-  const submit = useEvent(() =>
-    moving ? submitReschedule() : submitNew(),
-  );
+  const submit = useEvent(() => (moving ? submitReschedule() : submitNew()));
 
   // ── Render ─────────────────────────────────────────────────────────────
 
@@ -569,9 +623,7 @@ export default function BookingWizard({
 
   return (
     <div className="flex flex-col gap-[clamp(1.5rem,3vw,2.25rem)]">
-      {moving ? (
-        <RescheduleBanner booking={moving.booking} canPick />
-      ) : null}
+      {moving ? <RescheduleBanner booking={moving.booking} canPick /> : null}
 
       <Stepper
         steps={steps}
@@ -634,6 +686,7 @@ export default function BookingWizard({
           {state.step === "staff" ? (
             <StaffStep
               staff={state.staff}
+              treatment={state.treatment}
               options={staff.data ?? []}
               loading={staff.loading}
               error={staff.error}
@@ -645,15 +698,24 @@ export default function BookingWizard({
 
           {state.step === "service" ? (
             <ServiceStep
-              catalogue={catalogue.data}
+              treatments={treatments}
+              categories={catalogue.data?.categories ?? []}
               category={state.category}
-              variantId={state.variant?.id ?? null}
+              service={state.service}
+              lockedStaff={state.staffFromLink ? state.staffOption : null}
+              treatmentKey={state.treatment?.key ?? null}
               loading={catalogue.loading}
               error={catalogue.error}
               onCategory={(category) =>
                 dispatch({ type: "chooseCategory", category })
               }
-              onChoose={(variant) => dispatch({ type: "chooseVariant", variant })}
+              onShowAll={() => {
+                dispatch({ type: "setService", service: null });
+                dispatch({ type: "releaseStaffLink" });
+              }}
+              onChoose={(treatment) =>
+                dispatch({ type: "chooseTreatment", treatment })
+              }
             />
           ) : null}
 
@@ -724,45 +786,45 @@ export default function BookingWizard({
             Confirm would make a second one. Paying is the only thing left to
             do, and it lives in the modal or in the notice above. */}
         {state.payment ? null : (
-        <div className="booking-actions mt-7 flex flex-wrap items-center justify-between gap-3 border-t border-secondary/10 pt-5">
-          {previousStep ? (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => goTo(previousStep)}
-            >
-              Back
-            </Button>
-          ) : moving ? (
-            /* The first step of a reschedule has nowhere back inside the
+          <div className="booking-actions mt-7 flex flex-wrap items-center justify-between gap-3 border-t border-secondary/10 pt-5">
+            {previousStep ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => goTo(previousStep)}
+              >
+                Back
+              </Button>
+            ) : moving ? (
+              /* The first step of a reschedule has nowhere back inside the
                wizard, so it goes back where the visitor came from. */
-            <ButtonLink href={managePath(moving.booking)} variant="outline">
-              Back to your booking
-            </ButtonLink>
-          ) : (
-            <span />
-          )}
+              <ButtonLink href={managePath(moving.booking)} variant="outline">
+                Back to your booking
+              </ButtonLink>
+            ) : (
+              <span />
+            )}
 
-          {state.step === "summary" ? (
-            <Button
-              type="button"
-              variant="solid"
-              onClick={() => void submit()}
-              disabled={state.submitting}
-            >
-              {confirmLabel}
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="solid"
-              onClick={advance}
-              disabled={!canAdvance}
-            >
-              Continue
-            </Button>
-          )}
-        </div>
+            {state.step === "summary" ? (
+              <Button
+                type="button"
+                variant="solid"
+                onClick={() => void submit()}
+                disabled={state.submitting}
+              >
+                {confirmLabel}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="solid"
+                onClick={advance}
+                disabled={!canAdvance}
+              >
+                Continue
+              </Button>
+            )}
+          </div>
         )}
       </div>
 

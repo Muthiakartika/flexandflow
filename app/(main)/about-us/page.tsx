@@ -9,7 +9,7 @@ import { BAND, BAND_LINE, BTN_SOLID, CARD, FOCUS, H2, LINK, WRAP } from "@/compo
 import { therapistBySlug } from "@/lib/data/therapists";
 import { formatIdr } from "@/lib/pricing";
 import {
-  bookingCtaHref,
+  bookingHref,
   bookingCtaProps,
   contact,
   homeServiceFeeIdr,
@@ -238,7 +238,7 @@ export default function AboutPage() {
                       ))}
                     </ul>
                     <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-5">
-                      <Link href={bookingCtaHref} {...bookingCtaProps} className={BTN_SOLID}>
+                      <Link href={bookingHref({ staff: therapist.slug })} {...bookingCtaProps} className={BTN_SOLID}>
                         Book with {therapist.name}
                       </Link>
                       <Link href={`/therapist/${therapist.slug}`} className={LINK}>

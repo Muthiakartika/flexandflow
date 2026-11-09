@@ -52,7 +52,7 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "Trauma healing is at the studio in Ungasan only, not on the [home service](/uluwatu-bali/outcall-home-service-massage/) menu. Ginny takes a limited number of these sessions, so book ahead [online](https://booking.flexandflow.fit/) or on [WhatsApp](https://wa.me/6285858887777).",
+    text: "Trauma healing is at the studio in Ungasan only, not on the [home service](/uluwatu-bali/outcall-home-service-massage/) menu. Ginny takes a limited number of these sessions, so book ahead [online](https://flexandflow.fit/appointment/?service=trauma-healing) or on [WhatsApp](https://wa.me/6285858887777).",
   },
   {
     type: "heading",

@@ -20,7 +20,14 @@ import { bookingCtaHref, bookingCtaProps } from "@/lib/site";
  * strong booking button in view at a time, and quieter ones at the points
  * a reader decides (the hero, the prices, the end of the article).
  */
-export default function StickyBookBar({ from }: { from: string | null }) {
+export default function StickyBookBar({
+  from,
+  bookHref = bookingCtaHref,
+}: {
+  from: string | null;
+  /** Where "Book" goes — the wizard on this treatment (`bookingHref`). */
+  bookHref?: string;
+}) {
   const [pastHero, setPastHero] = useState(false);
 
   useEffect(() => {
@@ -54,7 +61,7 @@ export default function StickyBookBar({ from }: { from: string | null }) {
         ) : (
           <span />
         )}
-        <Link href={bookingCtaHref} {...bookingCtaProps} className={BTN_SOLID}>
+        <Link href={bookHref} {...bookingCtaProps} className={BTN_SOLID}>
           Book Session
         </Link>
       </div>

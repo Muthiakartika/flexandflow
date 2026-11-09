@@ -16,6 +16,7 @@ import "server-only";
 import {
   ANY_STAFF,
   type CategoryOption,
+  type PreselectedService,
   type ServiceCatalogue,
   type StaffOption,
   type StaffSelection,
@@ -74,8 +75,20 @@ export async function listStaff(): Promise<StaffOption[]> {
   }));
 }
 
+/**
+ * Every bookable variant at every tier — what the treatment step shows before
+ * anybody has picked a therapist. Unlike `listCatalogue(ANY_STAFF)` nothing is
+ * collapsed to the cheapest tier: the wizard groups these by treatment and
+ * length itself (`groupTreatments`), shows the price range, and resolves the
+ * variant once the staff step is answered (`resolveVariant`).
+ */
+export async function listFullCatalogue(): Promise<ServiceCatalogue> {
+  return listCatalogue(ANY_STAFF, { collapse: false });
+}
+
 export async function listCatalogue(
   staff: StaffSelection,
+  { collapse = true }: { collapse?: boolean } = {},
 ): Promise<ServiceCatalogue> {
   const services = await prisma.service.findMany({
     where: {
@@ -97,10 +110,41 @@ export async function listCatalogue(
   });
 
   const variants = services.flatMap((service) =>
-    variantsFor(service, service.variants, service.therapists, staff),
+    variantsFor(service, service.variants, service.therapists, staff, collapse),
   );
 
   return { categories: categoriesOf(variants, services), variants };
+}
+
+/**
+ * A treatment named by a "Book" link, with every therapist who can give it.
+ *
+ * Not derived from `listCatalogue(ANY_STAFF)`: that keeps only the cheapest
+ * tier per session length, so a Master therapist who also gives the treatment
+ * would vanish from the list. Null when nothing about it is bookable.
+ */
+export async function findBookableService(
+  slug: string,
+): Promise<PreselectedService | null> {
+  const service = await prisma.service.findFirst({
+    where: { slug, active: true },
+    include: {
+      variants: { where: { active: true } },
+      therapists: { include: { therapist: true } },
+    },
+  });
+  if (!service) return null;
+
+  const therapistIds = [
+    ...new Set(
+      service.variants.flatMap((variant) =>
+        deliverers(service.therapists, variant.tier, ANY_STAFF),
+      ),
+    ),
+  ];
+  if (therapistIds.length === 0) return null;
+
+  return { slug: service.slug, title: service.title, therapistIds };
 }
 
 export async function getVariant(
@@ -157,6 +201,7 @@ function variantsFor(
   rows: VariantRow[],
   links: TherapistLinkRow[],
   staff: StaffSelection,
+  collapse = true,
 ): VariantOption[] {
   const options = rows.flatMap((row) => {
     const therapistIds = deliverers(links, row.tier, staff);
@@ -166,8 +211,8 @@ function variantsFor(
     return therapistIds.length ? [toOption(service, row, therapistIds)] : [];
   });
 
-  return cheapestPerDuration(options).sort(
-    (a, b) => a.durationMinutes - b.durationMinutes,
+  return (collapse ? cheapestPerDuration(options) : options).sort(
+    (a, b) => a.durationMinutes - b.durationMinutes || a.priceIdr - b.priceIdr,
   );
 }
 

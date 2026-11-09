@@ -67,7 +67,10 @@ export default function SummaryStep({
 }) {
   const start = new Date(slot.startAt);
 
+  /* In the order the visitor answered: treatment, then who gives it. */
   const rows: Array<{ term: string; detail: string }> = [
+    { term: "Treatment", detail: variant.serviceTitle },
+    { term: "Length", detail: formatDuration(variant.durationMinutes) },
     {
       term: "Staff",
       detail:
@@ -77,8 +80,6 @@ export default function SummaryStep({
               staffOption ? TIER_LABEL[staffOption.tier] : ""
             }`.trim(),
     },
-    { term: "Treatment", detail: variant.serviceTitle },
-    { term: "Length", detail: formatDuration(variant.durationMinutes) },
     { term: "Date", detail: formatStudioDate(start) },
     {
       term: "Time",

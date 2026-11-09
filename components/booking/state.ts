@@ -10,9 +10,12 @@
  *   throws the chosen time away. A 9:00 that was free for Ginny is not
  *   necessarily free for Yuni, and offering it again would post a booking the
  *   server has to reject;
- * - a variant belongs to a tier, and the tier comes from the therapist, so
- *   changing staff throws the chosen service away too rather than carrying a
- *   variant id the new therapist cannot deliver.
+ * - a variant belongs to a tier, and the tier comes from the therapist. The
+ *   visitor picks the *treatment* first (a service at a length, every tier
+ *   still open) and the therapist second, and only then is it resolved to one
+ *   variant (`resolveVariant`). Changing either re-resolves it; a therapist
+ *   who does not give the chosen treatment is dropped rather than kept with a
+ *   variant they cannot deliver.
  *
  * The same machine runs a **reschedule**: `?reschedule=<token>` fills
  * `state.reschedule` from the booking behind that manage link, and the flow
@@ -21,12 +24,14 @@
  */
 import type {
   ApiError,
+  PreselectedService,
   Slot,
   StaffOption,
   StaffSelection,
+  TreatmentOption,
   VariantOption,
 } from "@/lib/booking/types";
-import { ANY_STAFF } from "@/lib/booking/types";
+import { ANY_STAFF, resolveVariant } from "@/lib/booking/types";
 import type { IsoDate } from "@/lib/booking/time";
 import type {
   PaymentDue,
@@ -36,9 +41,13 @@ import type {
 
 import type { BookingDetail } from "./useBookingApi";
 
+/**
+ * Treatment first, then who gives it (2026-11-09, owner's request; it used
+ * to be staff first). Most visitors arrive knowing what they want, not whom.
+ */
 export const STEPS = [
-  "staff",
   "service",
+  "staff",
   "datetime",
   "details",
   "summary",
@@ -48,8 +57,8 @@ export type StepId = (typeof STEPS)[number];
 
 /** Titles as the previous flow named them. */
 export const STEP_LABEL: Record<StepId, string> = {
+  service: "Treatment",
   staff: "Staff",
-  service: "Service",
   datetime: "Date & Time",
   details: "Basic Details",
   summary: "Summary",
@@ -63,8 +72,10 @@ export const STEP_LABEL: Record<StepId, string> = {
  * two steps are not questions and are not shown. The visitor picks a time and
  * confirms the move.
  */
-export const RESCHEDULE_STEPS = ["datetime", "summary"] as const satisfies
-  readonly StepId[];
+export const RESCHEDULE_STEPS = [
+  "datetime",
+  "summary",
+] as const satisfies readonly StepId[];
 
 /** The steps the flow the wizard is currently running actually has. */
 export function flowSteps(state: BookingState): readonly StepId[] {
@@ -198,7 +209,22 @@ export type BookingState = {
   staff: StaffSelection | null;
   /** The chosen therapist, kept so the summary can name them after a refresh. */
   staffOption: StaffOption | null;
+  /**
+   * True when a "Book with Ginny" link chose the therapist. The treatment step
+   * then lists only what they give, and the staff step is skipped, until the
+   * visitor asks to see every treatment.
+   */
+  staffFromLink: boolean;
+  /** Step one's answer: a treatment at a length, every tier still open. */
+  treatment: TreatmentOption | null;
+  /** `treatment` resolved against `staff`. Null until both are answered. */
   variant: VariantOption | null;
+  /**
+   * The treatment a "Book" link named (`?service=`). Narrows the staff step to
+   * who can give it and the service step to its lengths, until the visitor
+   * asks to see every treatment. `null` on an ordinary visit.
+   */
+  service: PreselectedService | null;
   category: string;
   /** `2026-08`, the month the calendar is showing. */
   month: string;
@@ -239,14 +265,20 @@ export function initialState(
   step: StepId,
   month: string,
   preselected: StaffOption | null = null,
+  service: PreselectedService | null = null,
+  treatment: TreatmentOption | null = null,
 ): BookingState {
+  const staff = preselected?.id ?? null;
   return {
     step,
     reschedule: null,
     rescheduleFailed: null,
-    staff: preselected?.id ?? null,
+    staff,
     staffOption: preselected,
-    variant: null,
+    staffFromLink: preselected !== null,
+    treatment,
+    variant: treatment && staff ? resolveVariant(treatment, staff) : null,
+    service,
     category: ALL_CATEGORIES,
     month,
     date: null,
@@ -267,7 +299,10 @@ export type BookingAction =
   | { type: "restore"; draft: BookingState }
   | { type: "chooseStaff"; staff: StaffSelection; option: StaffOption | null }
   | { type: "chooseCategory"; category: string }
-  | { type: "chooseVariant"; variant: VariantOption }
+  | { type: "setService"; service: PreselectedService | null }
+  | { type: "chooseTreatment"; treatment: TreatmentOption }
+  | { type: "releaseStaffLink" }
+  | { type: "restoreDetails"; draft: BookingState }
   | { type: "chooseMonth"; month: string }
   | { type: "chooseDate"; date: IsoDate }
   | { type: "chooseSlot"; slot: Slot }
@@ -343,28 +378,75 @@ export function reducer(
       if (state.staff === action.staff) {
         return { ...state, staffOption: action.option };
       }
-      /* A different therapist means a different tier, so the variant, the day
-         and the time all stop being answerable. */
+      /* A different therapist means a different tier, so the variant is
+         re-resolved, and the day and the time stop being answerable. */
       return {
         ...state,
         staff: action.staff,
         staffOption: action.option,
-        variant: null,
-        category: ALL_CATEGORIES,
+        staffFromLink: false,
+        variant: state.treatment
+          ? resolveVariant(state.treatment, action.staff)
+          : null,
         date: null,
         slot: null,
         notice: null,
       };
     }
 
+    case "chooseTreatment": {
+      if (state.treatment?.key === action.treatment.key) return state;
+      const variant =
+        state.staff === null
+          ? null
+          : resolveVariant(action.treatment, state.staff);
+      /* A therapist who does not give this treatment at this length is
+         dropped, so the staff step asks again rather than showing a choice
+         that cannot be booked. */
+      const keepStaff = state.staff === null || variant !== null;
+      return {
+        ...state,
+        treatment: action.treatment,
+        variant,
+        ...(keepStaff
+          ? {}
+          : { staff: null, staffOption: null, staffFromLink: false }),
+        /* The day survives, but the time does not: a 90-minute session does
+           not start where a 60 did. */
+        slot: null,
+        notice: null,
+      };
+    }
+
+    case "releaseStaffLink":
+      return { ...state, staffFromLink: false };
+
+    case "restoreDetails":
+      /* A link stated fresh intent (treatment, therapist), so only what the
+         visitor typed about themselves survives from an older draft. */
+      return {
+        ...state,
+        details: action.draft.details,
+        paymentMethod: action.draft.paymentMethod,
+      };
+
     case "chooseCategory":
       return { ...state, category: action.category };
 
-    case "chooseVariant": {
-      if (state.variant?.id === action.variant.id) return state;
-      /* The day survives — the visitor already said which day suits them — but
-         the time does not: a 90-minute session does not start where a 60 did. */
-      return { ...state, variant: action.variant, slot: null, notice: null };
+    case "setService": {
+      const slug = action.service?.slug ?? null;
+      if ((state.service?.slug ?? null) === slug) {
+        return { ...state, service: action.service };
+      }
+      /* A chosen variant of a different treatment no longer answers the
+         question this link asked; clearing the filter keeps it. */
+      const keep = slug === null || state.treatment?.serviceSlug === slug;
+      return {
+        ...state,
+        service: action.service,
+        category: ALL_CATEGORIES,
+        ...(keep ? {} : { treatment: null, variant: null, slot: null }),
+      };
     }
 
     case "chooseMonth":
@@ -517,10 +599,10 @@ export function reducer(
          new booking this tab had already started, which the reschedule was
          never part of and must not have thrown away. */
       return {
-        ...(action.draft ?? initialState("staff", state.month)),
+        ...(action.draft ?? initialState("service", state.month)),
         reschedule: null,
         rescheduleFailed: action.token,
-        step: "staff",
+        step: "service",
         submitting: false,
         errors: {},
         notice: action.notice,
@@ -534,14 +616,16 @@ export function reducer(
 /** Whether the step's own question has been answered. */
 export function isStepComplete(state: BookingState, step: StepId): boolean {
   switch (step) {
-    case "staff":
-      return state.staff !== null;
     case "service":
-      return state.variant !== null;
+      return state.treatment !== null;
+    case "staff":
+      return state.staff !== null && state.variant !== null;
     case "datetime":
       return state.slot !== null;
     case "details":
-      return state.details.firstName.trim() !== "" && state.details.phoneE164 !== "";
+      return (
+        state.details.firstName.trim() !== "" && state.details.phoneE164 !== ""
+      );
     case "summary":
       return false;
   }
@@ -558,8 +642,8 @@ export function furthestStep(state: BookingState): StepId {
   /* A reschedule has answered the first two questions before it started; all
      that is outstanding is the new time. */
   if (state.reschedule) return state.slot === null ? "datetime" : "summary";
-  if (state.staff === null) return "staff";
-  if (state.variant === null) return "service";
+  if (state.treatment === null) return "service";
+  if (state.staff === null || state.variant === null) return "staff";
   if (state.slot === null) return "datetime";
   if (!isStepComplete(state, "details")) return "details";
   return "summary";
@@ -580,7 +664,7 @@ export function staffParam(staff: StaffSelection | null): StaffSelection {
 
 /* Bumped whenever the shape above changes, so a draft written by an older
    build is dropped rather than restored into fields that no longer exist. */
-const DRAFT_KEY = "flexflow.booking.draft.v1";
+const DRAFT_KEY = "flexflow.booking.draft.v2";
 
 /**
  * Which draft a flow writes to.
@@ -660,7 +744,10 @@ export function loadDraft(token: string | null = null): BookingState | null {
     if ((parsed.reschedule?.token ?? null) !== token) return null;
 
     const steps = token === null ? STEPS : RESCHEDULE_STEPS;
-    const base = initialState(parseStep(parsed.step ?? null, steps), parsed.month);
+    const base = initialState(
+      parseStep(parsed.step ?? null, steps),
+      parsed.month,
+    );
 
     return {
       ...base,
@@ -673,6 +760,11 @@ export function loadDraft(token: string | null = null): BookingState | null {
         : null,
       rescheduleFailed: null,
       details: { ...emptyDetails, ...(parsed.details ?? {}) },
+      /* "Any Staff" is no longer offered, so a draft that chose it asks the
+         staff step again rather than holding an answer nobody can see. */
+      ...(parsed.staff === ANY_STAFF && !parsed.reschedule
+        ? { staff: null, staffOption: null, variant: null, slot: null }
+        : {}),
       paymentMethod: parsed.paymentMethod === "ONLINE" ? "ONLINE" : "AT_STUDIO",
       /* See `saveDraft`: never restored, whatever a hand-edited draft says. */
       payment: null,

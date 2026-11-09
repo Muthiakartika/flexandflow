@@ -5,10 +5,20 @@ import BookingWizard from "@/components/booking/BookingWizard";
 import PageHero from "@/components/ui/PageHero";
 import { ButtonLink } from "@/components/ui/Button";
 import { BAND, WRAP } from "@/components/ui/tokens";
-import { listStaff } from "@/lib/booking/catalogue";
+import {
+  findBookableService,
+  listFullCatalogue,
+  listStaff,
+} from "@/lib/booking/catalogue";
 import { paymentsEnabled } from "@/lib/env";
 import { DEFAULT_CANCEL_CUTOFF_HOURS } from "@/lib/booking/defaults";
-import type { StaffOption } from "@/lib/booking/types";
+import {
+  groupTreatments,
+  resolveVariant,
+  type PreselectedService,
+  type StaffOption,
+  type TreatmentOption,
+} from "@/lib/booking/types";
 import { contact } from "@/lib/site";
 
 const description =
@@ -74,7 +84,9 @@ const cancelCutoffHours = Number(
  * the visitor had already earned. It is resolved here instead, before anything
  * is sent, and handed to the wizard as its opening state.
  */
-export default async function AppointmentPage(props: PageProps<"/appointment">) {
+export default async function AppointmentPage(
+  props: PageProps<"/appointment">,
+) {
   const params = await props.searchParams;
   const slug = first(params.staff);
 
@@ -85,6 +97,41 @@ export default async function AppointmentPage(props: PageProps<"/appointment">) 
   const preselected: StaffOption | null = slug
     ? ((await listStaff()).find((option) => option.slug === slug) ?? null)
     : null;
+
+  /* `?service=sport-massage` — a treatment page's "Book" button. Resolved
+     here so the wizard learns the title to show and which therapists can give
+     it; a treatment that is not bookable online (no row, or nobody to deliver
+     it) falls through to an ordinary visit, like an unknown `?staff=`. */
+  const serviceSlug = first(params.service);
+  let preselectedService: PreselectedService | null = serviceSlug
+    ? await findBookableService(serviceSlug)
+    : null;
+  /* A therapist link and a treatment link that disagree — Yuni plus a
+     Master-only treatment — keep the therapist and drop the treatment filter,
+     rather than opening on an empty list. */
+  if (
+    preselected &&
+    preselectedService &&
+    !preselectedService.therapistIds.includes(preselected.id)
+  ) {
+    preselectedService = null;
+  }
+
+  /* A linked treatment sold at only one length (cupping, trauma healing…)
+     leaves nothing to choose on step one, so it is answered here and the
+     wizard opens on the therapist. With a therapist linked too, only the
+     lengths they give count. */
+  let preselectedTreatment: TreatmentOption | null = null;
+  if (preselectedService) {
+    const lengths = groupTreatments(
+      (await listFullCatalogue()).variants,
+    ).filter(
+      (treatment) =>
+        treatment.serviceSlug === preselectedService.slug &&
+        (!preselected || resolveVariant(treatment, preselected.id) !== null),
+    );
+    if (lengths.length === 1) preselectedTreatment = lengths[0];
+  }
 
   /* Whether "pay now" may be offered at all. Decided here rather than in the
      wizard because it depends on server secrets: a client component has no
@@ -118,6 +165,8 @@ export default async function AppointmentPage(props: PageProps<"/appointment">) 
           <BookingWizard
             cancelCutoffHours={cancelCutoffHours}
             preselectedStaff={preselected}
+            preselectedService={preselectedService}
+            preselectedTreatment={preselectedTreatment}
             paymentsEnabled={canPayOnline}
           />
         </Suspense>

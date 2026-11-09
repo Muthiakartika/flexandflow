@@ -358,8 +358,17 @@ The booking flow used to be a WordPress page at `flexandflow.fit/appointment/` �
 BookingPress install nobody here controlled. It now runs in this app. **`BOOKING-PLAN.md`
 is the spec and the reasoning; read it before changing any of this.**
 
-Five steps, in the order the old system used: **staff → service → date & time → basic
-details → summary**. Confirmations go out by email (SendGrid) and WhatsApp (the studio's
+Five steps: **treatment → staff → date & time → basic details → summary**. The old
+system asked staff first; the owner reversed it on 2026-11-09. Step one shows each
+treatment at each length with its price *range* (the tier is not known yet); step two
+offers only who gives it, each at their own price, and only then is it resolved to one
+`ServiceVariant` (`resolveVariant` in `lib/booking/types.ts`). Links: `?service=` filters
+step one and, when the treatment has one length, opens on step two; `?staff=` narrows
+step one to that therapist and skips step two. **Public CTAs are switched off** —
+`BOOKING_ENABLED = false` in `lib/flags.ts` since 2026-11-09, while the wizard is tested:
+every "Book" button, and every `flexandflow.fit/appointment/…` link in body copy
+(`bookingAware` in `RichText.tsx`), goes to `booking.flexandflow.fit` instead. The wizard
+still answers at its URL. Confirmations go out by email (SendGrid) and WhatsApp (the studio's
 own WAHA server), and the confirmation carries a `.ics` so the appointment lands in the
 customer's phone calendar.
 

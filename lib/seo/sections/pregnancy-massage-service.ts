@@ -102,7 +102,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "How do I book a pregnancy massage in Uluwatu?",
-        answer: "Book online at [booking.flexandflow.fit](https://booking.flexandflow.fit/) or message Flex & Flow on [WhatsApp](https://wa.me/6285858887777) (+62 858 5888 7777). Choose the studio on Jl. Toya Ning II, Ungasan, or a home visit to your villa in the Uluwatu area. Sessions run Monday to Saturday from 09:00 to 17:00, and the studio is closed on Sunday. Mention how far along you are when you book.",
+        answer: "Book [online](https://flexandflow.fit/appointment/?service=pregnancy-massage-service) or message Flex & Flow on [WhatsApp](https://wa.me/6285858887777) (+62 858 5888 7777). Choose the studio on Jl. Toya Ning II, Ungasan, or a home visit to your villa in the Uluwatu area. Sessions run Monday to Saturday from 09:00 to 17:00, and the studio is closed on Sunday. Mention how far along you are when you book.",
       },
       {
         question: "Can I ask to change or stop a pregnancy massage partway through?",

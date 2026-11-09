@@ -3,20 +3,25 @@
 import Image from "next/image";
 
 import { FOCUS, FOCUS_ON_OLIVE } from "@/components/ui/tokens";
+import { formatDurationShort, formatIdr } from "@/lib/booking/format";
 import {
-  ANY_STAFF,
   TIER_LABEL,
   TIER_NOTE,
+  resolveVariant,
+  treatmentTherapists,
   type StaffOption,
   type StaffSelection,
+  type TreatmentOption,
 } from "@/lib/booking/types";
 
 /**
- * Step 1 — who the session is with.
+ * Step 2 — who gives the treatment chosen in step 1.
  *
- * "Any Staff" leads, because it is the answer for a visitor who has no opinion
- * and it is the one that leaves the most times open. The two therapists follow
- * in the order the API returns them.
+ * Only the therapists who give that treatment at that length are offered, and
+ * each card carries their own price for it, because the price follows the
+ * therapist's tier. There is no "Any Staff" card (removed 2026-11-09, owner's
+ * request): the visitor always chooses a person. `ANY_STAFF` still exists in
+ * the API for older links and drafts, but nothing here offers it.
  *
  * The cards are `<button>`s in a radio group rather than clickable divs: the
  * choice is a choice, and a screen reader should hear it as one. Every option
@@ -25,12 +30,15 @@ import {
  */
 export default function StaffStep({
   staff,
-  options,
+  treatment,
+  options: everyone,
   loading,
   error,
   onChoose,
 }: {
   staff: StaffSelection | null;
+  /** Step one's answer. The step cannot be reached without it. */
+  treatment: TreatmentOption | null;
   options: StaffOption[];
   loading: boolean;
   error: string | null;
@@ -52,32 +60,42 @@ export default function StaffStep({
     );
   }
 
-  return (
-    <div
-      role="radiogroup"
-      aria-label="Staff"
-      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-    >
-      <StaffCard
-        selected={staff === ANY_STAFF}
-        title="Any Staff"
-        subtitle="First available"
-        note="Whoever is free at the time you choose"
-        photo={null}
-        onSelect={() => onChoose(ANY_STAFF, null)}
-      />
+  const givers = treatment ? treatmentTherapists(treatment) : [];
+  const options = everyone.filter((option) => givers.includes(option.id));
+  const priceFor = (selection: StaffSelection) => {
+    const variant = treatment ? resolveVariant(treatment, selection) : null;
+    return variant ? formatIdr(variant.priceIdr) : "";
+  };
 
-      {options.map((option) => (
-        <StaffCard
-          key={option.id}
-          selected={staff === option.id}
-          title={option.displayName}
-          subtitle={TIER_LABEL[option.tier]}
-          note={TIER_NOTE[option.tier]}
-          photo={option.photo}
-          onSelect={() => onChoose(option.id, option)}
-        />
-      ))}
+  return (
+    <div className="flex flex-col gap-5">
+      {treatment ? (
+        <p className="font-body text-[15px] leading-[1.6] text-body-text/75">
+          Booking{" "}
+          <strong className="text-body-text">
+            {treatment.serviceTitle} · {formatDurationShort(treatment.durationMinutes)}
+          </strong>
+          . Choose who you would like it with.
+        </p>
+      ) : null}
+      <div
+        role="radiogroup"
+        aria-label="Staff"
+        className="booking-staff-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        {options.map((option) => (
+          <StaffCard
+            key={option.id}
+            selected={staff === option.id}
+            title={option.displayName}
+            subtitle={TIER_LABEL[option.tier]}
+            note={TIER_NOTE[option.tier]}
+            price={priceFor(option.id)}
+            photo={option.photo}
+            onSelect={() => onChoose(option.id, option)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -87,6 +105,7 @@ function StaffCard({
   title,
   subtitle,
   note,
+  price,
   photo,
   onSelect,
 }: {
@@ -94,6 +113,7 @@ function StaffCard({
   title: string;
   subtitle: string;
   note: string;
+  price: string;
   photo: string | null;
   onSelect: () => void;
 }) {
@@ -121,19 +141,24 @@ function StaffCard({
             aria-hidden
             className="flex h-full w-full items-center justify-center font-display text-[40px] leading-none"
           >
-            Any
+            {title.charAt(0)}
           </span>
         )}
       </span>
 
-      <span className="block p-5 text-left">
-        <span className="block font-display text-[26px] leading-[1.1] font-bold">
+      <span className="booking-choice-body block p-5 text-left">
+        <span className="booking-choice-title block font-display text-[26px] leading-[1.1] font-bold">
           {title}
         </span>
         <span className="booking-choice-meta mt-2 block font-body text-[13px] leading-[1.5]">
           {subtitle}
           <span className="block">{note}</span>
         </span>
+        {price ? (
+          <span className="mt-3 block font-body text-[15px] leading-none font-bold tabular-nums">
+            {price}
+          </span>
+        ) : null}
       </span>
     </button>
   );

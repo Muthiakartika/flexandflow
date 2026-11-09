@@ -65,7 +65,11 @@ export default function ContactPage() {
       icon: CalendarCheck,
       term: "Book online",
       detail: "Pick a time yourself",
-      meta: "booking.flexandflow.fit",
+      /* Shows where the button really goes: the wizard, or the external
+         booking site while `BOOKING_ENABLED` is off. */
+      meta: bookingCtaHref.startsWith("http")
+        ? bookingCtaHref.replace(/^https?:\/\//, "").replace(/\/$/, "")
+        : `flexandflow.fit${bookingCtaHref.replace(/\/$/, "")}`,
       href: bookingCtaHref,
       external: false,
     },

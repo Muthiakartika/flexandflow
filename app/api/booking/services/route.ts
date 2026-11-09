@@ -1,5 +1,6 @@
 /**
- * `GET /api/booking/services?staff=` — step two of the wizard.
+ * `GET /api/booking/services?staff=` — the catalogue for one therapist, and
+ * `?all=1` — every tier, for the wizard's first step (the treatment).
  *
  * The catalogue filtered to what the chosen therapist can actually deliver, at
  * the price band their tier sets. Ginny and Yuni do not carry the same list and
@@ -7,7 +8,7 @@
  * offer sessions that cannot be booked at prices that do not exist.
  */
 import { ok, fail, serverError } from "@/lib/api/respond";
-import { listCatalogue } from "@/lib/booking/catalogue";
+import { listCatalogue, listFullCatalogue } from "@/lib/booking/catalogue";
 import { fieldErrors, staffSchema } from "@/lib/booking/schema";
 import { ANY_STAFF } from "@/lib/booking/types";
 
@@ -15,6 +16,17 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: Request): Promise<Response> {
   const params = new URL(request.url).searchParams;
+
+  /* `?all=1` — the treatment step, which comes before the staff step: every
+     variant at every tier, uncollapsed. See `listFullCatalogue`. */
+  if (params.get("all") === "1") {
+    try {
+      return ok(await listFullCatalogue());
+    } catch (error) {
+      console.error("[booking] GET /api/booking/services?all failed", error);
+      return serverError("We could not load the services. Please try again.");
+    }
+  }
 
   /* `therapistId` is the name BOOKING-PLAN §4.3 gives this parameter and
      `staff` is the name `lib/booking/schema.ts` gives it. Both are accepted so

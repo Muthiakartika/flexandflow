@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { CARD, FOCUS, LINK } from "@/components/ui/tokens";
 import { formatIdr, serviceMinutes, teamFirstRates } from "@/lib/pricing";
-import { bookingCtaHref, bookingCtaProps } from "@/lib/site";
+import { bookingCtaProps, bookingHref } from "@/lib/site";
 import { TREATMENT_NAMES } from "@/lib/treatments";
 import type { Service } from "@/types";
 
@@ -20,8 +20,8 @@ import type { Service } from "@/types";
  * rather than the panel's search title.
  *
  * Durations are per tier: they usually match, in which case the length is
- * stated once as a chip on the photo. "Book Session" goes to
- * booking.flexandflow.fit, a separate deployment from this site.
+ * stated once as a chip on the photo. "Book Session" opens the booking wizard
+ * on this treatment (`bookingHref` in `lib/site.ts`).
  */
 /**
  * `priority` for the cards in the first row, which are on screen as the page
@@ -104,7 +104,7 @@ export default function ServicePriceCard({
 
         <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-5">
           <Link
-            href={bookingCtaHref}
+            href={bookingHref({ service: service.slug })}
             {...bookingCtaProps}
             className={`inline-flex items-center justify-center rounded-[10px] bg-primary-strong px-5 py-2.5 font-body text-[14px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
           >

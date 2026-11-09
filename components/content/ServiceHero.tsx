@@ -84,6 +84,7 @@ export default function ServiceHero({
   facts: factsOverride,
   card,
   crumbs,
+  bookHref = bookingCtaHref,
 }: {
   service: Pick<Service, "title" | "excerpt" | "image" | "seo">;
   rates: Rate[];
@@ -96,6 +97,8 @@ export default function ServiceHero({
   card?: React.ReactNode;
   /** In place of Services › the treatment, for a page that is not one. */
   crumbs?: Crumb[];
+  /** Where "Book" goes — the wizard on this treatment (`bookingHref`). */
+  bookHref?: string;
 }) {
   const from = rates.length ? Math.min(...rates.map((rate) => rate.amount)) : null;
 
@@ -131,7 +134,7 @@ export default function ServiceHero({
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Link href={bookingCtaHref} {...bookingCtaProps} className={BTN_SOLID}>
+              <Link href={bookHref} {...bookingCtaProps} className={BTN_SOLID}>
                 Book Session
               </Link>
               <a

@@ -5,8 +5,21 @@ import { Fragment, type CSSProperties, type ReactNode } from "react";
 import { BTN_GHOST, BTN_SOLID } from "@/components/ui/tokens";
 import { groupsFor, type ColumnGroups } from "@/lib/seo/layouts";
 import CardSlider from "./CardSlider";
+import { BOOKING_ENABLED } from "@/lib/flags";
+import { externalBookingUrl } from "@/lib/site";
 import InlineFaq from "./InlineFaq";
 import type { ContentBlock } from "@/types";
+
+/**
+ * Booking links in body copy follow `BOOKING_ENABLED` like every other CTA.
+ * `flexandflow.fit` is this app now, so `/appointment/` there is the internal
+ * wizard; with the switch off, the link — query string and all, since the
+ * WordPress plugin reads none — goes to the external booking site instead.
+ */
+const APPOINTMENT_LINK = /^https:\/\/flexandflow\.fit\/appointment\/?(?:\?[^#]*)?$/;
+function bookingAware(href: string): string {
+  return !BOOKING_ENABLED && APPOINTMENT_LINK.test(href) ? externalBookingUrl : href;
+}
 
 /** Turn the extractor's `[text](href)` / `**bold**` / `*italic*` markers back
  *  into elements. Internal links use `next/link`. Exported for `InlineFaq`,
@@ -21,17 +34,17 @@ export function renderInline(text: string): ReactNode[] {
   while ((match = pattern.exec(text)) !== null) {
     if (match.index > last) nodes.push(text.slice(last, match.index));
 
-    const [, linkText, href, bold, italic] = match;
+    const [, linkText, rawHref, bold, italic] = match;
 
-    if (linkText && href) {
+    if (linkText && rawHref) {
+      const href = bookingAware(rawHref);
       const internal = href.startsWith("https://flexandflow.fit");
       const path = internal
         ? href.replace("https://flexandflow.fit", "").replace(/\/$/, "") || "/"
         : href;
-      const staysOnWordPress = /\/appointment\/?$/.test(href);
 
       nodes.push(
-        internal && !staysOnWordPress ? (
+        internal ? (
           <Link key={key++} href={path}>
             {linkText}
           </Link>
@@ -389,12 +402,12 @@ export default function RichText({
                `https://flexandflow.fit` prefix stays on the site. Anything
                else — including `flexandflow.id`, which redirects here — is a
                new tab, because that is what it actually is. */
-            const internal = block.href.startsWith("https://flexandflow.fit");
+            const href = bookingAware(block.href);
+            const internal = href.startsWith("https://flexandflow.fit");
             const path = internal
-              ? block.href.replace("https://flexandflow.fit", "").replace(/\/$/, "") ||
+              ? href.replace("https://flexandflow.fit", "").replace(/\/$/, "") ||
                 "/"
-              : block.href;
-            const staysExternal = /\/appointment\/?$/.test(block.href);
+              : href;
 
             const className =
               block.variant === "outline"
@@ -403,13 +416,13 @@ export default function RichText({
 
             return (
               <p key={i} className="my-7">
-                {internal && !staysExternal ? (
+                {internal ? (
                   <Link href={path} className={className}>
                     {block.label}
                   </Link>
                 ) : (
                   <a
-                    href={block.href}
+                    href={href}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={className}

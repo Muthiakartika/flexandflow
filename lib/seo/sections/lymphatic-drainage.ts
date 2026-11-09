@@ -103,7 +103,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Where can I get a lymphatic massage near me in Bali?",
-        answer: "Flex & Flow offers lymphatic drainage massage at its studio on Jl. Toya Ning II, Ungasan, in Uluwatu, Monday to Saturday from 09:00 to 17:00 (closed Sunday). If you are staying in the Uluwatu area, a therapist can come to you instead. You can [book online](https://booking.flexandflow.fit/) or message us on [WhatsApp](https://wa.me/6285858887777) on +62 858 5888 7777.",
+        answer: "Flex & Flow offers lymphatic drainage massage at its studio on Jl. Toya Ning II, Ungasan, in Uluwatu, Monday to Saturday from 09:00 to 17:00 (closed Sunday). If you are staying in the Uluwatu area, a therapist can come to you instead. You can [book online](https://flexandflow.fit/appointment/?service=lymphatic-drainage) or message us on [WhatsApp](https://wa.me/6285858887777) on +62 858 5888 7777.",
       },
       {
         question: "Can I have lymphatic drainage at my villa in Uluwatu?",

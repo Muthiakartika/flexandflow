@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 import { ACADEMY_ENABLED, INTAKE_ENABLED } from "./lib/flags";
-import { externalBookingUrl } from "./lib/site";
+import { bookingDestination } from "./lib/site";
 
 /**
  * The academy's own routes, kept in one place because the switch flips them as
@@ -47,10 +47,10 @@ const academyRedirects = ACADEMY_ENABLED
          temporary (307): a permanent redirect would be cached by browsers and
          search engines and would still be firing long after the academy is
          published. */
-      { source: "/academy", destination: externalBookingUrl, permanent: false },
+      { source: "/academy", destination: bookingDestination, permanent: false },
       {
         source: "/academy/:path*",
-        destination: externalBookingUrl,
+        destination: bookingDestination,
         permanent: false,
       },
     ];
@@ -65,7 +65,7 @@ const academyRedirects = ACADEMY_ENABLED
  */
 const intakeRedirects = INTAKE_ENABLED
   ? []
-  : [{ source: "/intake", destination: externalBookingUrl, permanent: false }];
+  : [{ source: "/intake", destination: bookingDestination, permanent: false }];
 
 const nextConfig: NextConfig = {
   /**
@@ -269,8 +269,19 @@ const nextConfig: NextConfig = {
        * current home.
        */
       {
-        source: "/shiatsu-massage/common-surfing-injuries-in-bali-and-how-to-avoid-them",
+        source:
+          "/shiatsu-massage/common-surfing-injuries-in-bali-and-how-to-avoid-them",
         destination: "/injury-guide/common-surfing-injuries/",
+        permanent: true,
+      },
+      {
+        source: "/shiatsu-massage/how-to-make-sitting-too-long-less-painful/",
+        destination: "/injury-guide/how-to-make-sitting-too-long-less-painful/",
+        permanent: true,
+      },
+      {
+        source: "/therapist/fauzan/",
+        destination: "/",
         permanent: true,
       },
       ...academyRedirects,

@@ -5,17 +5,16 @@
  * the price list followed, at `/price-list/`, backed by
  * `lib/data/priceList.ts`.
  *
- * **Booking is split two ways.** The wizard itself still runs inside this app
- * at `bookingUrl` — reschedule links and anything mid-flow use that, through
- * `next/link` like any other internal route. But every marketing "Book now" /
- * "Book Appointment" / "Book with <therapist>" CTA points visitors at
- * `/intake` instead: the client intake & consent form (INTAKE-PLAN.md), which
- * every visitor must complete before booking. On success it redirects to
- * `externalBookingUrl` — a separate booking.flexandflow.fit deployment,
- * absolute like `wordpressUrls`. See `BOOKING-PLAN.md`.
+ * **Booking.** The wizard runs inside this app at `bookingUrl`, and since
+ * 2026-11-09 (`BOOKING_ENABLED` in `lib/flags.ts`) every marketing "Book …"
+ * CTA goes to it, deep-linked to the treatment or therapist where the button
+ * knows which (`bookingHref`). With the intake form switched on, CTAs pass
+ * through `/intake` first and land on the same wizard URL afterwards. The
+ * external booking.flexandflow.fit plugin is the fallback when the switch is
+ * off. See `BOOKING-PLAN.md`.
  */
 
-import { ACADEMY_ENABLED, INTAKE_ENABLED } from "./flags";
+import { ACADEMY_ENABLED, BOOKING_ENABLED, INTAKE_ENABLED } from "./flags";
 
 export const siteConfig = {
   name: "Flex and Flow",
@@ -31,9 +30,8 @@ export const siteConfig = {
 /**
  * The booking flow — staff, service, date and time, details, summary.
  *
- * Internal. Reschedule links and anything already mid-flow use this directly;
- * the site's marketing CTAs currently point at `/intake` instead (see below)
- * rather than here. The trailing slash is not decoration:
+ * Internal. Marketing CTAs reach it through `bookingHref` below, reschedule
+ * links directly. The trailing slash is not decoration:
  * `trailingSlash: true` in `next.config.ts` matches the shape WordPress
  * published and Google indexed, and a link without one answers a 308 before
  * it resolves.
@@ -45,31 +43,82 @@ export const siteConfig = {
 export const bookingUrl = "/appointment/";
 
 /**
- * Where the client intake & consent form (`/intake`) sends a visitor once
- * they have completed it — a separate booking.flexandflow.fit deployment,
- * not a page in this app. Treat it like `wordpressUrls`: absolute, external.
- * It's a WordPress booking plugin and reads no query string, so every CTA
- * that reaches it via `/intake` ends up at this same bare URL — there is no
- * per-therapist variant, and "Book with Ginny" doesn't preselect anything on
- * arrival. `bookingUrl` above still matters: the wizard's own reschedule
- * links stay on it. No marketing CTA links here directly any more — every one
- * of them points at `/intake` first; see `components/intake/IntakeForm.tsx`
- * for the redirect on success, and INTAKE-PLAN.md for why.
+ * The external booking site — a WordPress booking plugin on
+ * booking.flexandflow.fit, not a page in this app. Absolute, external, and it
+ * reads no query string, so nothing can be preselected on arrival. Only used
+ * while `BOOKING_ENABLED` is off; see `bookingDestination`.
  */
 export const externalBookingUrl = "https://booking.flexandflow.fit/";
 
 /**
- * Where every marketing "Book …" button points. Through `/intake` while the
- * intake form is switched on; straight to the external booking site in a new
- * tab while it is off (`INTAKE_ENABLED` in `lib/flags.ts`). Spread
- * `bookingCtaProps` onto any plain `<Link>`/`<a>` that uses it — `ButtonLink`
- * opens absolute URLs in a new tab on its own.
+ * Where a visitor books: this app's wizard while `BOOKING_ENABLED`, the
+ * external WordPress plugin otherwise. Also where `/intake` sends people once
+ * the form is done, and where `next.config.ts` points the held-back routes.
  */
-export const bookingCtaHref = INTAKE_ENABLED ? "/intake" : externalBookingUrl;
+export const bookingDestination = BOOKING_ENABLED
+  ? bookingUrl
+  : externalBookingUrl;
 
-export const bookingCtaProps = INTAKE_ENABLED
-  ? {}
-  : ({ target: "_blank", rel: "noopener noreferrer" } as const);
+/**
+ * The href for a "Book …" button, deep-linked when the button knows what it is
+ * for: `{ service: "sport-massage" }` opens the wizard filtered to that
+ * treatment, `{ staff: "ginny" }` opens it with the therapist already chosen.
+ *
+ * Slugs are the booking catalogue's (`Service.slug`, `Therapist.slug`), which
+ * match the treatment pages' and the therapist profiles'. A slug the catalogue
+ * does not know — a treatment that is not bookable online, like the home
+ * service — is ignored by the wizard, which then opens as an ordinary visit.
+ *
+ * With the intake form on, the wizard URL rides along as `?next=` so the form
+ * lands the visitor on the same treatment afterwards. The external plugin
+ * reads no query string, so with `BOOKING_ENABLED` off every button gets the
+ * same bare URL.
+ */
+export function bookingHref(
+  target: { service?: string; staff?: string } = {},
+): string {
+  if (!BOOKING_ENABLED) return INTAKE_ENABLED ? "/intake/" : externalBookingUrl;
+
+  const query = new URLSearchParams();
+  if (target.staff) query.set("staff", target.staff);
+  if (target.service) query.set("service", target.service);
+  const search = query.toString();
+  const wizard = search ? `${bookingUrl}?${search}` : bookingUrl;
+
+  if (!INTAKE_ENABLED) return wizard;
+  return search ? `/intake/?next=${encodeURIComponent(wizard)}` : "/intake/";
+}
+
+/**
+ * Where a generic "Book now" button points — the header, the mobile drawer,
+ * the price list. Spread `bookingCtaProps` onto any plain `<Link>`/`<a>` that
+ * uses `bookingHref` — `ButtonLink` opens absolute URLs in a new tab on its own.
+ */
+export const bookingCtaHref = bookingHref();
+
+/** New tab only when the button leaves this app for the external plugin. */
+export const bookingCtaProps =
+  BOOKING_ENABLED || INTAKE_ENABLED
+    ? {}
+    : ({ target: "_blank", rel: "noopener noreferrer" } as const);
+
+/**
+ * Where `/intake` sends a visitor once the form is submitted: the `?next=` a
+ * deep-linked CTA attached, if it is a wizard URL on this site, otherwise the
+ * booking destination. Anything else is ignored — an open redirect off a form
+ * that collects health details is not something to leave lying around.
+ */
+export function intakeNextHref(next: string | null): string {
+  if (
+    BOOKING_ENABLED &&
+    next &&
+    next.startsWith(bookingUrl) &&
+    !next.startsWith("//")
+  ) {
+    return next;
+  }
+  return bookingDestination;
+}
 
 /**
  * The training academy used to be a separate deployment on its own domain; it
@@ -192,7 +241,10 @@ const allNavItems: NavItem[] = [
     label: "Services",
     href: "/services",
     children: [
-      { label: "Assisted Stretching", href: "/uluwatu-bali/assisted-stretching" },
+      {
+        label: "Assisted Stretching",
+        href: "/uluwatu-bali/assisted-stretching",
+      },
       { label: "Cupping Therapy", href: "/uluwatu-bali/cupping-therapy" },
       { label: "Sports Massage", href: "/uluwatu-bali/sport-massage" },
       {

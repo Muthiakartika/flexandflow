@@ -12,11 +12,7 @@ import type { IsoDate } from "@/lib/booking/time";
 export type Tier = "MASTER" | "STANDARD";
 
 export type BookingStatusValue =
-  | "PENDING"
-  | "CONFIRMED"
-  | "COMPLETED"
-  | "CANCELLED"
-  | "NO_SHOW";
+  "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
 
 /** The sentinel the staff step uses for "Any Staff". Never a real therapist id. */
 export const ANY_STAFF = "any" as const;
@@ -63,6 +59,84 @@ export type VariantOption = {
 export type ServiceCatalogue = {
   categories: CategoryOption[];
   variants: VariantOption[];
+};
+
+/**
+ * One choice on the treatment step: a treatment at one session length, with
+ * every tier it is sold at. The therapist is not chosen yet, so the price is a
+ * range until the staff step resolves it to one variant (`resolveVariant`).
+ */
+export type TreatmentOption = {
+  /** `sport-massage:60` — stable across reloads, used as the radio value. */
+  key: string;
+  serviceSlug: string;
+  serviceTitle: string;
+  serviceImage: string | null;
+  categoryId: string | null;
+  durationMinutes: number;
+  /** One per tier, cheapest first. */
+  variants: VariantOption[];
+};
+
+export function treatmentKey(serviceSlug: string, durationMinutes: number): string {
+  return `${serviceSlug}:${durationMinutes}`;
+}
+
+/** Group an uncollapsed catalogue (`?all=1`) into treatment choices, in order. */
+export function groupTreatments(variants: VariantOption[]): TreatmentOption[] {
+  const groups = new Map<string, TreatmentOption>();
+  for (const variant of variants) {
+    const key = treatmentKey(variant.serviceSlug, variant.durationMinutes);
+    const held = groups.get(key);
+    if (held) {
+      held.variants.push(variant);
+      continue;
+    }
+    groups.set(key, {
+      key,
+      serviceSlug: variant.serviceSlug,
+      serviceTitle: variant.serviceTitle,
+      serviceImage: variant.serviceImage,
+      categoryId: variant.categoryId,
+      durationMinutes: variant.durationMinutes,
+      variants: [variant],
+    });
+  }
+  for (const group of groups.values()) {
+    group.variants.sort((a, b) => a.priceIdr - b.priceIdr || (a.tier < b.tier ? -1 : 1));
+  }
+  return [...groups.values()];
+}
+
+/** Everyone who can give this treatment at this length, at any tier. */
+export function treatmentTherapists(treatment: TreatmentOption): string[] {
+  return [...new Set(treatment.variants.flatMap((v) => v.therapistIds))];
+}
+
+/**
+ * The variant a treatment resolves to once the staff step is answered: the
+ * therapist's own tier, or under "Any Staff" the cheapest tier — the same
+ * promise the old flow made, with the therapist assigned at submit. Null when
+ * that therapist does not give this treatment at this length.
+ */
+export function resolveVariant(
+  treatment: TreatmentOption,
+  staff: StaffSelection,
+): VariantOption | null {
+  if (staff === ANY_STAFF) return treatment.variants[0] ?? null;
+  return treatment.variants.find((v) => v.therapistIds.includes(staff)) ?? null;
+}
+
+/**
+ * A treatment a "Book" link already named (`/appointment/?service=<slug>`).
+ * The wizard narrows the staff step to `therapistIds` and the service step to
+ * this treatment's variants.
+ */
+export type PreselectedService = {
+  slug: string;
+  title: string;
+  /** Everyone who can give it at some length and tier. */
+  therapistIds: string[];
 };
 
 /** Which part of the day a slot falls in. Mirrors the previous booking UI. */

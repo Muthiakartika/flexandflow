@@ -17,7 +17,7 @@ const blocks: ContentBlock[] = [
     ordered: true,
     items: [
       "**Pick your treatment.** Anything in the list above, at the length you want.",
-      "**Message us.** [Book online](https://booking.flexandflow.fit/) or [WhatsApp us](https://wa.me/6285858887777) with the day, the time and where you are staying.",
+      "**Message us.** [Book online](https://flexandflow.fit/appointment/) or [WhatsApp us](https://wa.me/6285858887777) with the day, the time and where you are staying.",
       "**We confirm.** We check you are in our area and lock in the time. Staying outside Ungasan to Balangan? Ask first.",
       "**Your therapist arrives.** Everything comes with them. Before you start, you agree on focus, pressure and anything to avoid.",
     ],
@@ -98,7 +98,7 @@ const blocks: ContentBlock[] = [
       },
       {
         question: "Can I book a home massage on a Sunday or in the evening?",
-        answer: "No. Flex & Flow's home service in Uluwatu runs Monday to Saturday from 09:00 to 17:00, the same hours as the studio in Ungasan, so there are no Sunday or evening visits. If you surf early, a late-morning or afternoon appointment at your villa fits well. Book online at booking.flexandflow.fit or on WhatsApp at +62 858 5888 7777.",
+        answer: "No. Flex & Flow's home service in Uluwatu runs Monday to Saturday from 09:00 to 17:00, the same hours as the studio in Ungasan, so there are no Sunday or evening visits. If you surf early, a late-morning or afternoon appointment at your villa fits well. Book online or on WhatsApp at +62 858 5888 7777.",
       },
       {
         question: "Do you offer outcall massage outside Uluwatu, for example in Canggu or Seminyak?",

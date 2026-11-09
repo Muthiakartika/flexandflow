@@ -90,7 +90,7 @@ const blocks: ContentBlock[] = [
       "**Choose the session.** [Lymphatic drainage](/uluwatu-bali/lymphatic-drainage/) can focus on one area, such as the legs, or cover more of the body. The [lymphatic detox massage for men](/uluwatu-bali/lymphatic-detox-massage-for-men/) adds face, scalp, head and neck work.",
       "**Choose the place.** Come to the studio on Jl. Toya Ning II, Ungasan, Monday to Saturday from 09:00 to 17:00, or have a therapist visit your villa in the Uluwatu area for an extra IDR {{fee}}.",
       "**Share your health history.** Mention medication, recent surgery, pregnancy and any of the warning signs above. We ask before every session.",
-      "**Book.** Use [online booking](https://booking.flexandflow.fit/) or [WhatsApp](https://wa.me/6285858887777).",
+      "**Book.** Use [online booking](https://flexandflow.fit/appointment/?service=lymphatic-drainage) or [WhatsApp](https://wa.me/6285858887777).",
     ],
   },
   {

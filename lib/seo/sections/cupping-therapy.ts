@@ -33,7 +33,7 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "Sessions run Monday to Saturday, 09:00 to 17:00. The studio is closed on Sunday. If you searched for cupping near me and you are staying in Ungasan, Pecatu, Bingin, Padang Padang or Balangan, our [home service](/uluwatu-bali/outcall-home-service-massage/) brings cupping to you. Book at [booking.flexandflow.fit](https://booking.flexandflow.fit/) or on [WhatsApp](https://wa.me/6285858887777), and see the [price list](/price-list/) for every rate.",
+    text: "Sessions run Monday to Saturday, 09:00 to 17:00. The studio is closed on Sunday. If you searched for cupping near me and you are staying in Ungasan, Pecatu, Bingin, Padang Padang or Balangan, our [home service](/uluwatu-bali/outcall-home-service-massage/) brings cupping to you. Book [online](https://flexandflow.fit/appointment/?service=cupping-therapy) or on [WhatsApp](https://wa.me/6285858887777), and see the [price list](/price-list/) for every rate.",
   },
   {
     type: "heading",
@@ -81,7 +81,7 @@ const blocks: ContentBlock[] = [
     items: [
       {
         question: "How much does cupping therapy cost in Uluwatu?",
-        answer: "At Flex & Flow in Ungasan, Uluwatu, cupping therapy costs **IDR {{price:cupping-therapy:30:standard}} for a 30-minute session**. The price is the same with Ginny, the master therapist, or with Yuni. You can book cupping on its own or alongside a sport massage, Monday to Saturday from 09:00 to 17:00, online at booking.flexandflow.fit or on WhatsApp.",
+        answer: "At Flex & Flow in Ungasan, Uluwatu, cupping therapy costs **IDR {{price:cupping-therapy:30:standard}} for a 30-minute session**. The price is the same with Ginny, the master therapist, or with Yuni. You can book cupping on its own or alongside a sport massage, Monday to Saturday from 09:00 to 17:00, online or on WhatsApp.",
       },
       {
         question: "Does Flex & Flow offer hijama or wet cupping in Bali?",

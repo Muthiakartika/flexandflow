@@ -662,6 +662,66 @@ button.booking-step-body {
   color: color-mix(in oklab, #fff 82%, transparent);
 }
 
+/* Phones. Nine treatment cards at full width stood 306px each, putting
+   Continue ~3,500px below the first card; the two staff cards were 478px each.
+   Treatments become rows (small photo left, text right) and the therapists sit
+   side by side, so each step fits in roughly a screen or two. Plain @media
+   rather than Tailwind breakpoints — see CLAUDE.md, gotcha 2. */
+@media (max-width: 639px) {
+  .booking-choice[data-layout="row"] {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    align-items: stretch;
+  }
+
+  .booking-choice[data-layout="row"] .booking-choice-media {
+    aspect-ratio: auto;
+    height: 100%;
+    min-height: 88px;
+  }
+
+  .booking-choice[data-layout="row"] .booking-choice-body {
+    padding: 12px 14px;
+  }
+
+  .booking-choice[data-layout="row"] .booking-choice-title {
+    font-size: 22px;
+  }
+
+  .booking-choice[data-layout="row"] .booking-choice-body > span + span {
+    margin-top: 8px;
+  }
+
+  .booking-staff-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .booking-staff-grid .booking-choice-body {
+    padding: 12px;
+  }
+
+  .booking-staff-grid .booking-choice-title {
+    font-size: 20px;
+  }
+
+  /* Back / Continue stay in reach while the visitor scrolls the choices. */
+  .booking-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin-top: 20px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    background-color: var(--color-cream);
+  }
+
+  /* The site's scroll-to-top button sits bottom-right, exactly where the
+     sticky Continue lands; lift it clear on the booking page only. */
+  body:has(.booking-actions) .scroll-to-top {
+    bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+}
+
 /* ── Category chips ──────────────────────────────────────────────────────── */
 
 .booking-chips {

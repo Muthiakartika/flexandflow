@@ -12,8 +12,8 @@ import {
   teamFirstRates,
 } from "@/lib/pricing";
 import {
-  bookingCtaHref,
   bookingCtaProps,
+  bookingHref,
   contact,
   homeServiceFeeIdr,
   homeServiceSlugs,
@@ -77,6 +77,10 @@ export default async function ServiceArticle({
 
   const uniform = serviceMinutes(service);
   const homeService = homeServiceSlugs.has(service.slug);
+  /* Every "Book" button on this page opens the wizard on this treatment. A
+     slug the booking catalogue does not carry is ignored there, so this is
+     safe for treatments that are not bookable online. */
+  const bookHref = bookingHref({ service: service.slug });
   const pilot = REDESIGN_PILOT.has(service.slug);
   /* The team first and Ginny's tier last (`teamFirstRates`), each with its
      villa price where a therapist brings the treatment home. */
@@ -178,7 +182,7 @@ export default async function ServiceArticle({
         <ButtonLink href={contact.whatsapp} external variant="solid">
           Book on WhatsApp
         </ButtonLink>
-        <ButtonLink href={bookingCtaHref}>Book an Appointment</ButtonLink>
+        <ButtonLink href={bookHref}>Book an Appointment</ButtonLink>
       </div>
     </>
   );
@@ -191,6 +195,7 @@ export default async function ServiceArticle({
         rates={rates}
         minutes={uniform}
         homeService={homeService}
+        bookHref={bookHref}
       />
 
       {pilot ? (
@@ -245,7 +250,7 @@ export default async function ServiceArticle({
               </div>
 
               <Link
-                href={bookingCtaHref}
+                href={bookHref}
 
                 {...bookingCtaProps}
                 className={`mt-4 flex w-full items-center justify-center rounded-[10px] bg-primary-strong px-5 py-3 font-body text-[14px] leading-none text-white transition-colors duration-300 hover:bg-secondary ${FOCUS}`}
@@ -356,6 +361,7 @@ export default async function ServiceArticle({
               ? formatIdr(Math.min(...rates.map((rate) => rate.amount)))
               : null
           }
+          bookHref={bookHref}
         />
       ) : null}
     </>

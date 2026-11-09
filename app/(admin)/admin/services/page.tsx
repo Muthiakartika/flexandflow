@@ -39,7 +39,7 @@ export default async function AdminServicesPage() {
       {/* Two stores, one page each: the Ginny / Yuni rate cards on
           /price-list read these rows (`lib/booking/price-list.ts`); the
           treatment pages, the home grid and the "Pick Your Treatment" grid
-          read the treatment editor. The live "Book" buttons read neither. */}
+          read the treatment editor. The booking wizard charges these rows. */}
       <div className="admin-card mb-5 border-warn/40 bg-warn-soft p-4">
         <h2 className="text-[15px] font-bold text-warn">
           Which prices on the website this changes
@@ -51,10 +51,8 @@ export default async function AdminServicesPage() {
           and session length, as soon as you save. The treatment pages, the home
           page and the &ldquo;Pick Your Treatment&rdquo; grid do not — edit
           those under <strong>Treatments</strong>. The site&rsquo;s
-          &ldquo;Book&rdquo; buttons go to{" "}
-          <code className="rounded bg-cream px-1 py-0.5 text-[12px]">booking.flexandflow.fit</code>
-          , which has its own WordPress admin and is not affected by anything
-          here.
+          &ldquo;Book&rdquo; buttons open the booking form, which charges
+          exactly the rows on this page.
         </p>
       </div>
 

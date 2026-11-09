@@ -82,7 +82,7 @@ const blocks: ContentBlock[] = [
   },
   {
     type: "paragraph",
-    text: "At your villa or hotel in the Uluwatu area, add IDR {{fee}} per visit for [home service](/uluwatu-bali/outcall-home-service-massage/). Book at [booking.flexandflow.fit](https://booking.flexandflow.fit/).",
+    text: "At your villa or hotel in the Uluwatu area, add IDR {{fee}} per visit for [home service](/uluwatu-bali/outcall-home-service-massage/). Book [online](https://flexandflow.fit/appointment/).",
   },
   {
     type: "heading",

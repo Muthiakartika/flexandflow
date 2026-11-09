@@ -34,23 +34,42 @@
 export const ACADEMY_ENABLED = false;
 
 /**
+ * Whether this app's own booking wizard (`/appointment/`) takes new bookings.
+ *
+ * **Off — 2026-11-09.** Turned on earlier that day at the owner's request,
+ * then back off before deploying because the wizard is still being tested.
+ *
+ * `true`: every "Book …" CTA goes to the internal wizard — Phase 3,
+ * BOOKING-PLAN.md — and a CTA that knows which treatment or therapist it
+ * belongs to deep-links into it (`/appointment/?service=<slug>`,
+ * `?staff=<slug>`; see `bookingHref` in `lib/site.ts`).
+ *
+ * `false` puts every CTA back on `externalBookingUrl`
+ * (booking.flexandflow.fit, the WordPress plugin) in a new tab, exactly as
+ * between 2026-08-24 and the switch. The wizard keeps working at its URL
+ * either way — reschedule links in confirmation emails depend on it.
+ */
+export const BOOKING_ENABLED: boolean = false;
+
+/**
  * Whether the client intake & consent form at `/intake` is live.
  *
- * **Off unless the environment says otherwise.** The form is built and works
- * (INTAKE-PLAN.md), but the owner is holding it back from flexandflow.fit for
- * now. Read from `NEXT_PUBLIC_INTAKE_ENABLED`, which `.env.local` sets to
- * `true` for development; production leaves it unset. `NEXT_PUBLIC_` because
- * the header and the mobile drawer are client components, and Next inlines
- * the value at build time — changing it on Vercel needs a redeploy.
+ * **Closed — 2026-11-09, owner's request: "langsung book aja".** Every "Book"
+ * button goes straight to the booking wizard with no form in front of it, in
+ * every environment. Hard-coded rather than read from
+ * `NEXT_PUBLIC_INTAKE_ENABLED`, so a leftover env var (`.env.local` still sets
+ * it to `"true"`) cannot reopen it. The form is built and works
+ * (INTAKE-PLAN.md); reopening it is
+ * `process.env.NEXT_PUBLIC_INTAKE_ENABLED === "true"` back in place of `false`.
  *
  * With the switch off:
  *
- * - every booking CTA goes straight to `externalBookingUrl` in a new tab,
- *   exactly as the live site did before the form existed (`bookingCtaHref`
- *   and `bookingCtaProps` in `lib/site.ts`);
+ * - every booking CTA goes straight to the booking destination — the
+ *   internal wizard while `BOOKING_ENABLED`, otherwise `externalBookingUrl`
+ *   in a new tab (`bookingHref` and `bookingCtaProps` in `lib/site.ts`);
  * - `app/(main)/intake/page.tsx` answers 404.
  *
  * The admin side (`/admin/intake/`, field builder, submissions) keeps working
  * either way — it is behind the login and is how the form gets prepared.
  */
-export const INTAKE_ENABLED = process.env.NEXT_PUBLIC_INTAKE_ENABLED === "true";
+export const INTAKE_ENABLED: boolean = false;
