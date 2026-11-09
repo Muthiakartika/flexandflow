@@ -6,6 +6,9 @@ import { formatIdr } from "@/lib/pricing";
 import { siteConfig } from "@/lib/site";
 
 const ginny = therapists.find((t) => t.slug === "ginny");
+/* The team card shows a real face rather than the logo: the first therapist
+   on the team (Yuni today). The logo is only the fallback. */
+const teamFace = therapists.find((t) => t.slug !== "ginny");
 
 /**
  * Who treats you, at the top of a pilot treatment page's price section
@@ -37,7 +40,18 @@ export default function TierChooser({
     <div className="tier-chooser">
       <section className="tier-card tier-card-team">
         <span className="tier-avatar">
-          <Image src={siteConfig.logo} alt="" width={112} height={112} sizes="56px" />
+          {teamFace ? (
+            <Image
+              src={teamFace.portrait}
+              alt=""
+              width={320}
+              height={400}
+              sizes="56px"
+              className="tier-avatar-face"
+            />
+          ) : (
+            <Image src={siteConfig.logo} alt="" width={112} height={112} sizes="56px" />
+          )}
         </span>
         <p className="tier-pill">Easiest to book</p>
         <h3>Our therapists</h3>
@@ -49,6 +63,12 @@ export default function TierChooser({
         <p className="tier-meta">{meta}</p>
         <p className="tier-copy">
           The most open slots, and the same listen-first approach the studio was built on.
+          {teamFace ? (
+            <>
+              {" "}
+              <Link href={`/therapist/${teamFace.slug}`}>Meet {teamFace.name} &rarr;</Link>
+            </>
+          ) : null}
         </p>
       </section>
 

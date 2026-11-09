@@ -2499,16 +2499,33 @@ button.booking-step-body {
   padding: 0.04em 12px 0.14em;
   font-family: var(--font-display);
   font-size: clamp(3.25rem, 16vw, 4.75rem);
-  font-weight: 700;
+  /* The header's lockup, larger: Amatic SC at its regular weight, in the
+     body-text colour (Header.tsx). */
+  font-weight: 400;
   line-height: 1;
   letter-spacing: -0.01em;
   text-align: center;
   white-space: nowrap;
-  color: var(--color-primary);
+  color: var(--color-body-text);
   user-select: none;
 }
 
-.footer-mark > span {
+/* The round logo sits beside the name, sized in `em` so it scales with the
+   wordmark at every breakpoint. */
+.footer-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2em;
+}
+
+.footer-mark-logo {
+  flex: none;
+  width: 1.05em;
+  height: 1.05em;
+}
+
+.footer-mark-word > span {
   color: var(--color-body-text);
 }
 
@@ -3389,6 +3406,7 @@ button.booking-step-body {
     font-size: clamp(3rem, 4vw, 4.25rem);
     line-height: 0.82;
     text-align: left;
+    justify-content: flex-start;
   }
 
   .footer-base {

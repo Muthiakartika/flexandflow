@@ -152,7 +152,17 @@ export default function Footer() {
         </nav>
 
         <p aria-hidden className="footer-mark">
-          Flex <span>&amp;</span> Flow
+          <Image
+            src={siteConfig.logo}
+            alt=""
+            width={160}
+            height={160}
+            sizes="80px"
+            className="footer-mark-logo"
+          />
+          <span className="footer-mark-word">
+            Flex <span>&amp;</span> Flow
+          </span>
         </p>
 
         {/* ── Small print ────────────────────────────────────────────────── */}
