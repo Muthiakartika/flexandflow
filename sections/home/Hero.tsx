@@ -119,7 +119,7 @@ export default function Hero({ from }: { from: number | null }) {
             wide={assets.heroVideoWide}
             narrow={assets.heroVideoNarrow}
             still="/images/2026/08/gallery-1.jpg"
-            className="aspect-[4/3] w-full rounded-[10px] bg-secondary/10 object-cover lg:aspect-square"
+            className="aspect-[4/3] w-full rounded-[10px] bg-secondary/10 lg:aspect-square"
           />
 
           <ul className="home-hero-team">
