@@ -9,8 +9,7 @@
  */
 import "server-only";
 
-import sharp from "sharp";
-
+import { convertUpload } from "@/lib/cms/compress";
 import { prisma } from "@/lib/db";
 import {
   ALLOWED_TYPES,
@@ -101,41 +100,35 @@ export async function storeUpload(
     };
   }
 
-  const bytes = Buffer.from(await file.arrayBuffer());
+  const original = Buffer.from(await file.arrayBuffer());
+
+  /* Every raster upload is stored as a WebP capped at 1920px
+     (`lib/cms/compress.ts`): uploads are served as stored, with no optimizer
+     in front of them. SVG is kept as it came. */
+  const converted = await convertUpload(original, file.type, file.name || "image");
+  if (!converted.ok) return converted;
+  const { bytes, width, height, mimeType, filename } = converted;
   const checksum = checksumOf(bytes);
 
-  const existing = await prisma.mediaAsset.findUnique({
-    where: { checksum },
+  /* Same bytes, same picture. Returning the existing row is what keeps the
+     library free of duplicates; nothing is written and nothing is uploaded.
+     The original's checksum is checked too, for rows stored before uploads
+     were compressed. */
+  const existing = await prisma.mediaAsset.findFirst({
+    where: { checksum: { in: [checksum, checksumOf(original)] } },
     select: SELECT,
   });
-
-  /* Same bytes, same picture. Returning the existing row is what keeps the
-     library free of duplicates; nothing is written and nothing is uploaded. */
   if (existing) return { ok: true, asset: existing, reused: true };
 
-  let width: number | null = null;
-  let height: number | null = null;
-
-  if (file.type !== "image/svg+xml") {
-    try {
-      const meta = await sharp(bytes).metadata();
-      width = meta.width ?? null;
-      height = meta.height ?? null;
-    } catch {
-      /* An image whose header sharp cannot read still uploads. It will need
-         its dimensions typed in, which the block editor asks for. */
-    }
-  }
-
-  const key = keyFor(file.name || "image", checksum);
-  const stored = await putObject(key, bytes, file.type);
+  const key = keyFor(filename, checksum);
+  const stored = await putObject(key, bytes, mimeType);
 
   const asset = await prisma.mediaAsset.create({
     data: {
       url: stored.url,
       checksum,
-      filename: file.name || key.split("/").pop() || "image",
-      mimeType: file.type,
+      filename,
+      mimeType,
       bytes: bytes.byteLength,
       width,
       height,

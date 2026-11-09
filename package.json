@@ -29,7 +29,8 @@
     "cache:purge": "tsx scripts/purge-cache.ts",
     "images:optimize": "node scripts/optimize-images.mjs",
     "images:variants": "node scripts/image-variants.mjs",
-    "images:sync": "tsx scripts/sync-media.ts"
+    "images:sync": "tsx scripts/sync-media.ts",
+    "check:upload-compress": "tsx scripts/check-upload-compress.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1123.0",

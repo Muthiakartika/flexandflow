@@ -20,9 +20,18 @@ against the worst failure mode here.
 > 6–17 points. To go back to Vercel's optimizer, remove `loader` and
 > `loaderFile` and delete `unoptimized: true`; the notes below still apply.
 >
-> CMS uploads on the media host are not resized; copy a heavy one into
-> `public/` and point `lib/seo/photos.ts` at it, as the surfing and
-> lymphatic guides do.
+> CMS uploads on the media host get no responsive variants. Since
+> 2026-11-09 every raster upload is **stored as WebP** (`lib/cms/compress.ts`,
+> called from `storeUpload`): JPEG, PNG, WebP, AVIF and GIF alike, width
+> capped at 1920px, EXIF orientation applied and stripped (GPS with it),
+> quality 80 (88 for PNG/GIF, which are more often graphics), transparency
+> and animation kept, filename and mime switched to `.webp`. SVG is the one
+> exception and is stored as it came; bytes sharp cannot decode are refused.
+> AVIF comes out larger as WebP — accepted for one format everywhere.
+> `npm run check:upload-compress` covers it.
+> Files uploaded before that date are untouched. For a heavy photo on a
+> key page, copy it into `public/` and point `lib/seo/photos.ts` at it, as
+> the surfing and lymphatic guides do.
 
 > ## ⚠ THE OPTIMIZER IS CURRENTLY OFF
 >
